@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-TW" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LingoFlow Pro</title>
+    
+    <!-- 1. 錯誤攔截器 (最優先執行) -->
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            const errorBox = document.getElementById('global-error-box');
+            if(errorBox) {
+                errorBox.style.display = 'block';
+                document.getElementById('error-msg').innerText = `系統偵測到錯誤: ${msg}\nLine: ${lineNo}`;
+                document.getElementById('loading-screen').style.display = 'none'; // 隱藏載入畫面
+            }
+            return false;
+        };
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <meta name="theme-color" content="#F2F2F7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'] },
+                    colors: {
+                        ios: { bg: '#F2F2F7', card: '#FFFFFF', blue: '#007AFF', gray: '#8E8E93' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .active-scale:active { transform: scale(0.97); transition: 0.1s; }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.1); }
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+    </style>
+</head>
+<body class="bg-ios-bg text-slate-900 h-[100dvh] w-screen overflow-hidden flex flex-col font-sans select-none">
+
+    <!-- 2. 全局錯誤顯示窗 (預設隱藏) -->
+    <div id="global-error-box" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; padding:20px; color:red; overflow:auto;">
+        <h2 class="text-xl font-bold mb-2">⚠️ App 發生錯誤</h2>
+        <pre id="error-msg" class="bg-gray-100 p-2 rounded text-sm mb-4 border border-red-200"></pre>
+        <button onclick="localStorage.clear(); location.reload();" class="w-full bg-red-500 text-white py-3 rounded-lg font-bold">
+            清除所有資料並重置 (修復白屏)
+        </button>
+        <p class="text-xs text-gray-500 mt-4">請截圖此畫面回報，或點擊上方按鈕重置 App。</p>
+    </div>
+
+    <!-- 3. 初始載入畫面 (防止白屏) -->
+    <div id="loading-screen" class="fixed inset-0 bg-ios-bg z-[5000] flex flex-col items-center justify-center">
+        <div class="text-ios-blue text-4xl mb-4"><i class="fa-solid fa-language fa-beat"></i></div>
+        <p class="text-slate-500 font-bold">LingoFlow 啟動中...</p>
+    </div>
+
+    <!-- App 主內容 -->
+    <div id="app" class="flex-1 relative overflow-hidden flex flex-col opacity-0 transition-opacity duration-500">
+        
+        <!-- Home View -->
+        <div id="view-home" class="page-view flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-6 mt-4 flex justify-between items-center">
+                <div>
+                    <p class="text-ios-gray text-xs font-bold uppercase tracking-wider mb-1">AI Language Coach</p>
+                    <h1 class="text-3xl font-bold text-slate-900">今日練習</h1>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <button onclick="switchView('settings')" class="bg-white px-3 py-1 rounded-full text-xs font-bold shadow-sm text-ios-blue flex items-center gap-1">
+                        <span id="current-lang-display">Loading...</span>
+                    </button>
+                    <span id="home-level-badge" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">Level</span>
+                </div>
+            </header>
+
+            <div onclick="startChat('free')" class="bg-gradient-to-r from-blue-500 to-indigo-600 p-5 rounded-2xl shadow-lg text-white mb-6 active-scale cursor-pointer relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="font-bold text-xl mb-1">自由對話 (Free Talk)</h3>
+                    <p class="text-blue-100 text-sm opacity-90">不限主題，像朋友一樣隨意聊天</p>
+                </div>
+                <i class="fa-solid fa-comments text-5xl opacity-20 absolute right-2 bottom-[-10px]"></i>
+            </div>
+
+            <h2 class="font-bold text-lg mb-3 ml-1 text-slate-700">情境模擬</h2>
+            <div class="space-y-3" id="scenario-list"></div>
+        </div>
+
+        <!-- Learn View -->
+        <div id="view-learn" class="page-view hidden flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-6 mt-4">
+                <h1 class="text-3xl font-bold">主題課程</h1>
+            </header>
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-4 border border-slate-100 flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-slate-600">當前標準</p>
+                    <p id="learn-level-display" class="font-bold text-ios-blue text-lg">JLPT</p>
+                </div>
+                <button onclick="switchView('settings')" class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-500 font-bold">更換</button>
+            </div>
+            <div id="lesson-list" class="grid grid-cols-1 gap-3"></div>
+        </div>
+
+        <!-- Vocab View -->
+        <div id="view-vocab" class="page-view hidden flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-4 mt-4 flex justify-between items-end">
+                <div>
+                    <h1 class="text-3xl font-bold">單字筆記</h1>
+                    <p class="text-ios-gray text-sm mt-1" id="vocab-subtitle">...</p>
+                </div>
+            </header>
+            <div id="vocab-list" class="space-y-3 pb-10"></div>
+        </div>
+
+        <!-- Chat View -->
+        <div id="view-chat" class="page-view hidden flex-1 flex flex-col h-full absolute inset-0 bg-ios-bg z-50">
+            <div class="glass-nav pt-safe-top px-4 py-3 flex items-center justify-between shadow-sm z-30 h-16 shrink-0">
+                <button onclick="backToMain()" class="text-ios-blue flex items-center gap-1 text-lg active-scale w-16">
+                    <i class="fa-solid fa-chevron-left"></i> <span class="text-base font-medium">返回</span>
+                </button>
+                <div class="text-center flex-1 overflow-hidden">
+                    <h2 id="chat-title" class="font-bold text-base truncate px-2">對話</h2>
+                    <p id="chat-subtitle" class="text-[10px] text-ios-gray">AI Coach</p>
+                </div>
+                <div class="w-16 flex justify-end"></div>
+            </div>
+
+            <div id="mission-banner" class="hidden bg-indigo-50 border-b border-indigo-100 p-2 px-4 flex justify-between items-center shrink-0 min-h-[40px]">
+                <span class="text-xs text-indigo-800 font-bold shrink-0">任務：</span>
+                <span id="mission-words" class="text-xs text-indigo-600 font-mono truncate flex-1 text-right">生成中...</span>
+            </div>
+
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 pb-4"></div>
+
+            <div class="bg-white border-t border-slate-200 p-3 pb-safe-bottom w-full shrink-0 relative z-30" id="chat-input-area">
+                <div id="correction-area" class="hidden absolute bottom-full left-0 w-full bg-yellow-50 border-t border-yellow-200 p-3 shadow-sm rounded-t-xl mb-[1px] mx-2 w-[calc(100%-1rem)]">
+                    <div id="correction-text" class="text-sm"></div>
+                </div>
+                <div class="flex items-end gap-2">
+                    <button id="mic-btn" onclick="toggleSpeech()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-lg active-scale transition-colors shrink-0">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <div class="flex-1 bg-slate-100 rounded-2xl px-4 py-2 min-h-[40px] flex items-center">
+                        <textarea id="msg-input" rows="1" class="w-full bg-transparent border-none outline-none resize-none max-h-24 text-base pt-1 placeholder-slate-400" placeholder="輸入訊息..."></textarea>
+                    </div>
+                    <button onclick="sendUserMessage()" id="send-btn" class="w-10 h-10 rounded-full bg-ios-blue text-white flex items-center justify-center text-lg shadow-md active-scale shrink-0">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="view-settings" class="page-view hidden flex-1 overflow-y-auto p-5">
+             <header class="mb-6 mt-4">
+                <button onclick="switchView('home')" class="text-ios-blue mb-4 flex items-center gap-1"><i class="fa-solid fa-chevron-left"></i> 返回</button>
+                <h1 class="text-3xl font-bold">設定</h1>
+            </header>
+            
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                <div class="p-4 border-b border-slate-100">
+                    <label class="block text-sm font-medium text-slate-500 mb-1">Gemini API Key</label>
+                    <input type="password" id="api-key-input" class="w-full text-base p-2 bg-slate-100 rounded-lg outline-none" placeholder="貼上 API Key">
+                </div>
+                <div class="p-4 flex justify-between items-center border-b border-slate-100">
+                    <span class="text-base font-medium">學習語言</span>
+                    <select id="target-lang" class="bg-transparent text-ios-blue font-bold outline-none text-right" onchange="updateLangDisplay()">
+                        <option value="Japanese">日本語</option>
+                        <option value="English">English</option>
+                        <option value="Korean">한국어</option>
+                    </select>
+                </div>
+                <div class="p-4 flex justify-between items-center">
+                    <span class="text-base font-medium">當前等級</span>
+                    <select id="user-level" class="bg-transparent text-ios-blue font-bold outline-none text-right">
+                        <option value="Beginner">初級</option>
+                        <option value="Intermediate">中級</option>
+                        <option value="Advanced">高級</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="saveSettings()" class="w-full bg-ios-blue text-white font-bold py-3 rounded-xl shadow-md active-scale mb-8">儲存並返回</button>
+            
+            <div class="bg-red-50 p-4 rounded-xl border border-red-100 text-center">
+                <button onclick="if(confirm('確定要清除所有設定與單字嗎？')){localStorage.clear();location.reload();}" class="text-red-500 font-bold text-sm">
+                    重置所有資料 (修復故障)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="glass-nav h-[85px] flex justify-around items-start pt-3 absolute bottom-0 w-full z-40 pb-safe-bottom" id="tab-bar">
+        <button onclick="switchView('home')" class="nav-btn active flex flex-col items-center gap-1 w-16 text-ios-blue" data-target="home"><i class="fa-solid fa-house text-xl"></i><span class="text-[10px]">練習</span></button>
+        <button onclick="switchView('learn')" class="nav-btn flex flex-col items-center gap-1 w-16 text-ios-gray" data-target="learn"><i class="fa-solid fa-book-open-reader text-xl"></i><span class="text-[10px]">課程</span></button>
+        <button onclick="switchView('vocab')" class="nav-btn flex flex-col items-center gap-1 w-16 text-ios-gray" data-target="vocab"><i class="fa-solid fa-bookmark text-xl"></i><span class="text-[10px]">單字</span></button>
+        <button onclick="switchView('settings')" class="nav-btn flex flex-col items-center gap-1 w-16 text-ios-gray" data-target="settings"><i class="fa-solid fa-gear text-xl"></i><span class="text-[10px]">設定</span></button>
+    </nav>
+
+    <script>
+        // === 安全模式：資料初始化 ===
+        // 防止 JSON.parse 錯誤導致白屏
+        function safeJSONParse(key, fallback) {
+            try {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : fallback;
+            } catch (e) {
+                console.warn(`Resetting corrupted key: ${key}`);
+                return fallback;
+            }
+        }
+
+        const state = {
+            apiKey: localStorage.getItem('gemini_api_key') || '',
+            lang: localStorage.getItem('target_lang') || 'Japanese',
+            level: localStorage.getItem('user_level') || 'Beginner',
+            vocab: safeJSONParse('vocab_v2', []),
+            chatHistory: []
+        };
+
+        const scenarios = [
+            { id: 'cafe', title: '咖啡廳點餐', icon: 'fa-mug-hot', color: 'bg-orange-100 text-orange-600', role: '店員' },
+            { id: 'convenience', title: '便利商店', icon: 'fa-store', color: 'bg-green-100 text-green-600', role: '店員' },
+            { id: 'airport', title: '機場入境', icon: 'fa-plane-arrival', color: 'bg-blue-100 text-blue-600', role: '移民官' },
+            { id: 'business', title: '商務會議', icon: 'fa-briefcase', color: 'bg-slate-200 text-slate-700', role: '客戶' }
+        ];
+
+        const curriculumData = {
+            'Japanese': {
+                'Beginner': ['N5: 平假名與片假名', 'N5: 基本問候', 'N4: 動詞變化 (Te-form)', 'N3: 基礎敬語'],
+                'Intermediate': ['N2: 假設語氣 (Tara/Ba)', 'N2: 被動與使役', 'N2: 商務敬語'],
+                'Advanced': ['N1: 書面語', 'N1: 抽象語法', 'N1: 新聞討論']
+            },
+            'English': {
+                'Beginner': ['A1: Greetings', 'A2: Past Simple'],
+                'Intermediate': ['B1: Present Perfect', 'B2: Conditionals'],
+                'Advanced': ['C1: Phrasal Verbs', 'C2: Academic Writing']
+            },
+            'Korean': {
+                'Beginner': ['TOPIK I: 字母', 'TOPIK I: 句型'],
+                'Intermediate': ['TOPIK II: 引用', 'TOPIK II: 被動'],
+                'Advanced': ['TOPIK II: 高級寫作']
+            }
+        };
+
+        // === 主程式 ===
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                renderScenarios();
+                updateLangDisplay();
+                
+                // 填充設定頁面
+                document.getElementById('api-key-input').value = state.apiKey;
+                document.getElementById('target-lang').value = state.lang;
+                document.getElementById('user-level').value = state.level;
+                
+                // 移除載入畫面，顯示 App
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('app').classList.remove('opacity-0');
+                    if(!state.apiKey) switchView('settings');
+                }, 500);
+
+            } catch (e) {
+                // 如果初始化失敗，觸發全域錯誤
+                throw e; 
+            }
+        });
+
+        // UI 導航
+        function switchView(viewId) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            const tabBar = document.getElementById('tab-bar');
+            if (viewId === 'chat') tabBar.classList.add('hidden'); else tabBar.classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('text-ios-blue', btn.dataset.target === viewId);
+                btn.classList.toggle('text-ios-gray', btn.dataset.target !== viewId);
+            });
+            if(viewId === 'learn') renderLessons();
+            if(viewId === 'vocab') renderVocab();
+        }
+
+        function backToMain() { switchView('home'); state.chatHistory = []; }
+
+        function updateLangDisplay() {
+            const map = { 'Japanese': '🇯🇵 日語', 'English': '🇺🇸 英語', 'Korean': '🇰🇷 韓語' };
+            document.getElementById('current-lang-display').innerText = map[state.lang] || state.lang;
+            // 簡化顯示以免出錯
+            document.getElementById('home-level-badge').innerText = state.level;
+            document.getElementById('learn-level-display').innerText = state.level;
+        }
+
+        function renderScenarios() {
+            document.getElementById('scenario-list').innerHTML = scenarios.map(s => `
+                <div onclick="startChat('${s.id}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4 active-scale cursor-pointer">
+                    <div class="w-10 h-10 rounded-full ${s.color} flex items-center justify-center text-lg shrink-0"><i class="fa-solid ${s.icon}"></i></div>
+                    <div class="flex-1"><h3 class="font-bold text-base">${s.title}</h3><p class="text-xs text-slate-500">${s.role}</p></div>
+                </div>
+            `).join('');
+        }
+
+        function renderLessons() {
+            const list = document.getElementById('lesson-list');
+            const data = (curriculumData[state.lang] || curriculumData['English'])[state.level] || [];
+            list.innerHTML = data.map(t => `
+                <div onclick="startLesson('${t}')" class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 active-scale mb-3 cursor-pointer flex justify-between items-center">
+                    <div><span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">Lesson</span><h3 class="font-bold text-lg">${t}</h3></div>
+                    <i class="fa-solid fa-play text-ios-blue"></i>
+                </div>
+            `).join('');
+        }
+
+        // === API 邏輯 (Gemini) ===
+        async function callAPI(contents) {
+            if(!state.apiKey) throw new Error("請先設定 API Key");
+            
+            // 嘗試模型
+            const models = ['gemini-1.5-flash', 'gemini-pro']; 
+            let lastError = null;
+
+            for (const model of models) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${state.apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents, generationConfig: { maxOutputTokens: 800 } })
+                    });
+                    const data = await response.json();
+                    if(data.error) throw new Error(data.error.message);
+                    return data.candidates[0].content.parts[0].text;
+                } catch (e) {
+                    console.warn(`Model ${model} failed:`, e);
+                    lastError = e;
+                }
+            }
+            throw new Error(`API 連線失敗: ${lastError ? lastError.message : 'Unknown error'}`);
+        }
+
+        async function startChat(id) {
+            if(!state.apiKey) return switchView('settings');
+            switchView('chat');
+            document.getElementById('chat-container').innerHTML = '';
+            document.getElementById('mission-banner').classList.add('hidden');
+            
+            const isFree = id === 'free';
+            const s = scenarios.find(x => x.id === id) || { title: 'Free Talk', role: 'Friend' };
+            document.getElementById('chat-title').innerText = s.title;
+            
+            // 任務生成
+            if(!isFree) {
+                document.getElementById('mission-banner').classList.remove('hidden');
+                document.getElementById('mission-words').innerText = "生成中...";
+                callAPI([{role:'user', parts:[{text: `Generate 3 vocabulary words for ${state.level} ${state.lang} learner in scenario "${s.title}". Format: word1, word2, word3`}]}]).then(res => {
+                    document.getElementById('mission-words').innerText = res.replace(/\n/g, '');
+                }).catch(()=> document.getElementById('mission-words').innerText = "載入失敗");
+            }
+
+            const prompt = `Act as ${s.role}. Language: ${state.lang}. Level: ${state.level}. 
+            Start conversation about ${s.title}. Keep it short. 
+            If I make mistakes, add ||| {"original":..., "correction":...} at end.`;
+            
+            addMsg('ai', 'Thinking...');
+            try {
+                const res = await callAPI([{role:'user', parts:[{text: prompt}]}]);
+                processRes(res, true);
+                state.chatHistory = [{role:'user', parts:[{text: prompt}]}, {role:'model', parts:[{text: res.split('|||')[0]}]}];
+            } catch(e) { addMsg('system', e.message); }
+        }
+
+        async function startLesson(topic) {
+            if(!state.apiKey) return switchView('settings');
+            switchView('chat');
+            document.getElementById('chat-container').innerHTML = '';
+            document.getElementById('chat-title').innerText = topic;
+            document.getElementById('mission-banner').classList.add('hidden');
+            
+            const prompt = `Teach ${topic} in ${state.lang} (${state.level}). Explain, Examples, Quiz.`;
+            addMsg('ai', 'Preparing lesson...');
+            try {
+                const res = await callAPI([{role:'user', parts:[{text: prompt}]}]);
+                processRes(res, true);
+                state.chatHistory = [{role:'user', parts:[{text: prompt}]}, {role:'model', parts:[{text: res}]}];
+            } catch(e) { addMsg('system', e.message); }
+        }
+
+        async function sendUserMessage() {
+            const input = document.getElementById('msg-input');
+            const txt = input.value.trim();
+            if(!txt) return;
+            addMsg('user', txt);
+            input.value = '';
+            
+            const history = [...state.chatHistory, {role:'user', parts:[{text: txt}]}];
+            try {
+                const res = await callAPI(history);
+                processRes(res);
+                state.chatHistory.push({role:'user', parts:[{text: txt}]}, {role:'model', parts:[{text: res.split('|||')[0]}]});
+            } catch(e) { addMsg('system', e.message); }
+        }
+
+        function processRes(text, init=false) {
+            if(init) document.getElementById('chat-container').innerHTML = '';
+            const parts = text.split('|||');
+            addMsg('ai', parts[0]);
+            if(parts[1]) {
+                try {
+                    const j = JSON.parse(parts[1]);
+                    const area = document.getElementById('correction-area');
+                    area.classList.remove('hidden');
+                    document.getElementById('correction-text').innerHTML = `<span class="line-through text-red-400">${j.original}</span> -> <span class="text-green-600 font-bold">${j.correction}</span>`;
+                    setTimeout(()=> area.classList.add('hidden'), 5000);
+                } catch(e){}
+            }
+        }
+
+        function addMsg(role, text) {
+            const div = document.createElement('div');
+            div.className = role === 'user' ? "flex justify-end animate-fade-in" : (role === 'system' ? "text-center text-red-500 text-xs" : "flex justify-start animate-fade-in");
+            if(role !== 'system') {
+                const bubble = role === 'user' ? "bg-ios-blue text-white rounded-tr-sm" : "bg-white text-slate-800 rounded-tl-sm";
+                div.innerHTML = `<div class="${bubble} px-4 py-2 rounded-2xl shadow-sm max-w-[85%] text-base leading-relaxed break-words">${marked.parse(text)}</div>`;
+            } else { div.innerText = text; }
+            const c = document.getElementById('chat-container');
+            c.appendChild(div);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function saveSettings() {
+            state.apiKey = document.getElementById('api-key-input').value;
+            state.lang = document.getElementById('target-lang').value;
+            state.level = document.getElementById('user-level').value;
+            localStorage.setItem('gemini_api_key', state.apiKey);
+            localStorage.setItem('target_lang', state.lang);
+            localStorage.setItem('user_level', state.level);
+            updateLangDisplay();
+            switchView('home');
+        }
+
+        function renderVocab() {
+            const list = document.getElementById('vocab-list');
+            const v = state.vocab.filter(x => x.lang === state.lang);
+            document.getElementById('vocab-subtitle').innerText = `${v.length} words`;
+            list.innerHTML = v.length ? v.map(i => `<div class="bg-white p-3 rounded shadow-sm border border-slate-100"><div class="font-bold">${i.word}</div><div class="text-sm text-slate-500">${i.meaning}</div></div>`).join('') : '<div class="text-center text-slate-400">Empty</div>';
+        }
+
+        // 簡單語音輸入
+        function toggleSpeech() {
+            if(!window.webkitSpeechRecognition) return alert('No Speech API');
+            const r = new webkitSpeechRecognition();
+            r.lang = {'Japanese':'ja-JP','English':'en-US','Korean':'ko-KR'}[state.lang];
+            r.onresult = e => document.getElementById('msg-input').value += e.results[0][0].transcript;
+            r.start();
+        }
+    </script>
+</body>
+</html>
