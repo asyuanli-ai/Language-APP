@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LingoFlow Pro</title>
+    
+    <!-- 1. 引入 Tailwind 與 Icon -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- 2. PWA 設定 -->
+    <meta name="theme-color" content="#F2F2F7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- 3. Tailwind 設定 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        ios: { bg: '#F2F2F7', card: '#FFFFFF', blue: '#007AFF', gray: '#8E8E93', red: '#FF3B30', green: '#34C759' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .active-scale:active { transform: scale(0.97); transition: 0.1s; }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.1); }
+        .popover { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        /* 載入動畫 */
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        /* 錯誤訊息浮窗 */
+        #error-console {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; 
+            background: rgba(220, 38, 38, 0.95); color: white; 
+            padding: 10px; font-size: 12px; z-index: 9999;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body class="bg-ios-bg text-slate-900 h-[100dvh] w-screen overflow-hidden flex flex-col font-sans" translate="no">
+
+    <!-- 錯誤顯示區 (除錯用) -->
+    <div id="error-console" onclick="this.style.display='none'"></div>
+
+    <!-- App 容器 -->
+    <div id="app" class="flex-1 relative overflow-hidden flex flex-col">
+        
+        <!-- 頁面 1: 練習首頁 (Home) -->
+        <div id="view-home" class="page-view flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-6 mt-4 flex justify-between items-center">
+                <div>
+                    <p class="text-ios-gray text-xs font-bold uppercase tracking-wider mb-1">AI Language Coach</p>
+                    <h1 class="text-3xl font-bold text-slate-900">今日練習</h1>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <button onclick="switchView('settings')" class="bg-white px-3 py-1 rounded-full text-xs font-bold shadow-sm text-ios-blue flex items-center gap-1">
+                        <span id="current-lang-display">🇯🇵 日語</span>
+                    </button>
+                    <span id="home-level-badge" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">載入中...</span>
+                </div>
+            </header>
+
+            <div onclick="startChat('free')" class="bg-gradient-to-r from-blue-500 to-indigo-600 p-5 rounded-2xl shadow-lg text-white mb-6 active-scale cursor-pointer relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="font-bold text-xl mb-1">自由對話 (Free Talk)</h3>
+                    <p class="text-blue-100 text-sm opacity-90">不限主題，隨意聊天</p>
+                </div>
+                <i class="fa-solid fa-comments text-3xl opacity-80 absolute right-4 top-4"></i>
+            </div>
+
+            <h2 class="font-bold text-lg mb-3 ml-1 text-slate-700">情境模擬</h2>
+            <div class="space-y-3" id="scenario-list">
+                <!-- 預設載入文字，避免JS掛掉時一片白 -->
+                <p class="text-slate-400 text-center text-sm py-4">正在載入情境...</p>
+            </div>
+        </div>
+
+        <!-- 頁面 2: 課程模式 (Learn) -->
+        <div id="view-learn" class="page-view hidden flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-6 mt-4">
+                <h1 class="text-3xl font-bold">主題課程</h1>
+            </header>
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-4 border border-slate-100 flex justify-between items-center">
+                <div>
+                    <p class="text-sm text-slate-600">當前標準</p>
+                    <p id="learn-level-display" class="font-bold text-ios-blue text-lg">Loading...</p>
+                </div>
+                <button onclick="switchView('settings')" class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-500 font-bold">設定</button>
+            </div>
+            <div id="lesson-list" class="grid grid-cols-1 gap-3"></div>
+        </div>
+
+        <!-- 頁面 3: 單字本 (Vocab) -->
+        <div id="view-vocab" class="page-view hidden flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-4 mt-4 flex justify-between items-end">
+                <div>
+                    <h1 class="text-3xl font-bold">單字筆記</h1>
+                    <p class="text-ios-gray text-sm mt-1" id="vocab-subtitle">...</p>
+                </div>
+                <button onclick="startQuiz()" class="bg-ios-blue text-white px-4 py-2 rounded-full text-sm font-bold shadow-md active-scale">
+                    <i class="fa-solid fa-graduation-cap mr-1"></i> 測驗
+                </button>
+            </header>
+            <div id="vocab-list" class="space-y-3 pb-10"></div>
+        </div>
+
+        <!-- 頁面 4: 聊天室 -->
+        <div id="view-chat" class="page-view hidden flex-1 flex flex-col h-full absolute inset-0 bg-ios-bg z-50">
+            <div class="glass-nav pt-safe-top px-4 py-3 flex items-center justify-between shadow-sm z-30 h-16 shrink-0">
+                <button onclick="backToMain()" class="text-ios-blue flex items-center gap-1 text-lg active-scale w-16">
+                    <i class="fa-solid fa-chevron-left"></i> <span class="text-base font-medium">返回</span>
+                </button>
+                <div class="text-center flex-1 overflow-hidden">
+                    <h2 id="chat-title" class="font-bold text-base truncate px-2">對話</h2>
+                </div>
+                <div class="w-16 flex justify-end"></div>
+            </div>
+
+            <div id="mission-banner" class="hidden bg-indigo-50 border-b border-indigo-100 p-2 px-4 flex justify-between items-center shrink-0 min-h-[40px]">
+                <span class="text-xs text-indigo-800 font-bold shrink-0">任務：</span>
+                <span id="mission-words" class="text-xs text-indigo-600 font-mono truncate flex-1 text-right">生成中...</span>
+            </div>
+
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 pb-4"></div>
+
+            <div class="bg-white border-t border-slate-200 p-3 pb-safe-bottom w-full shrink-0 relative z-30" id="chat-input-area">
+                <div id="correction-area" class="hidden absolute bottom-full left-0 w-full bg-yellow-50 border-t border-yellow-200 p-3 shadow-sm rounded-t-xl mb-[1px] mx-2 w-[calc(100%-1rem)]">
+                    <div class="flex justify-between items-start mb-1">
+                         <span class="text-xs font-bold text-yellow-800">建議修正</span>
+                         <button onclick="document.getElementById('correction-area').classList.add('hidden')" class="text-yellow-600"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div id="correction-text" class="text-sm"></div>
+                </div>
+
+                <div class="flex items-end gap-2">
+                    <button id="mic-btn" onclick="toggleSpeech()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-lg active-scale shrink-0">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <textarea id="msg-input" rows="1" class="flex-1 bg-slate-100 rounded-2xl px-4 py-2 min-h-[40px] border-none outline-none resize-none max-h-24 text-base pt-2 placeholder-slate-400" placeholder="輸入訊息..."></textarea>
+                    <button onclick="sendUserMessage()" id="send-btn" class="w-10 h-10 rounded-full bg-ios-blue text-white flex items-center justify-center text-lg shadow-md active-scale shrink-0">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 翻譯按鈕 -->
+        <button id="translate-btn" class="hidden fixed z-[100] bg-slate-800 text-white text-sm py-2 px-4 rounded-full shadow-xl popover flex items-center gap-2" onclick="handleTranslate()">
+            <span>翻譯</span> <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+
+        <!-- 設定頁面 -->
+        <div id="view-settings" class="page-view hidden flex-1 overflow-y-auto p-5">
+             <header class="mb-6 mt-4">
+                <button onclick="switchView('home')" class="text-ios-blue mb-4 flex items-center gap-1"><i class="fa-solid fa-chevron-left"></i> 返回</button>
+                <h1 class="text-3xl font-bold">設定</h1>
+            </header>
+            
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+                <div class="p-4 border-b border-slate-100">
+                    <label class="block text-sm font-medium text-slate-500 mb-1">Gemini API Key</label>
+                    <input type="password" id="api-key-input" class="w-full text-base p-2 bg-slate-100 rounded-lg outline-none" placeholder="貼上 API Key">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-ios-blue mt-1 block">取得免費 API Key</a>
+                </div>
+                <div class="p-4 flex justify-between items-center border-b border-slate-100">
+                    <span class="text-base font-medium">學習語言</span>
+                    <select id="target-lang" class="bg-transparent text-ios-blue font-bold outline-none text-right" onchange="updateLangDisplay()">
+                        <option value="Japanese">日本語</option>
+                        <option value="English">English</option>
+                        <option value="Korean">한국어</option>
+                    </select>
+                </div>
+                <div class="p-4 flex justify-between items-center">
+                    <span class="text-base font-medium">當前等級</span>
+                    <select id="user-level" class="bg-transparent text-ios-blue font-bold outline-none text-right">
+                        <option value="Beginner">初級 (N5-N3 / A1-A2)</option>
+                        <option value="Intermediate">中級 (N2 / B1-B2)</option>
+                        <option value="Advanced">高級 (N1 / C1-C2)</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="saveSettings()" class="w-full bg-ios-blue text-white font-bold py-3 rounded-xl shadow-md active-scale mb-8">儲存設定</button>
+
+             <!-- 資料管理 -->
+             <h2 class="text-lg font-bold mb-3 text-slate-700">資料管理</h2>
+             <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6 p-4 space-y-3">
+                 <button onclick="exportData()" class="w-full border border-ios-blue text-ios-blue font-bold py-2.5 rounded-lg active-scale flex items-center justify-center gap-2">
+                     <i class="fa-solid fa-cloud-arrow-down"></i> 備份資料
+                 </button>
+                 <button onclick="document.getElementById('file-input').click()" class="w-full border border-slate-300 text-slate-600 font-bold py-2.5 rounded-lg active-scale flex items-center justify-center gap-2">
+                     <i class="fa-solid fa-cloud-arrow-up"></i> 還原資料
+                 </button>
+                 
