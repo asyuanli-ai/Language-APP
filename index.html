@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-TW" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LingoFlow Pro v3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- PWA iOS 設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] },
+                    colors: {
+                        ios: { bg: '#F2F2F7', card: '#FFFFFF', blue: '#007AFF', gray: '#8E8E93', red: '#FF3B30', green: '#34C759' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .active-scale:active { transform: scale(0.97); transition: 0.1s; }
+        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-top: 1px solid rgba(0,0,0,0.05); }
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        /* 除錯視窗樣式 */
+        #debug-console {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 150px;
+            background: rgba(0,0,0,0.85); color: #0f0; font-family: monospace; font-size: 10px;
+            overflow-y: auto; z-index: 9999; padding: 10px; border-top: 2px solid #333;
+            display: none; /* 預設隱藏 */
+        }
+        .log-error { color: #ff5555; border-bottom: 1px solid #500; padding: 2px 0; }
+        .log-info { color: #ccfbf1; border-bottom: 1px solid #003300; padding: 2px 0; }
+    </style>
+</head>
+<body class="bg-ios-bg text-slate-900 h-[100dvh] w-screen overflow-hidden flex flex-col font-sans">
+
+    <!-- 除錯開關與視窗 -->
+    <button onclick="toggleDebug()" style="position:fixed; bottom:90px; right:10px; z-index:9998; opacity:0.3; background:#000; color:#fff; padding:5px; font-size:10px;">Debug</button>
+    <div id="debug-console"></div>
+
+    <!-- App 容器 -->
+    <div id="app" class="flex-1 relative overflow-hidden flex flex-col">
+        
+        <!-- 頁面 1: 首頁 -->
+        <div id="view-home" class="page-view flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-6 mt-4 flex justify-between items-center">
+                <div>
+                    <p class="text-ios-gray text-xs font-bold uppercase tracking-wider mb-1">AI Coach</p>
+                    <h1 class="text-3xl font-bold text-slate-900">今日練習</h1>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <button onclick="switchView('settings')" class="bg-white px-3 py-1 rounded-full text-xs font-bold shadow-sm text-ios-blue">
+                        <span id="current-lang-display">Loading...</span>
+                    </button>
+                    <span id="home-level-badge" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">...</span>
+                </div>
+            </header>
+
+            <div onclick="startChat('free')" class="bg-gradient-to-r from-blue-500 to-indigo-600 p-5 rounded-2xl shadow-lg text-white mb-6 active-scale cursor-pointer">
+                <h3 class="font-bold text-xl">自由對話 (Free Talk)</h3>
+                <p class="text-blue-100 text-sm">不限主題隨意聊</p>
+            </div>
+
+            <h2 class="font-bold text-lg mb-3 ml-1 text-slate-700">情境模擬</h2>
+            <div class="space-y-3" id="scenario-list"></div>
+        </div>
+
+        <!-- 頁面 2: 課程 -->
+        <div id="view-learn" class="page-view hidden flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-6 mt-4">
+                <h1 class="text-3xl font-bold">主題課程</h1>
+            </header>
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-4 border border-slate-100">
+                <p class="text-sm text-slate-600">當前等級：<span id="learn-level-display" class="font-bold text-ios-blue">...</span></p>
+            </div>
+            <div id="lesson-list" class="grid grid-cols-1 gap-3"></div>
+        </div>
+
+        <!-- 頁面 3: 單字 -->
+        <div id="view-vocab" class="page-view hidden flex-1 overflow-y-auto p-5 pb-24">
+            <header class="mb-4 mt-4 flex justify-between items-end">
+                <h1 class="text-3xl font-bold">單字筆記</h1>
+                <button onclick="startQuiz()" class="bg-ios-blue text-white px-4 py-2 rounded-full text-sm font-bold shadow-md">測驗</button>
+            </header>
+            <div id="vocab-list" class="space-y-3 pb-10"></div>
+        </div>
+
+        <!-- 頁面 4: 聊天室 -->
+        <div id="view-chat" class="page-view hidden flex-1 flex flex-col h-full absolute inset-0 bg-ios-bg z-50">
+            <div class="glass-nav pt-safe-top px-4 py-3 flex items-center justify-between shadow-sm z-30 h-16 shrink-0">
+                <button onclick="backToMain()" class="text-ios-blue w-16 text-left">返回</button>
+                <h2 id="chat-title" class="font-bold text-base">對話</h2>
+                <div class="w-16"></div>
+            </div>
+            
+            <div id="mission-banner" class="hidden bg-indigo-50 p-2 text-center text-xs text-indigo-800 font-bold shrink-0">
+                目標：<span id="mission-words">...</span>
+            </div>
+
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 pb-4"></div>
+
+            <div class="bg-white border-t border-slate-200 p-3 pb-safe-bottom w-full shrink-0 z-30">
+                <div id="correction-area" class="hidden bg-yellow-50 p-2 mb-2 rounded border border-yellow-200 text-sm">
+                     <div id="correction-text"></div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="msg-input" class="flex-1 bg-slate-100 rounded-full px-4 py-2 outline-none" placeholder="輸入訊息...">
+                    <button onclick="sendUserMessage()" class="w-10 h-10 bg-ios-blue text-white rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 頁面 5: 設定 -->
+        <div id="view-settings" class="page-view hidden flex-1 overflow-y-auto p-5">
+            <header class="mb-6 mt-4">
+                <button onclick="switchView('home')" class="text-ios-blue mb-4">返回</button>
+                <h1 class="text-3xl font-bold">設定</h1>
+            </header>
+            <div class="bg-white rounded-xl shadow-sm p-4 space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm text-slate-500 mb-1">API Key</label>
+                    <input type="password" id="api-key-input" class="w-full p-2 bg-slate-100 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-500 mb-1">語言</label>
+                    <select id="target-lang" class="w-full p-2 bg-slate-100 rounded">
+                        <option value="Japanese">日本語</option>
+                        <option value="English">English</option>
+                        <option value="Korean">한국어</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-500 mb-1">等級</label>
+                    <select id="user-level" class="w-full p-2 bg-slate-100 rounded">
+                        <option value="Beginner">初級</option>
+                        <option value="Intermediate">中級</option>
+                        <option value="Advanced">高級</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="saveSettings()" class="w-full bg-ios-blue text-white py-3 rounded-xl font-bold">儲存</button>
+        </div>
+
+    </div>
+
+    <!-- 底部導航 -->
+    <nav class="glass-nav h-[85px] flex justify-around items-start pt-3 absolute bottom-0 w-full z-40" id="tab-bar">
+        <button onclick="switchView('home')" class="nav-btn active text-ios-blue" data-target="home"><i class="fa-solid fa-house text-xl"></i></button>
+        <button onclick="switchView('learn')" class="nav-btn text-ios-gray" data-target="learn"><i class="fa-solid fa-book-open-reader text-xl"></i></button>
+        <button onclick="switchView('vocab')" class="nav-btn text-ios-gray" data-target="vocab"><i class="fa-solid fa-bookmark text-xl"></i></button>
+        <button onclick="switchView('settings')" class="nav-btn text-ios-gray" data-target="settings"><i class="fa-solid fa-gear text-xl"></i></button>
+    </nav>
+
+    <script>
+        // =========================================
+        // 0. 除錯與安全儲存模組 (最優先執行)
+        // =========================================
+        
+        function log(msg, isError = false) {
+            const consoleEl = document.getElementById('debug-console');
+            const line = document.createElement('div');
+            line.className = isError ? 'log-error' : 'log-info';
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            consoleEl.appendChild(line);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            if(isError) {
+                console.error(msg); // 同時印在瀏覽器原生 console
+                // 自動打開除錯視窗如果發生錯誤
+                consoleEl.style.display = 'block'; 
+            } else {
+                console.log(msg);
+            }
+        }
+
+        window.onerror = function(message, source, lineno, colno, error) {
+            log(`CRITICAL ERROR: ${message} at line ${lineno}`, true);
+        };
+
+        function toggleDebug() {
+            const el = document.getElementById('debug-console');
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // SafeStorage: 防止隱私模式下崩潰
+        const SafeStorage = {
+            _mem: {},
+            getItem: function(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch(e) {
+                    log('Storage read error (Privacy mode?), utilizing memory fallback.');
+                    return this._mem[key] || null;
+                }
+            },
+            setItem: function(key, val) {
+                try {
+                    localStorage.setItem(key, val);
+                } catch(e) {
+                    log('Storage write error, saving to memory only.');
+                    this._mem[key] = val;
+                }
+            }
+        };
+
+        // =========================================
+        // 1. 資料定義
+        // =========================================
+        const scenarios = [
+            { id: 'cafe', title: '咖啡廳', icon: 'fa-mug-hot', color: 'bg-orange-100', role: '店員' },
+            { id: 'hotel', title: '飯店', icon: 'fa-hotel', color: 'bg-indigo-100', role: '櫃檯' },
+            { id: 'business', title: '會議', icon: 'fa-briefcase', color: 'bg-slate-200', role: '客戶' }
+        ];
+
+        const curriculumData = {
+            'Japanese': { 'Beginner': ['N5 問候', 'N5 自我介紹'], 'Intermediate': ['N3 敬語', 'N2 複合動詞'], 'Advanced': ['N1 新聞'] },
+            'English': { 'Beginner': ['A1 Greetings'], 'Intermediate': ['B1 Tenses'], 'Advanced': ['C1 Debates'] },
+            'Korean': { 'Beginner': ['Basic Hangul'], 'Intermediate': ['Honorifics'], 'Advanced': ['News'] }
+        };
+
+        let state = {
+            apiKey: '', lang: 'Japanese', level: 'Beginner', vocab: [], chatHistory: [], currentMode: null
+        };
+
+        // =========================================
+        // 2. 初始化流程 (window.load)
+        // =========================================
+        window.addEventListener('load', function() {
+            log('App loading started...');
+            try {
+                // 1. 讀取資料
+                state.apiKey = SafeStorage.getItem('gemini_api_key') || '';
+                state.lang = SafeStorage.getItem('target_lang') || 'Japanese';
+                state.level = SafeStorage.getItem('user_level') || 'Beginner';
+                const vocabRaw = SafeStorage.getItem('vocab_v2');
+                state.vocab = vocabRaw ? JSON.parse(vocabRaw) : [];
+
+                // 2. 渲染 UI
+                renderScenarios();
+                updateLangDisplay();
+                
+                // 3. 設定 Input 值
+                document.getElementById('api-key-input').value = state.apiKey;
+                document.getElementById('target-lang').value = state.lang;
+                document.getElementById('user-level').value = state.level;
+
+                // 4. 檢查 Key
+                if(!state.apiKey) {
+                    log('No API Key found, redirecting to settings.');
+                    switchView('settings');
+                } else {
+                    log('App initialized successfully.');
+                }
+
+                // 5. 綁定按鈕 (避免 HTML onclick 有時失效)
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        // 處理圖示點擊
+                        const target = e.currentTarget.dataset.target;
+                        if(target) switchView(target);
+                    });
+                });
+
+            } catch (e) {
+                log(`Init Error: ${e.message}`, true);
+            }
+        });
+
+        // =========================================
+        // 3. 邏輯函數
+        // =========================================
+
+        function switchView(viewId) {
+            try {
+                log(`Switching to view: ${viewId}`);
+                document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
+                const targetEl = document.getElementById(`view-${viewId}`);
+                if(targetEl) targetEl.classList.remove('hidden');
+                else throw new Error(`View ${viewId} not found`);
+
+                const tabBar = document.getElementById('tab-bar');
+                if (viewId === 'chat') tabBar.classList.add('hidden');
+                else tabBar.classList.remove('hidden');
+
+                if(viewId === 'learn') renderLessons();
+                if(viewId === 'vocab') renderVocab();
+
+            } catch(e) { log(e.message, true); }
+        }
+
+        function backToMain() { switchView('home'); state.chatHistory = []; }
+
+        function updateLangDisplay() {
+            const map = { 'Japanese': '🇯🇵 日語', 'English': '🇺🇸 英語', 'Korean': '🇰🇷 韓語' };
+            document.getElementById('current-lang-display').innerText = map[state.lang] || state.lang;
+            document.getElementById('home-level-badge').innerText = state.level;
+            document.getElementById('learn-level-display').innerText = state.level;
+        }
+
+        function renderScenarios() {
+            const list = document.getElementById('scenario-list');
+            list.innerHTML = scenarios.map(s => `
+                <div onclick="startChat('${s.id}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4 active-scale">
+                    <div class="w-10 h-10 rounded-full ${s.color} flex items-center justify-center"><i class="fa-solid ${s.icon}"></i></div>
+                    <div class="flex-1"><h3 class="font-bold">${s.title}</h3><p class="text-xs text-slate-500">${s.role}</p></div>
+                    <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                </div>
+            `).join('');
+        }
+
+        function renderLessons() {
+            const list = document.getElementById('lesson-list');
+            const data = (curriculumData[state.lang] || curriculumData['English'])[state.level] || [];
+            list.innerHTML = data.map(topic => `
+                <div onclick="startLesson('${topic}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 active-scale flex justify-between">
+                    <h3 class="font-bold text-slate-700">${topic}</h3>
+                    <i class="fa-solid fa-play text-ios-blue"></i>
+                </div>
+            `).join('');
+        }
+
+        // =========================================
+        // 4. API 呼叫 (Robust Version)
+        // =========================================
+        
+        async function callGemini(contents, isJson = false) {
+            if(!state.apiKey) throw new Error("無 API Key");
+
+            // 硬編碼 URL，避免字串拼接錯誤
+            const MODEL = 'gemini-1.5-flash'; 
+            const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+            const url = `${BASE_URL}/${MODEL}:generateContent?key=${state.apiKey}`;
+
+            log(`Calling API: ${MODEL}`);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: contents,
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 500,
+                        responseMimeType: isJson ? "application/json" : "text/plain"
+                    }
+                })
+            });
+
+            if(!response.ok) {
+                const errorData = await response.json();
+                const errMsg = errorData.error?.message || `HTTP ${response.status}`;
+                throw new Error(errMsg);
+            }
+
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        // =========================================
+        // 5. 聊天邏輯
+        // =========================================
+
+        async function startChat(id) {
+            state.currentMode = 'chat';
+            state.chatHistory = [];
+            switchView('chat');
+            document.getElementById('chat-container').innerHTML = '';
+            document.getElementById('mission-banner').classList.add('hidden');
+            
+            const s = scenarios.find(x => x.id === id) || { title: 'Free Talk', role: 'Friend' };
+            document.getElementById('chat-title').innerText = s.title;
+
+            const prompt = `System: Roleplay as ${s.role} in ${state.lang} (Level: ${state.level}). 
+            Keep it short. If user errors, correct in JSON format at end.`;
+
+            addMessage('ai', 'Thinking...');
+            try {
+                const res = await callGemini([{ role: "user", parts: [{ text: prompt }] }]);
+                updateChatUI(res, true);
+                state.chatHistory.push({ role: 'user', text: prompt });
+                state.chatHistory.push({ role: 'model', text: res });
+            } catch(e) {
+                log(e.message, true);
+                addMessage('system', `Error: ${e.message}`);
+            }
+        }
+
+        async function startLesson(topic) {
+            state.currentMode = 'lesson';
+            state.chatHistory = [];
+            switchView('chat');
+            document.getElementById('chat-container').innerHTML = '';
+            document.getElementById('chat-title').innerText = topic;
+
+            const prompt = `Teach ${topic} in ${state.lang} (Level: ${state.level}). Explain, Example, Question.`;
+            addMessage('ai', 'Preparing lesson...');
+            try {
+                const res = await callGemini([{ role: "user", parts: [{ text: prompt }] }]);
+                updateChatUI(res, true);
+                state.chatHistory.push({ role: 'user', text: prompt });
+                state.chatHistory.push({ role: 'model', text: res });
+            } catch(e) {
+                log(e.message, true);
+                addMessage('system', `Error: ${e.message}`);
+            }
+        }
+
+        async function sendUserMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            addMessage('user', text);
+            input.value = '';
+
+            try {
+                let history = state.chatHistory.map(m => ({
+                    role: m.role === 'user' ? 'user' : 'model',
+                    parts: [{ text: m.text }]
+                }));
+                history.push({ role: "user", parts: [{ text: text }] });
+
+                const res = await callGemini(history);
+                updateChatUI(res);
+                
+                state.chatHistory.push({ role: 'user', text: text });
+                state.chatHistory.push({ role: 'model', text: res.split('|||')[0] });
+
+            } catch(e) {
+                log(e.message, true);
+                addMessage('system', `Send Error: ${e.message}`);
+            }
+        }
+
+        function updateChatUI(raw, init=false) {
+            if(init) document.getElementById('chat-container').innerHTML = '';
+            // 簡單處理 JSON correction
+            let text = raw;
+            if(raw.includes('{')) {
+                const parts = raw.split('{'); // 粗略分割
+                text = parts[0];
+            }
+            addMessage('ai', text);
+        }
+
+        function addMessage(role, text) {
+            const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = role === 'user' ? "flex justify-end mb-2" : (role === 'system' ? "text-center text-red-500 text-xs" : "flex justify-start mb-2");
+            
+            const bubble = document.createElement('div');
+            bubble.className = role === 'user' 
+                ? "bg-ios-blue text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[80%]" 
+                : (role === 'system' ? "" : "bg-white px-4 py-2 rounded-2xl rounded-tl-sm shadow-sm max-w-[90%] text-slate-800");
+            
+            if(role !== 'system') bubble.innerHTML = marked.parse(text);
+            else bubble.innerText = text;
+
+            div.appendChild(bubble);
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // =========================================
+        // 6. 設定與儲存
+        // =========================================
+
+        function saveSettings() {
+            const k = document.getElementById('api-key-input').value;
+            const l = document.getElementById('target-lang').value;
+            const lvl = document.getElementById('user-level').value;
+
+            SafeStorage.setItem('gemini_api_key', k);
+            SafeStorage.setItem('target_lang', l);
+            SafeStorage.setItem('user_level', lvl);
+            
+            state.apiKey = k; state.lang = l; state.level = lvl;
+            updateLangDisplay();
+            switchView('home');
+            log('Settings saved.');
+        }
+
+        function renderVocab() {
+            const list = document.getElementById('vocab-list');
+            list.innerHTML = `<div class="text-center text-slate-400">目前功能簡化中 (Debug mode)</div>`;
+        }
+        
+        function startQuiz() { alert('測驗功能暫時關閉以進行穩定性測試'); }
+
+    </script>
+</body>
+</html>
