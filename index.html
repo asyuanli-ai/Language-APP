@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>連線測試 - LingoFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white p-6 flex flex-col h-screen">
+    <h1 class="text-xl font-bold mb-4 text-blue-400">Gemini 連線測試</h1>
+    
+    <div class="mb-4 space-y-2">
+        <label class="block text-xs text-slate-400">請貼上 API 金鑰 (AIza 開頭):</label>
+        <input type="password" id="key-input" class="w-full p-3 bg-slate-800 rounded-lg border border-slate-700 outline-none text-blue-300">
+        <button onclick="testConnection()" id="test-btn" class="w-full bg-blue-600 py-3 rounded-lg font-bold hover:bg-blue-500 transition-all">測試連線</button>
+    </div>
+
+    <div id="result-box" class="flex-1 bg-black rounded-lg p-4 font-mono text-sm overflow-y-auto border border-slate-800">
+        <div class="text-slate-500 italic">系統準備就緒，請點擊測試連線...</div>
+    </div>
+
+    <script>
+        // 頁面載入時讀取舊的 Key (如果有)
+        document.getElementById('key-input').value = localStorage.getItem('test_key') || '';
+
+        async function testConnection() {
+            const key = document.getElementById('key-input').value.trim();
+            const btn = document.getElementById('test-btn');
+            const box = document.getElementById('result-box');
+            
+            if(!key) return alert('請輸入金鑰');
+            localStorage.setItem('test_key', key);
+            
+            box.innerHTML = '<div class="text-yellow-400 font-bold">正在發送請求至 Google 伺服器...</div>';
+            btn.disabled = true;
+            btn.innerText = '連線中...';
+
+            // 💡 2026 年最穩定的 API 路徑
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "Hello! If you can read this, please reply 'Connected successfully'." }] }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const aiReply = data.candidates[0].content.parts[0].text;
+                    box.innerHTML = `
+                        <div class="text-green-400 font-bold mb-2">✅ 連線成功！</div>
+                        <div class="p-3 bg-slate-800 rounded border border-green-900/50 text-white">${aiReply}</div>
+                        <div class="mt-4 text-xs text-slate-500 italic">這代表你的 API 通路已打通。</div>
+                    `;
+                } else {
+                    // 顯示詳細報錯，讓我們知道為什麼 Google 噴 404
+                    box.innerHTML = `
+                        <div class="text-red-500 font-bold mb-2">❌ 連線失敗 (狀態碼: ${response.status})</div>
+                        <div class="p-3 bg-red-950/30 rounded border border-red-900 text-red-300">
+                            錯誤訊息: ${data.error?.message || '無詳細訊息'}<br><br>
+                            錯誤代碼: ${data.error?.status || 'UNKNOWN'}
+                        </div>
+                        <div class="mt-4 text-xs text-slate-400">
+                            如果依然是 404，代表 Google 專案未同步，請嘗試「不限制金鑰」設定。
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                box.innerHTML = `<div class="text-red-500">網路請求異常: ${e.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '測試連線';
+            }
+        }
+    </script>
+</body>
+</html>
