@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#F2F2F7">
+    <title>LingoFlow v24.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; outline: none; user-select: none; }
+        .selectable { user-select: text; }
+        body { background-color: #F2F2F7; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; overflow: hidden; color: #1c1c1e; }
+        .page-view { position: absolute; inset: 0; bottom: 85px; overflow-y: auto; padding: 20px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; padding-bottom: 120px; }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); border-top: 1px solid rgba(0,0,0,0.1); }
+        .ios-card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.02); position: relative; overflow: hidden; }
+        .ios-card:active { background-color: #f2f2f2; transform: scale(0.99); transition: 0.1s; }
+        #word-tools { display: none; position: absolute; background: #1c1c1e; color: white; padding: 8px 16px; border-radius: 12px; z-index: 2000; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); pointer-events: auto; }
+    </style>
+</head>
+<body class="h-[100dvh] w-screen">
+
+    <div id="word-tools">
+        <div class="flex items-center gap-3">
+            <span id="sel-text" class="max-w-[120px] truncate opacity-90 border-r border-gray-500 pr-3 font-medium"></span>
+            <button onclick="translateAndSave()" class="text-blue-400 font-bold whitespace-nowrap active:opacity-50">翻譯收藏</button>
+        </div>
+    </div>
+
+    <div id="app" class="h-full relative">
+
+        <div id="view-home" class="page-view">
+            <div class="flex justify-between items-center mb-4 mt-2">
+                <h1 class="text-3xl font-bold tracking-tight">LingoFlow</h1>
+                <span id="current-lang-badge" class="px-3 py-1 bg-gray-200 rounded-full text-xs font-bold text-gray-500">English</span>
+            </div>
+            
+            <div class="bg-gray-200/80 p-1 rounded-xl flex mb-6 text-xs font-bold text-center">
+                <div onclick="setLevel('Easy')" id="lvl-Easy" class="flex-1 py-2 rounded-lg bg-white shadow-sm transition-all cursor-pointer">初級</div>
+                <div onclick="setLevel('Medium')" id="lvl-Medium" class="flex-1 py-2 rounded-lg text-gray-500 transition-all cursor-pointer">中級</div>
+                <div onclick="setLevel('Hard')" id="lvl-Hard" class="flex-1 py-2 rounded-lg text-gray-500 transition-all cursor-pointer">高級</div>
+            </div>
+
+            <div onclick="initChat('Free Talk', 'Friend')" class="bg-gradient-to-br from-[#007AFF] to-[#0055ff] p-6 rounded-[24px] text-white mb-8 shadow-lg shadow-blue-200 active:scale-95 transition-all relative overflow-hidden cursor-pointer">
+                <div class="relative z-10">
+                    <h3 class="font-bold text-xl">Free Talk</h3>
+                    <p class="text-blue-100 text-sm mt-1 opacity-90">AI 自由對話</p>
+                </div>
+                <i class="fa-solid fa-comments absolute -bottom-3 -right-3 text-7xl text-white opacity-20"></i>
+            </div>
+
+            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">情境選擇</h2>
+            <div id="scenario-list" class="space-y-3"></div>
+        </div>
+
+        <div id="view-learn" class="page-view hidden">
+            <h1 class="text-3xl font-bold mb-6 mt-2 tracking-tight">課程</h1>
+            <div id="lesson-list" class="space-y-3"></div>
+        </div>
+
+        <div id="view-vocab" class="page-view hidden">
+            <div class="flex justify-between items-end mb-6 mt-2">
+                <h1 class="text-3xl font-bold tracking-tight">單字本</h1>
+                <button onclick="startQuiz()" class="bg-orange-500 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow active:scale-95">測驗</button>
+            </div>
+            <div id="vocab-display-list" class="space-y-3"></div>
+        </div>
+
+        <div id="view-settings" class="page-view hidden">
+            <h1 class="text-3xl font-bold mb-6 mt-2 tracking-tight">設定</h1>
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm mb-6 border border-gray-100">
+                <div class="p-4 border-b border-gray-100">
+                    <label class="text-xs font-bold text-gray-400 uppercase">API Key</label>
+                    <input type="password" id="api-key-input" class="w-full mt-2 outline-none text-sm bg-transparent" placeholder="AIza...">
+                </div>
+                <div class="p-4 border-b border-gray-100">
+                    <label class="text-xs font-bold text-gray-400 uppercase">Project ID</label>
+                    <input type="text" id="project-id-input" class="w-full mt-2 outline-none text-sm bg-transparent" placeholder="language-app-xxx">
+                </div>
+                <div class="p-4">
+                    <label class="text-xs font-bold text-gray-400 uppercase">練習語言</label>
+                    <select id="target-lang" class="w-full mt-2 outline-none bg-transparent font-bold text-blue-600 text-base" onchange="handleLangChange()">
+                        <option value="English">English</option>
+                        <option value="Japanese">日本語</option>
+                        <option value="Korean">한국어</option>
+                    </select>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl overflow-hidden shadow-sm mb-6 border border-gray-100">
+                <div onclick="backupData()" class="p-4 border-b border-gray-100 flex justify-between items-center active:bg-gray-50 cursor-pointer">
+                    <span class="text-sm font-medium">備份資料 (JSON)</span>
+                    <i class="fa-solid fa-cloud-arrow-down text-blue-500"></i>
+                </div>
+                <label class="p-4 flex justify-between items-center active:bg-gray-50 cursor-pointer">
+                    <span class="text-sm font-medium">還原資料</span>
+                    <i class="fa-solid fa-cloud-arrow-up text-green-500"></i>
+                    <input type="file" onchange="restoreData(this)" class="hidden" accept=".json">
+                </label>
+            </div>
+            <button onclick="saveSettings()" class="w-full bg-[#007AFF] text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 text-sm">儲存設定</button>
+        </div>
+
+        <div id="view-chat" class="fixed inset-0 bg-[#F2F2F7] z-50 hidden flex flex-col translate-x-full transition-transform duration-300">
+            <div class="h-[60px] bg-white/95 backdrop-blur flex justify-between items-center px-4 border-b shadow-sm z-10 pt-2">
+                <button onclick="closeChat()" class="text-[#007AFF] flex items-center gap-1 font-medium active:opacity-50 p-2"><i class="fa-solid fa-chevron-left"></i> 返回</button>
+                <div class="text-center">
+                    <h2 id="chat-title" class="font-bold text-base text-slate-800">對話</h2>
+                    <span id="chat-status" class="text-[10px] text-gray-400 block leading-none mt-0.5">準備中...</span>
+                </div>
+                <div class="w-16"></div>
+            </div>
+            
+            <div id="mission-bar" class="bg-blue-50 px-4 py-3 text-xs text-blue-800 border-b border-blue-100 hidden">
+                <div class="font-bold mb-1"><i class="fa-solid fa-bullseye mr-1"></i>Mission Words:</div>
+                <div id="mission-words" class="font-mono bg-white px-2 py-1 rounded border border-blue-200 text-center"></div>
+            </div>
+
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+
+            <div class="bg-white border-t p-3 pb-8 flex items-end gap-2">
+                <button id="btn-mic" onclick="toggleSpeech()" class="w-10 h-10 rounded-full text-gray-400 bg-gray-50 border border-gray-200 flex items-center justify-center">
+                    <i class="fa-solid fa-microphone text-lg"></i>
+                </button>
+                <div class="flex-1 bg-gray-100 rounded-2xl px-4 py-2 min-h-[40px] flex items-center">
+                    <input type="text" id="msg-input" class="w-full bg-transparent outline-none text-base text-slate-800" placeholder="輸入訊息..." onkeypress="if(event.key==='Enter') sendUserMessage()">
+                </div>
+                <button onclick="sendUserMessage()" class="w-10 h-10 bg-[#007AFF] text-white rounded-full flex items-center justify-center shadow-lg active:scale-90">
+                    <i class="fa-solid fa-arrow-up"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="glass-nav fixed bottom-0 w-full h-[85px] flex justify-around pt-3 z-40 text-[10px] font-medium">
+        <button onclick="switchView('home')" class="nav-btn text-[#007AFF] flex flex-col items-center gap-1"><i class="fa-solid fa-house text-xl"></i><span>首頁</span></button>
+        <button onclick="switchView('learn')" class="nav-btn text-gray-400 flex flex-col items-center gap-1"><i class="fa-solid fa-graduation-cap text-xl"></i><span>課程</span></button>
+        <button onclick="switchView('vocab')" class="nav-btn text-gray-400 flex flex-col items-center gap-1"><i class="fa-solid fa-book-bookmark text-xl"></i><span>單字</span></button>
+        <button onclick="switchView('settings')" class="nav-btn text-gray-400 flex flex-col items-center gap-1"><i class="fa-solid fa-gear text-xl"></i><span>設定</span></button>
+    </nav>
+
+    <script>
+        // --- 資料庫 (擴充版) ---
+        const DB = {
+            English: {
+                scenarios: [
+                    { t: 'Coffee Shop', r: 'Barista', i: 'fa-mug-hot', c: 'text-amber-600 bg-amber-50' },
+                    { t: 'Hotel Check-in', r: 'Receptionist', i: 'fa-bell', c: 'text-indigo-600 bg-indigo-50' },
+                    { t: 'Job Interview', r: 'Interviewer', i: 'fa-user-tie', c: 'text-slate-600 bg-slate-50' },
+                    { t: 'At the Doctor', r: 'Doctor', i: 'fa-user-doctor', c: 'text-red-600 bg-red-50' },
+                    { t: 'Taxi Ride', r: 'Driver', i: 'fa-taxi', c: 'text-yellow-600 bg-yellow-50' },
+                    { t: 'Shopping', r: 'Sales Clerk', i: 'fa-bag-shopping', c: 'text-pink-600 bg-pink-50' },
+                    { t: 'Airport Immigration', r: 'Officer', i: 'fa-passport', c: 'text-blue-800 bg-blue-50' },
+                    { t: 'Gym Workout', r: 'Trainer', i: 'fa-dumbbell', c: 'text-emerald-600 bg-emerald-50' }
+                ],
+                curriculum: {
+                    Easy: ['Alphabet & Phonics', 'Greetings & Intros', 'Numbers 1-100', 'Colors & Shapes', 'My Family', 'Days of the Week', 'Basic Food', 'Weather'],
+                    Medium: ['Ordering at a Cafe', 'Asking Directions', 'Making Reservations', 'Shopping for Clothes', 'Describing People', 'Telephone Manners', 'Travel Plans', 'Seeing a Doctor'],
+                    Hard: ['Job Interview Skills', 'Business Meetings', 'News Discussion', 'Debating Opinions', 'Public Speaking', 'Email Etiquette', 'Cultural Differences', 'Negotiation']
+                },
+                missions: ['definitely', 'perspective', 'appreciate', 'wonder', 'actually', 'consider', 'basically', 'honestly']
+            },
+            Japanese: {
+                scenarios: [
+                    { t: 'カフェ (Cafe)', r: '店員', i: 'fa-mug-hot', c: 'text-amber-600 bg-amber-50' },
+                    { t: 'コンビニ (Konbini)', r: '店員', i: 'fa-store', c: 'text-orange-600 bg-orange-50' },
+                    { t: '旅館 (Ryokan)', r: '女将', i: 'fa-bed', c: 'text-indigo-600 bg-indigo-50' },
+                    { t: '駅で (Station)', r: '駅員', i: 'fa-train', c: 'text-blue-600 bg-blue-50' },
+                    { t: '病院 (Hospital)', r: '医者', i: 'fa-user-doctor', c: 'text-red-600 bg-red-50' },
+                    { t: '居酒屋 (Izakaya)', r: '店員', i: 'fa-beer-mug-empty', c: 'text-yellow-600 bg-yellow-50' },
+                    { t: '交番 (Police)', r: '警察官', i: 'fa-building-shield', c: 'text-slate-600 bg-slate-50' },
+                    { t: 'アニメショップ', r: 'オタク', i: 'fa-robot', c: 'text-purple-600 bg-purple-50' }
+                ],
+                curriculum: {
+                    Easy: ['ひらがな・カタカナ', '自己紹介 (N5)', '数字と時間 (N5)', 'これ・それ・あれ (N5)', '買い物 (N5)', '位置の言葉 (N5)', 'カレンダー (N5)', '好きなもの (N5)'],
+                    Medium: ['電車に乗る (N4)', 'レストランの注文 (N4)', '許可を求める (N4)', '友達との会話 (N3)', '道を教える (N3)', '敬語の基本 (N3)', '使役・受身 (N2)', 'トラブル対応 (N2)'],
+                    Hard: ['ビジネスメール (N2)', '電話対応 (N2)', '謝罪の仕方 (N1)', 'ニュースの議論 (N1)', '面接 (N1)', '会議の進行 (N1)', 'プレゼン (N1)', '敬語の極意 (N1)']
+                },
+                missions: ['確かに (Tashikani)', '例えば (Tatoeba)', '実は (Jitsuwa)', 'なるほど (Naruhodo)', '恐縮 (Kyoushuku)', '一応 (Ichiou)']
+            },
+            Korean: {
+                scenarios: [
+                    { t: '카페 (Cafe)', r: '직원', i: 'fa-mug-hot', c: 'text-amber-600 bg-amber-50' },
+                    { t: '편의점 (Store)', r: '직원', i: 'fa-store', c: 'text-blue-600 bg-blue-50' },
+                    { t: '식당 (Restaurant)', r: '아줌마', i: 'fa-utensils', c: 'text-red-600 bg-red-50' },
+                    { t: '길거리 (Street)', r: '행인', i: 'fa-map-location-dot', c: 'text-green-600 bg-green-50' },
+                    { t: '택시 (Taxi)', r: '기사님', i: 'fa-taxi', c: 'text-yellow-600 bg-yellow-50' },
+                    { t: '옷가게 (Clothes)', r: '점원', i: 'fa-shirt', c: 'text-pink-600 bg-pink-50' }
+                ],
+                curriculum: {
+                    Easy: ['Hangul Basics', 'Greetings', 'Numbers', 'Ordering Food', 'Self Intro', 'Family'],
+                    Medium: ['Shopping', 'Directions', 'Phone Calls', 'Making Plans', 'Travel', 'Doctor'],
+                    Hard: ['News', 'Debate', 'Business', 'Honorifics', 'Interview', 'Culture']
+                },
+                missions: ['솔직히', '진짜', '혹시', '물론', '대박', '잠시만요']
+            }
+        };
+
+        // --- 狀態 ---
+        let state = {
+            apiKey: localStorage.getItem('v24_key') || '',
+            projectId: localStorage.getItem('v24_proj') || '',
+            lang: localStorage.getItem('v24_lang') || 'English',
+            level: localStorage.getItem('v24_level') || 'Medium',
+            vocabs: JSON.parse(localStorage.getItem('v24_vocabs') || '[]'),
+            chatHistory: []
+        };
+
+        // --- 初始化 ---
+        window.onload = () => {
+            document.getElementById('api-key-input').value = state.apiKey;
+            document.getElementById('project-id-input').value = state.projectId;
+            document.getElementById('target-lang').value = state.lang;
+            setLevel(state.level);
+            updateUI();
+            document.addEventListener('mouseup', handleTextSelection);
+        };
+
+        function handleLangChange() {
+            state.lang = document.getElementById('target-lang').value;
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('current-lang-badge').innerText = state.lang;
+            renderScenarios();
+            renderLessons();
+            renderVocabs();
+        }
+
+        function setLevel(lvl) {
+            state.level = lvl;
+            localStorage.setItem('v24_level', lvl);
+            ['Easy', 'Medium', 'Hard'].forEach(l => {
+                const el = document.getElementById(`lvl-${l}`);
+                el.className = l === lvl ? "flex-1 py-2 rounded-lg bg-white shadow-sm transition-all cursor-pointer text-blue-600 ring-1 ring-black/5" : "flex-1 py-2 rounded-lg text-gray-500 transition-all cursor-pointer hover:bg-gray-200/50";
+            });
+            renderLessons();
+        }
+
+        // --- 渲染函數 ---
+        function renderScenarios() {
+            const list = document.getElementById('scenario-list');
+            const data = DB[state.lang].scenarios;
+            list.innerHTML = data.map(s => `
+                <div onclick="initChat('${s.t}', '${s.r}')" class="ios-card p-4 flex items-center gap-4 cursor-pointer active:scale-98">
+                    <div class="w-12 h-12 rounded-2xl ${s.c} flex items-center justify-center text-xl shadow-sm"><i class="fa-solid ${s.i}"></i></div>
+                    <div class="flex-1">
+                        <div class="font-bold text-slate-800 text-base">${s.t}</div>
+                        <div class="text-xs text-slate-400 font-medium">Role: ${s.r}</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+                </div>
+            `).join('');
+        }
+
+        function renderLessons() {
+            const list = document.getElementById('lesson-list');
+            const data = DB[state.lang].curriculum[state.level] || [];
+            list.innerHTML = data.map((l, i) => `
+                <div onclick="initChat('Lesson: ${l}', 'Teacher')" class="ios-card p-5 flex justify-between items-center cursor-pointer active:scale-98">
+                    <div>
+                        <div class="text-[10px] font-bold text-blue-500 uppercase mb-1 tracking-wider">UNIT ${i+1}</div>
+                        <div class="font-bold text-slate-800 text-base">${l}</div>
+                    </div>
+                    <i class="fa-solid fa-circle-play text-blue-500 text-2xl opacity-90"></i>
+                </div>
+            `).join('');
+        }
+
+        // --- 聊天核心 ---
+        function initChat(title, role) {
+            // 1. 立即打開 UI (修復點擊無反應)
+            const chatView = document.getElementById('view-chat');
+            chatView.classList.remove('translate-x-full');
+            document.getElementById('chat-title').innerText = title;
+            document.getElementById('chat-container').innerHTML = '';
+            
+            // 2. 顯示任務單字
+            const missions = DB[state.lang].missions.sort(() => 0.5 - Math.random()).slice(0, 3);
+            document.getElementById('mission-bar').classList.remove('hidden');
+            document.getElementById('mission-words').innerText = missions.join('、');
+
+            // 3. 設定系統提示並開始連線
+            const levelMap = { 'Easy': 'Beginner (N5/A1)', 'Medium': 'Intermediate (N3/B1)', 'Hard': 'Advanced (N1/C1)' };
+            const sysPrompt = `Act as a ${role} speaking ${state.lang}. User level: ${levelMap[state.level]}. 
+            If user makes mistakes, output JSON {"correction": "...", "reason": "..."} first. 
+            Keep replies concise. Try to use words: ${missions.join(', ')}.`;
+
+            state.chatHistory = [{ role: 'user', parts: [{ text: sysPrompt + " Start with a greeting." }] }];
+            
+            // 延遲一點點呼叫 API 以確保 UI 動畫順暢
+            setTimeout(() => apiTurn(), 300);
+        }
+
+        async function apiTurn() {
+            const status = document.getElementById('chat-status');
+            status.innerText = "對方輸入中...";
+            status.className = "text-[10px] text-blue-500 block leading-none mt-0.5 animate-pulse";
+
+            try {
+                const text = await callGemini(state.chatHistory);
+                addBubble('ai', text);
+                state.chatHistory.push({ role: 'model', parts: [{ text: text }] });
+                status.innerText = "線上";
+                status.className = "text-[10px] text-green-500 block leading-none mt-0.5";
+            } catch (e) {
+                addBubble('sys', `連線錯誤: ${e.message}`);
+                status.innerText = "離線";
+                status.className = "text-[10px] text-red-500 block leading-none mt-0.5";
+            }
+        }
+
+        async function callGemini(contents) {
+            if (!state.apiKey) throw new Error("請至設定填寫 Key");
+            const urls = [
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.apiKey}`,
+                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${state.apiKey}`
+            ];
+            const headers = { 'Content-Type': 'application/json' };
+            if (state.projectId) headers['X-Goog-User-Project'] = state.projectId;
+
+            for (let url of urls) {
+                try {
+                    const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ contents }) });
+                    const data = await res.json();
+                    if (res.ok) return data.candidates[0].content.parts[0].text;
+                } catch (e) {}
+            }
+            throw new Error("無法連線 Google API");
+        }
+
+        function sendUserMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if (!text) return;
+            addBubble('user', text);
+            input.value = '';
+            state.chatHistory.push({ role: 'user', parts: [{ text: text }] });
+            apiTurn();
+        }
+
+        function addBubble(role, text) {
+            const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            
+            if (role === 'user') {
+                div.className = 'flex justify-end mb-4 animate-fade-in';
+                div.innerHTML = `<div class="bg-[#007AFF] text-white px-4 py-3 rounded-2xl rounded-tr-none shadow-sm text-sm max-w-[85%] leading-relaxed">${text}</div>`;
+            } else if (role === 'sys') {
+                div.innerHTML = `<div class="text-center text-xs text-red-400 py-2">${text}</div>`;
+            } else {
+                // AI Response parsing
+                let cleanText = text;
+                let correctionHtml = '';
+                const jsonMatch = text.match(/^\{[\s\S]*?\}/);
+                if (jsonMatch) {
+                    try {
+                        const c = JSON.parse(jsonMatch[0]);
+                        if(c.correction) {
+                            correctionHtml = `<div class="mb-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs"><div class="font-bold text-yellow-700">💡 建議修正</div><div class="text-slate-800 mt-1">${c.correction}</div></div>`;
+                            cleanText = text.replace(jsonMatch[0], '').trim();
+                        }
+                    } catch(e) {}
+                }
+                div.className = 'flex justify-start mb-4 animate-fade-in';
+                div.innerHTML = `<div class="max-w-[85%]">${correctionHtml}<div class="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm text-sm text-slate-800 selectable border border-gray-100">${marked.parse(cleanText)}</div><button onclick="speakText('${cleanText.replace(/'/g,"\\'")}')" class="mt-1 ml-1 text-gray-400 text-xs"><i class="fa-solid fa-volume-high"></i></button></div>`;
+            }
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // --- 其他功能 ---
+        function switchView(t) {
+            document.querySelectorAll('.page-view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`view-${t}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                const isActive = b.getAttribute('onclick').includes(t);
+                b.className = isActive ? 'nav-btn text-[#007AFF] flex flex-col items-center gap-1' : 'nav-btn text-gray-400 flex flex-col items-center gap-1';
+            });
+            if(t==='vocab') renderVocabs();
+        }
+        
+        function handleTextSelection(e) {
+            const t = window.getSelection().toString().trim();
+            const tools = document.getElementById('word-tools');
+            if (t && t.length < 50) {
+                document.getElementById('sel-text').innerText = t;
+                tools.style.display = 'block';
+                tools.style.left = Math.min(e.pageX, window.innerWidth - 140) + 'px';
+                tools.style.top = (e.pageY - 50) + 'px';
+            } else { tools.style.display = 'none'; }
+        }
+
+        async function translateAndSave() {
+            const w = document.getElementById('sel-text').innerText;
+            document.getElementById('word-tools').style.display = 'none';
+            try {
+                const res = await callGemini([{ role: 'user', parts: [{ text: `Translate "${w}" to Traditional Chinese. Just the word.` }] }]);
+                state.vocabs.push({ w: w, t: res.trim(), l: state.lang });
+                localStorage.setItem('v24_vocabs', JSON.stringify(state.vocabs));
+                alert(`已收藏: ${w}`);
+            } catch(e) {}
+        }
+
+        function renderVocabs() {
+            const list = document.getElementById('vocab-display-list');
+            const data = state.vocabs.filter(v => v.l === state.lang);
+            list.innerHTML = data.map(v => `<div class="ios-card p-4 flex justify-between"><div><div class="font-bold">${v.w}</div><div class="text-xs text-gray-500">${v.t}</div></div><button onclick="delVocab('${v.w}')" class="text-red-400 text-xs"><i class="fa-solid fa-trash"></i></button></div>`).join('') || '<div class="text-center text-gray-400 py-10">無單字</div>';
+        }
+
+        function delVocab(w) {
+            state.vocabs = state.vocabs.filter(v => v.w !== w);
+            localStorage.setItem('v24_vocabs', JSON.stringify(state.vocabs));
+            renderVocabs();
+        }
+
+        function startQuiz() {
+            const pool = state.vocabs.filter(v => v.l === state.lang);
+            if(pool.length===0) return alert("無單字");
+            const q = pool[Math.floor(Math.random()*pool.length)];
+            const a = prompt(`測驗: ${q.t}`);
+            if(a && a.toLowerCase()===q.w.toLowerCase()) alert("正確!"); else alert(`錯誤, 是 ${q.w}`);
+        }
+
+        function speakText(t) {
+            const u = new SpeechSynthesisUtterance(t);
+            u.lang = state.lang === 'Japanese' ? 'ja-JP' : state.lang === 'Korean' ? 'ko-KR' : 'en-US';
+            speechSynthesis.speak(u);
+        }
+
+        function saveSettings() {
+            state.apiKey = document.getElementById('api-key-input').value.trim();
+            state.projectId = document.getElementById('project-id-input').value.trim();
+            state.lang = document.getElementById('target-lang').value;
+            localStorage.setItem('v24_key', state.apiKey);
+            localStorage.setItem('v24_proj', state.projectId);
+            localStorage.setItem('v24_lang', state.lang);
+            localStorage.setItem('v24_level', state.level);
+            location.reload();
+        }
+
+        function closeChat() { document.getElementById('view-chat').classList.add('translate-x-full'); }
+        function backupData() {
+            const a = document.createElement('a');
+            a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            a.download = "backup.json";
+            a.click();
+        }
+        function restoreData(input) {
+            const r = new FileReader();
+            r.onload = e => { state = JSON.parse(e.target.result); saveSettings(); };
+            r.readAsText(input.files[0]);
+        }
+    </script>
+</body>
+</html>
