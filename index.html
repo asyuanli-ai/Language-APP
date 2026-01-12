@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>My Learning 2.0</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#F2F2F7">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ios: { bg: '#F2F2F7', card: '#FFFFFF', blue: '#007AFF', green: '#34C759', yellow: '#FFCC00', red: '#FF3B30', gray: '#8E8E93' }
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* iOS Layout Fixes */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            background-color: #F2F2F7;
+            height: 100dvh; /* Dynamic Viewport Height for Mobile */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Views Transition */
+        .view-section {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 100px; /* Space for tab bar */
+        }
+        .view-section.active { display: flex; animation: fadeIn 0.2s ease-out; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Chat Specifics */
+        .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; margin-bottom: 10px; font-size: 16px; line-height: 1.5; position: relative; word-wrap: break-word; }
+        .chat-user { background-color: #007AFF; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-ai { background-color: #E5E5EA; color: black; align-self: flex-start; border-bottom-left-radius: 4px; }
+        
+        /* Correction Box */
+        .correction-box { background-color: #FFF9C4; border-left: 4px solid #FBC02D; padding: 8px; margin-bottom: 8px; border-radius: 8px; font-size: 14px; align-self: flex-start; max-width: 85%; }
+
+        /* Custom Scrollbar hide */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 60; display: none; justify-content: center; items-center: center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; width: 90%; max-width: 400px; border-radius: 20px; padding: 24px; animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="text-gray-900">
+
+    <div id="app" class="w-full h-full flex flex-col relative">
+
+        <header class="px-4 py-3 bg-white/90 backdrop-blur-md border-b border-gray-200 z-10 flex justify-between items-center pt-safe-top">
+            <h1 id="page-title" class="text-xl font-bold tracking-tight">My Learning</h1>
+            <div id="header-right" class="text-ios-blue font-medium text-sm"></div>
+        </header>
+
+        <main class="flex-1 relative overflow-hidden flex flex-col">
+            
+            <div id="view-home" class="view-section active p-4">
+                
+                <div class="bg-gray-200/50 p-1 rounded-xl flex mb-6">
+                    <button onclick="setLang('en')" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all lang-btn" data-lang="en">English</button>
+                    <button onclick="setLang('jp')" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all lang-btn" data-lang="jp">日本語</button>
+                    <button onclick="setLang('kr')" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all lang-btn" data-lang="kr">한국어</button>
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider ml-1">目前等級 (Current Level)</h2>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setLevel('beginner')" class="level-btn bg-white p-3 rounded-xl border border-transparent shadow-sm flex flex-col items-center gap-1 transition-all active:scale-95">
+                            <i class="fa-solid fa-seedling text-ios-green mb-1"></i>
+                            <span class="text-xs font-bold" id="lbl-beg">初級</span>
+                            <span class="text-[10px] text-gray-400" id="sub-beg">A1-A2</span>
+                        </button>
+                        <button onclick="setLevel('intermediate')" class="level-btn bg-white p-3 rounded-xl border border-transparent shadow-sm flex flex-col items-center gap-1 transition-all active:scale-95">
+                            <i class="fa-solid fa-layer-group text-ios-blue mb-1"></i>
+                            <span class="text-xs font-bold" id="lbl-int">中級</span>
+                            <span class="text-[10px] text-gray-400" id="sub-int">B1-B2</span>
+                        </button>
+                        <button onclick="setLevel('advanced')" class="level-btn bg-white p-3 rounded-xl border border-transparent shadow-sm flex flex-col items-center gap-1 transition-all active:scale-95">
+                            <i class="fa-solid fa-briefcase text-purple-600 mb-1"></i>
+                            <span class="text-xs font-bold" id="lbl-adv">高級</span>
+                            <span class="text-[10px] text-gray-400" id="sub-adv">C1-C2</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider ml-1">情境選擇 (Scenarios)</h2>
+                    <div id="scenario-list" class="grid grid-cols-1 gap-3">
+                        </div>
+                </div>
+            </div>
+
+            <div id="view-learn" class="view-section p-4">
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-2xl font-bold">主題課程</h2>
+                    <span id="course-level-badge" class="px-2 py-1 bg-ios-blue text-white text-[10px] rounded-md font-bold">CEFR A1</span>
+                </div>
+                <div id="course-list" class="space-y-4">
+                    </div>
+            </div>
+
+            <div id="view-chat" class="view-section relative bg-gray-100 !pb-0 !flex-col !h-full !overflow-hidden">
+                
+                <div class="bg-yellow-50 border-b border-yellow-200 px-4 py-2 flex justify-between items-center shadow-sm z-20 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-yellow-600"></i>
+                        <span class="text-xs font-bold text-yellow-800">本次任務單字：</span>
+                    </div>
+                    <div id="mission-words" class="flex gap-2 text-xs font-mono text-yellow-900 font-bold">
+                        </div>
+                </div>
+
+                <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 w-full">
+                    <div class="text-center text-gray-400 text-xs mt-4">AI 正在準備角色...<br>請開啟麥克風或輸入文字</div>
+                </div>
+
+                <div class="bg-white border-t border-gray-200 p-3 pb-safe-bottom w-full shrink-0 z-30 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                    
+                    <div id="typing-indicator" class="hidden text-[10px] text-gray-400 mb-2 pl-2 flex items-center gap-1">
+                        <span class="animate-pulse">●</span> AI 正在輸入...
+                    </div>
+
+                    <div class="flex items-end gap-2">
+                        <button id="mic-btn" class="h-10 w-10 shrink-0 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center active:bg-red-100 active:text-red-500 transition-colors">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                        
+                        <div class="flex-1 bg-gray-100 rounded-2xl flex items-center px-3 py-1">
+                            <textarea id="chat-input" rows="1" class="w-full bg-transparent border-none focus:ring-0 px-0 py-2 text-base resize-none max-h-24" placeholder="輸入訊息..."></textarea>
+                        </div>
+                        
+                        <button onclick="sendMessage()" class="h-10 w-10 shrink-0 rounded-full bg-ios-blue text-white shadow-md flex items-center justify-center active:scale-95 transition-transform">
+                            <i class="fa-solid fa-paper-plane text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-vocab" class="view-section p-4">
+                <h2 class="text-2xl font-bold mb-4">單字本</h2>
+                <div id="vocab-list" class="space-y-3"></div>
+            </div>
+
+            <div id="view-settings" class="view-section p-4">
+                <div class="bg-white rounded-xl p-5 shadow-sm space-y-4">
+                    <h3 class="font-bold border-b pb-2">API 設定 (必填)</h3>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">API KEY</label>
+                        <input type="password" id="api-key" class="w-full bg-gray-100 p-2 rounded mt-1 font-mono text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500">PROJECT ID (例如: my-project-123)</label>
+                        <input type="text" id="project-id" class="w-full bg-gray-100 p-2 rounded mt-1 font-mono text-sm">
+                    </div>
+                    <button onclick="saveSettings()" class="w-full bg-ios-blue text-white py-3 rounded-lg font-bold">儲存並重啟</button>
+                </div>
+            </div>
+        </main>
+
+        <nav class="h-[80px] bg-white border-t border-gray-200 flex justify-around items-start pt-2 z-50 shrink-0 pb-safe-bottom">
+            <button onclick="switchTab('home')" class="nav-btn active-nav flex flex-col items-center w-16 gap-1" data-target="home">
+                <i class="fa-solid fa-house text-xl mb-0.5"></i>
+                <span class="text-[10px]">首頁</span>
+            </button>
+            <button onclick="switchTab('learn')" class="nav-btn flex flex-col items-center w-16 gap-1 text-gray-400" data-target="learn">
+                <i class="fa-solid fa-graduation-cap text-xl mb-0.5"></i>
+                <span class="text-[10px]">課程</span>
+            </button>
+            <button onclick="switchTab('vocab')" class="nav-btn flex flex-col items-center w-16 gap-1 text-gray-400" data-target="vocab">
+                <i class="fa-solid fa-book text-xl mb-0.5"></i>
+                <span class="text-[10px]">單字</span>
+            </button>
+            <button onclick="switchTab('settings')" class="nav-btn flex flex-col items-center w-16 gap-1 text-gray-400" data-target="settings">
+                <i class="fa-solid fa-gear text-xl mb-0.5"></i>
+                <span class="text-[10px]">設定</span>
+            </button>
+        </nav>
+
+        <div id="role-modal" class="modal-overlay flex">
+            <div class="modal-content">
+                <h3 class="text-xl font-bold mb-4 text-center">確認對話角色</h3>
+                
+                <div class="bg-blue-50 p-3 rounded-lg mb-3">
+                    <span class="text-xs text-blue-500 font-bold block mb-1">您將扮演 (USER)</span>
+                    <div id="modal-user-role" class="font-bold text-gray-800"></div>
+                </div>
+
+                <div class="bg-gray-100 p-3 rounded-lg mb-6">
+                    <span class="text-xs text-gray-500 font-bold block mb-1">AI 將扮演</span>
+                    <div id="modal-ai-role" class="font-bold text-gray-800"></div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeModal()" class="flex-1 py-3 bg-gray-200 rounded-xl font-bold text-gray-600">取消</button>
+                    <button onclick="confirmStartChat()" class="flex-1 py-3 bg-ios-blue text-white rounded-xl font-bold shadow-lg">開始對話</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. CONFIG & DATA ---
+        const state = {
+            lang: localStorage.getItem('ml_lang') || 'en',
+            level: localStorage.getItem('ml_level') || 'beginner',
+            apiKey: localStorage.getItem('ml_api_key') || '',
+            projectId: localStorage.getItem('ml_project_id') || '',
+            vocab: JSON.parse(localStorage.getItem('ml_vocab') || '[]'),
+            pendingScenario: null,
+            missionWords: []
+        };
+
+        // Standard mappings
+        const levelStandards = {
+            en: { beginner: 'A1-A2 (Beginner)', intermediate: 'B1-B2 (Intermediate)', advanced: 'C1-C2 (Advanced)' },
+            jp: { beginner: 'N4-N5 (初級)', intermediate: 'N2-N3 (中級)', advanced: 'N1 (上級)' },
+            kr: { beginner: 'TOPIK 1-2 (初級)', intermediate: 'TOPIK 3-4 (中級)', advanced: 'TOPIK 5-6 (高級)' }
+        };
+
+        // Mission Words Database (By Level)
+        const missionDatabase = {
+            en: {
+                beginner: ['Hello', 'Price', 'Name', 'Time', 'Food', 'Water', 'Help', 'Bus', 'Train'],
+                intermediate: ['Schedule', 'Refund', 'Suggest', 'Available', 'Reservation', 'Delay', 'Reason'],
+                advanced: ['Negotiate', 'Strategy', 'Economy', 'Perspective', 'Analyze', 'Investment', 'Liability']
+            },
+            jp: {
+                beginner: ['すみません', 'いくら', '駅', '水', 'これ', '好き', '時間', 'トイレ', '名前'], // N4-N5
+                intermediate: ['予約', '変更', '理由', '説明', '相談', '経験', '準備', '確認'], // N2-N3
+                advanced: ['経済', '交渉', '影響', '提供', '検討', '責任', '解決', '専門'] // N1
+            },
+            kr: {
+                beginner: ['안녕하세요', '얼마', '김치', '어디', '주세요', '이름', '시간'],
+                intermediate: ['예약', '환불', '추천', '이유', '가능', '확인'],
+                advanced: ['경제', '협상', '문화', '해결', '책임', '영향']
+            }
+        };
+
+        // Expanded Scenarios with EXPLICIT ROLES
+        const scenarios = {
+            en: [
+                { id: 'cafe', title: 'Coffee Shop', userRole: 'Customer (ordering custom drink)', aiRole: 'Barista (friendly but busy)', icon: 'fa-mug-hot', color: 'bg-orange-100 text-orange-600' },
+                { id: 'immi', title: 'Immigration', userRole: 'Traveler (visiting for tourism)', aiRole: 'Border Officer (strict, asking details)', icon: 'fa-passport', color: 'bg-blue-100 text-blue-600' },
+                { id: 'doctor', title: 'Medical Clinic', userRole: 'Patient (has flu symptoms)', aiRole: 'Doctor (diagnosing)', icon: 'fa-user-doctor', color: 'bg-red-100 text-red-600' },
+                { id: 'tech', title: 'Job Interview', userRole: 'Applicant (Software Engineer)', aiRole: 'Hiring Manager', icon: 'fa-laptop-code', color: 'bg-gray-100 text-gray-700' },
+                { id: 'rent', title: 'Renting Apt', userRole: 'Tenant (looking for apartment)', aiRole: 'Real Estate Agent', icon: 'fa-building', color: 'bg-green-100 text-green-600' }
+            ],
+            jp: [
+                { id: 'izakaya', title: '居酒屋 (Izakaya)', userRole: '客 (おすすめを聞きたい)', aiRole: '店員 (元気で親切)', icon: 'fa-beer-mug-empty', color: 'bg-yellow-100 text-yellow-700' },
+                { id: 'hotel', title: '旅館 Check-in', userRole: '宿泊客', aiRole: 'フロント (非常に丁寧な敬語)', icon: 'fa-hotel', color: 'bg-purple-100 text-purple-600' },
+                { id: 'lost', title: '交番 (Police Box)', userRole: '財布をなくした人', aiRole: '警察官 (状況を確認する)', icon: 'fa-shield-halved', color: 'bg-blue-100 text-blue-600' },
+                { id: 'office', title: '会社 (Office)', userRole: '部下 (進捗報告)', aiRole: '上司 (厳しいが指導熱心)', icon: 'fa-building-user', color: 'bg-gray-100 text-gray-600' },
+                { id: 'elec', title: '電気屋 (Electronics)', userRole: '客 (カメラを買いたい)', aiRole: '店員 (機能オタク)', icon: 'fa-camera', color: 'bg-red-100 text-red-600' }
+            ],
+            kr: [
+                { id: 'k-rest', title: '餐廳點餐', userRole: '顧客', aiRole: '熱情的阿姨 (Auntie)', icon: 'fa-utensils', color: 'bg-orange-100 text-orange-600' },
+                { id: 'taxi', title: '搭計程車', userRole: '乘客 (趕時間)', aiRole: '司機 (喜歡聊政治)', icon: 'fa-taxi', color: 'bg-yellow-100 text-yellow-600' },
+                { id: 'school', title: '語學堂', userRole: '留學生', aiRole: '老師 (糾正發音)', icon: 'fa-chalkboard-user', color: 'bg-green-100 text-green-600' }
+            ]
+        };
+
+        // Courses mapped to Levels
+        const courses = {
+            beginner: [
+                { title: '基礎問候與自我介紹', desc: '學習如何破冰與基本禮儀' },
+                { title: '購物與數字', desc: '詢問價格、殺價與結帳' },
+                { title: '交通指引', desc: '問路與搭乘大眾運輸' }
+            ],
+            intermediate: [
+                { title: '退貨與客訴處理', desc: '表達不滿並尋求解決方案' },
+                { title: '看醫生與描述症狀', desc: '詳細描述身體狀況' },
+                { title: '餐廳訂位與特殊需求', desc: '電話預約與過敏源確認' }
+            ],
+            advanced: [
+                { title: '商務談判技巧', desc: '價格協商與合約條款討論' },
+                { title: '時事與社會議題', desc: '深入探討新聞與文化差異' },
+                { title: '緊急狀況處理', desc: '報警、車禍與法律諮詢' }
+            ]
+        };
+
+        // --- 2. INITIALIZATION & UI ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('api-key').value = state.apiKey;
+            document.getElementById('project-id').value = state.projectId;
+            
+            if(!state.apiKey) switchTab('settings');
+            else {
+                updateLevelLabels();
+                renderHome();
+            }
+
+            // Auto-resize textarea
+            const tx = document.getElementById('chat-input');
+            tx.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${tabId}`).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const isActive = btn.dataset.target === tabId;
+                btn.classList.toggle('active-nav', isActive);
+                btn.classList.toggle('text-ios-blue', isActive);
+                btn.classList.toggle('text-gray-400', !isActive);
+            });
+
+            if (tabId === 'learn') renderCourses();
+            if (tabId === 'vocab') renderVocab();
+        }
+
+        function setLang(lang) {
+            state.lang = lang;
+            localStorage.setItem('ml_lang', lang);
+            updateLevelLabels();
+            renderHome();
+            renderCourses();
+        }
+
+        function setLevel(lvl) {
+            state.level = lvl;
+            localStorage.setItem('ml_level', lvl);
+            updateLevelLabels();
+            renderCourses(); // refresh courses immediately
+        }
+
+        function updateLevelLabels() {
+            // Update UI buttons based on Language Standard
+            const std = levelStandards[state.lang];
+            
+            // Buttons visual state
+            ['beginner', 'intermediate', 'advanced'].forEach(l => {
+                const isSel = state.level === l;
+                const btn = document.querySelector(`.level-btn[onclick="setLevel('${l}')"]`);
+                if(isSel) {
+                    btn.classList.add('ring-2', 'ring-ios-blue', 'bg-blue-50');
+                    btn.classList.remove('bg-white');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-ios-blue', 'bg-blue-50');
+                    btn.classList.add('bg-white');
+                }
+            });
+
+            // Update Text Labels
+            document.getElementById('sub-beg').innerText = std.beginner.split(' ')[0];
+            document.getElementById('sub-int').innerText = std.intermediate.split(' ')[0];
+            document.getElementById('sub-adv').innerText = std.advanced.split(' ')[0];
+            
+            // Language Buttons
+            document.querySelectorAll('.lang-btn').forEach(b => {
+                if(b.dataset.lang === state.lang) b.classList.add('bg-white', 'shadow-sm', 'text-black');
+                else b.classList.remove('bg-white', 'shadow-sm', 'text-black');
+            });
+        }
+
+        function renderHome() {
+            const list = document.getElementById('scenario-list');
+            list.innerHTML = '';
+            const data = scenarios[state.lang] || scenarios['en'];
+
+            data.forEach(s => {
+                list.innerHTML += `
+                    <div onclick="openRoleModal('${s.id}')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 active:bg-gray-50 transition">
+                        <div class="h-12 w-12 rounded-full ${s.color} flex items-center justify-center text-xl shrink-0">
+                            <i class="fa-solid ${s.icon}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">${s.title}</h3>
+                            <div class="flex gap-2 mt-1">
+                                <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500">You: ${s.userRole}</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function renderCourses() {
+            const list = document.getElementById('course-list');
+            const std = levelStandards[state.lang];
+            const currentStdLabel = std[state.level]; // e.g., "N4-N5 (初級)"
+            
+            document.getElementById('course-level-badge').innerText = currentStdLabel;
+            
+            list.innerHTML = '';
+            const data = courses[state.level];
+            
+            data.forEach(c => {
+                list.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-lg mb-1">${c.title}</h3>
+                        <p class="text-gray-500 text-sm mb-3">${c.desc}</p>
+                        <button onclick="startCourseChat('${c.title}')" class="w-full py-2.5 bg-gray-900 text-white rounded-lg font-bold text-sm active:scale-95 transition-transform">
+                            開始練習 <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 3. CHAT LOGIC ---
+
+        function openRoleModal(scenarioId) {
+            const data = (scenarios[state.lang] || scenarios['en']).find(s => s.id === scenarioId);
+            state.pendingScenario = data;
+            
+            document.getElementById('modal-user-role').innerText = data.userRole;
+            document.getElementById('modal-ai-role').innerText = data.aiRole;
+            document.getElementById('role-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('role-modal').style.display = 'none';
+        }
+
+        function generateMissionWords() {
+            // Get words based on current Lang and Level
+            const pool = missionDatabase[state.lang][state.level] || missionDatabase['en']['beginner'];
+            // Shuffle and pick 3
+            const shuffled = [...pool].sort(() => 0.5 - Math.random());
+            state.missionWords = shuffled.slice(0, 3);
+            
+            const html = state.missionWords.map(w => `<span class="bg-white/80 px-2 py-0.5 rounded-md border border-yellow-300 shadow-sm">${w}</span>`).join('');
+            document.getElementById('mission-words').innerHTML = html;
+        }
+
+        function confirmStartChat() {
+            closeModal();
+            const s = state.pendingScenario;
+            const prompt = `
+                Roleplay Setup:
+                - Language: ${state.lang}
+                - Level: ${levelStandards[state.lang][state.level]}
+                - Your Role (AI): ${s.aiRole}
+                - My Role (User): ${s.userRole}
+                - Scenario: ${s.title}
+                
+                Instructions:
+                1. Stay in character strictly.
+                2. Adjust vocabulary to the user's level (${state.level}).
+                3. Guide the conversation naturally.
+            `;
+            initChat(prompt, `(場景：${s.title}) ${s.aiRole} 正在看著你...`);
+        }
+
+        function startCourseChat(title) {
+            const prompt = `
+                Roleplay Setup:
+                - Type: Language Lesson / Roleplay
+                - Topic: ${title}
+                - Language: ${state.lang}
+                - Level: ${levelStandards[state.lang][state.level]}
+                
+                Instructions:
+                Act as a tutor guiding the user through a roleplay about "${title}".
+                Correct mistakes gently.
+            `;
+            initChat(prompt, `課程開始：${title}。請嘗試用目標語言開口。`);
+        }
+
+        function initChat(systemInstructions, welcomeText) {
+            switchTab('chat');
+            generateMissionWords(); // Generate new words
+            document.getElementById('chat-container').innerHTML = '';
+            
+            // Define System Prompt with JSON enforcement
+            state.currentSystemPrompt = systemInstructions + `
+                
+                CRITICAL OUTPUT FORMAT:
+                You must ONLY reply in valid JSON format.
+                {
+                    "reply": "Your response in the target language (${state.lang})",
+                    "correction": null OR {
+                        "original": "User's wrong sentence",
+                        "fixed": "Corrected sentence",
+                        "reason": "Explanation in Traditional Chinese (繁體中文)"
+                    }
+                }
+            `;
+            
+            // Add initial message
+            addBubble('ai', welcomeText, null);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            addBubble('user', text);
+            input.value = '';
+            input.style.height = 'auto'; // Reset height
+
+            const indicator = document.getElementById('typing-indicator');
+            indicator.classList.remove('hidden');
+            const container = document.getElementById('chat-container');
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.apiKey}`;
+                
+                // Construct history (simplified for demo, usually you append history)
+                const payload = {
+                    contents: [
+                        { role: "user", parts: [{ text: state.currentSystemPrompt + "\n\nUser input: " + text }] }
+                    ],
+                    generationConfig: { response_mime_type: "application/json" }
+                };
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Goog-User-Project': state.projectId },
+                    body: JSON.stringify(payload)
+                });
+
+                if(!res.ok) throw new Error("API Error");
+
+                const data = await res.json();
+                const aiJson = JSON.parse(data.candidates[0].content.parts[0].text);
+
+                indicator.classList.add('hidden');
+                addBubble('ai', aiJson.reply, aiJson.correction);
+
+                // TTS
+                speak(aiJson.reply);
+
+            } catch(e) {
+                indicator.classList.add('hidden');
+                addBubble('ai', "連線錯誤，請檢查網路或 API Key 設定。");
+            }
+        }
+
+        function addBubble(role, text, correction) {
+            const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = `flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`;
+            
+            let html = '';
+            if(correction) {
+                html += `
+                    <div class="correction-box">
+                        <div class="flex items-center gap-1 font-bold text-yellow-800 text-xs mb-1">
+                            <i class="fa-solid fa-wrench"></i> 修正建議
+                        </div>
+                        <div class="line-through text-gray-500 text-xs">${correction.original}</div>
+                        <div class="text-green-700 font-bold text-sm">${correction.fixed}</div>
+                        <div class="text-[10px] text-gray-500 mt-1">${correction.reason}</div>
+                    </div>
+                `;
+            }
+            
+            html += `<div class="chat-bubble chat-${role}">${marked.parseInline(text)}</div>`;
+            div.innerHTML = html;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // --- 4. UTILS (TTS, SETTINGS) ---
+        function speak(text) {
+            if(!window.speechSynthesis) return;
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = state.lang === 'jp' ? 'ja-JP' : state.lang === 'kr' ? 'ko-KR' : 'en-US';
+            window.speechSynthesis.speak(u);
+        }
+
+        function saveSettings() {
+            const k = document.getElementById('api-key').value;
+            const p = document.getElementById('project-id').value;
+            if(k && p) {
+                state.apiKey = k;
+                state.projectId = p;
+                localStorage.setItem('ml_api_key', k);
+                localStorage.setItem('ml_project_id', p);
+                alert("設定已儲存");
+                location.reload();
+            } else {
+                alert("請填寫完整");
+            }
+        }
+
+        // Web Speech API (STT)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(SpeechRecognition) {
+            const rec = new SpeechRecognition();
+            rec.continuous = false;
+            const btn = document.getElementById('mic-btn');
+            
+            btn.onclick = () => {
+                rec.lang = state.lang === 'jp' ? 'ja-JP' : state.lang === 'kr' ? 'ko-KR' : 'en-US';
+                rec.start();
+                btn.classList.add('text-red-500', 'bg-red-100', 'animate-pulse');
+            };
+            rec.onresult = (e) => {
+                const t = e.results[0][0].transcript;
+                document.getElementById('chat-input').value = t;
+                sendMessage();
+            };
+            rec.onend = () => {
+                btn.classList.remove('text-red-500', 'bg-red-100', 'animate-pulse');
+            };
+        } else {
+            document.getElementById('mic-btn').style.display = 'none';
+        }
+
+        // Vocab Dummy Render
+        function renderVocab() {
+            const list = document.getElementById('vocab-list');
+            list.innerHTML = `<div class="text-center text-gray-400 mt-10">在對話中長按選取文字即可加入單字本 (功能實作與上版相同)</div>`;
+        }
+
+    </script>
+</body>
+</html>
