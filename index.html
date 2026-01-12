@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>My Learning 3.0</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#F2F2F7">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { ios: { bg: '#F2F2F7', blue: '#007AFF', green: '#34C759', gray: '#8E8E93' } },
+                    fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            background-color: #F2F2F7;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .view-section {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow-y: auto;
+            padding-bottom: 100px;
+        }
+        .view-section.active { display: flex; animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; margin-bottom: 10px; font-size: 16px; line-height: 1.5; word-wrap: break-word; }
+        .chat-user { background-color: #007AFF; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-ai { background-color: #E5E5EA; color: black; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .correction-box { background-color: #FFF9C4; border-left: 4px solid #FBC02D; padding: 8px; margin-bottom: 8px; border-radius: 8px; font-size: 14px; align-self: flex-start; max-width: 85%; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 60; display: none; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-content { background: white; width: 90%; max-width: 400px; border-radius: 20px; padding: 24px; animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="text-gray-900">
+
+    <header class="px-4 py-3 bg-white/90 backdrop-blur-md border-b border-gray-200 z-10 flex justify-between items-center pt-safe-top">
+        <h1 class="text-xl font-bold tracking-tight">My Learning</h1>
+        <div id="model-status" class="text-[10px] font-mono text-gray-400">Model: Detecting...</div>
+    </header>
+
+    <main class="flex-1 relative overflow-hidden flex flex-col">
+        
+        <div id="view-home" class="view-section active p-4">
+            <div class="bg-gray-200/50 p-1 rounded-xl flex mb-6">
+                <button onclick="setLang('en')" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all lang-btn" data-lang="en">English</button>
+                <button onclick="setLang('jp')" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all lang-btn" data-lang="jp">日本語</button>
+                <button onclick="setLang('kr')" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all lang-btn" data-lang="kr">한국어</button>
+            </div>
+
+            <div onclick="startFreeChat()" class="mb-6 bg-gradient-to-r from-blue-500 to-indigo-600 p-5 rounded-2xl shadow-lg text-white flex items-center justify-between cursor-pointer active:scale-95 transition-transform">
+                <div class="flex items-center gap-4">
+                    <div class="bg-white/20 h-12 w-12 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-lg">自由對話 (Free Chat)</h2>
+                        <p class="text-blue-100 text-xs">不限角色，隨意練習</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right opacity-50"></i>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-xs font-bold text-gray-500 mb-2 uppercase ml-1">等級 (Level)</h2>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setLevel('beginner')" class="level-btn bg-white p-3 rounded-xl shadow-sm flex flex-col items-center gap-1" id="btn-beg">
+                        <span class="text-xs font-bold">初級</span>
+                        <span class="text-[10px] text-gray-400" id="sub-beg">A1</span>
+                    </button>
+                    <button onclick="setLevel('intermediate')" class="level-btn bg-white p-3 rounded-xl shadow-sm flex flex-col items-center gap-1" id="btn-int">
+                        <span class="text-xs font-bold">中級</span>
+                        <span class="text-[10px] text-gray-400" id="sub-int">B1</span>
+                    </button>
+                    <button onclick="setLevel('advanced')" class="level-btn bg-white p-3 rounded-xl shadow-sm flex flex-col items-center gap-1" id="btn-adv">
+                        <span class="text-xs font-bold">高級</span>
+                        <span class="text-[10px] text-gray-400" id="sub-adv">C1</span>
+                    </button>
+                </div>
+            </div>
+
+            <h2 class="text-xs font-bold text-gray-500 mb-3 uppercase ml-1">情境扮演 (Roleplay)</h2>
+            <div id="scenario-list" class="grid grid-cols-1 gap-3"></div>
+        </div>
+
+        <div id="view-chat" class="view-section relative bg-gray-100 !pb-0 !flex-col !h-full !overflow-hidden">
+            <div id="mission-bar" class="bg-yellow-50 border-b border-yellow-200 px-4 py-2 flex justify-between items-center shadow-sm z-20 shrink-0 hidden">
+                <span class="text-xs font-bold text-yellow-800">🎯 任務：</span>
+                <div id="mission-words" class="flex gap-2 text-xs font-mono text-yellow-900 font-bold"></div>
+            </div>
+
+            <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 w-full"></div>
+
+            <div class="bg-white border-t border-gray-200 p-3 pb-safe-bottom w-full shrink-0 z-30">
+                <div id="typing-indicator" class="hidden text-[10px] text-gray-400 mb-2 pl-2">AI 正在輸入...</div>
+                <div class="flex items-end gap-2">
+                    <textarea id="chat-input" rows="1" class="flex-1 bg-gray-100 rounded-2xl px-4 py-3 text-base resize-none max-h-24 focus:outline-none" placeholder="輸入訊息..."></textarea>
+                    <button onclick="sendMessage()" class="h-12 w-12 bg-ios-blue text-white rounded-full shadow-md flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-settings" class="view-section p-4">
+            <div class="bg-white rounded-xl p-5 shadow-sm space-y-4">
+                <h3 class="font-bold border-b pb-2">連線設定</h3>
+                <input type="password" id="api-key" class="w-full bg-gray-100 p-3 rounded text-sm font-mono" placeholder="API Key">
+                <input type="text" id="project-id" class="w-full bg-gray-100 p-3 rounded text-sm font-mono" placeholder="Project ID (選填, 若報錯則必填)">
+                <button onclick="saveSettings()" class="w-full bg-ios-blue text-white py-3 rounded-lg font-bold">儲存並偵測模型</button>
+                <div id="connection-log" class="text-xs text-gray-500 font-mono mt-2 break-all bg-gray-50 p-2 rounded"></div>
+            </div>
+        </div>
+
+        <div id="view-learn" class="view-section p-4"><div id="course-list"></div></div>
+        <div id="view-vocab" class="view-section p-4"><div id="vocab-list"></div></div>
+    </main>
+
+    <nav class="h-[80px] bg-white border-t border-gray-200 flex justify-around items-start pt-2 z-50 shrink-0 pb-safe-bottom">
+        <button onclick="switchTab('home')" class="nav-btn active-nav w-16 text-ios-blue" data-target="home"><i class="fa-solid fa-house text-xl"></i><span class="text-[10px] block">首頁</span></button>
+        <button onclick="switchTab('learn')" class="nav-btn w-16 text-gray-400" data-target="learn"><i class="fa-solid fa-graduation-cap text-xl"></i><span class="text-[10px] block">課程</span></button>
+        <button onclick="switchTab('vocab')" class="nav-btn w-16 text-gray-400" data-target="vocab"><i class="fa-solid fa-book text-xl"></i><span class="text-[10px] block">單字</span></button>
+        <button onclick="switchTab('settings')" class="nav-btn w-16 text-gray-400" data-target="settings"><i class="fa-solid fa-gear text-xl"></i><span class="text-[10px] block">設定</span></button>
+    </nav>
+
+    <div id="role-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4 text-center">確認角色</h3>
+            <div class="bg-blue-50 p-3 rounded-lg mb-3"><span class="text-xs text-blue-500 font-bold block">你扮演</span><div id="modal-user-role" class="font-bold"></div></div>
+            <div class="bg-gray-100 p-3 rounded-lg mb-6"><span class="text-xs text-gray-500 font-bold block">AI 扮演</span><div id="modal-ai-role" class="font-bold"></div></div>
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 py-3 bg-gray-200 rounded-xl font-bold text-gray-600">取消</button>
+                <button onclick="confirmStartChat()" class="flex-1 py-3 bg-ios-blue text-white rounded-xl font-bold">開始</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- STATE & DATA ---
+        const state = {
+            lang: localStorage.getItem('ml_lang') || 'en',
+            level: localStorage.getItem('ml_level') || 'beginner',
+            apiKey: localStorage.getItem('ml_api_key') || '',
+            projectId: localStorage.getItem('ml_project_id') || '',
+            discoveredModel: null, // Auto-discovered model name
+            currentPrompt: '',
+            pendingScenario: null,
+            missionWords: []
+        };
+
+        const levelData = {
+            en: { beginner: 'A1-A2', intermediate: 'B1-B2', advanced: 'C1-C2' },
+            jp: { beginner: 'N4-N5', intermediate: 'N2-N3', advanced: 'N1' },
+            kr: { beginner: 'TOPIK 1-2', intermediate: 'TOPIK 3-4', advanced: 'TOPIK 5-6' }
+        };
+
+        const scenarios = {
+            en: [
+                { id: 'cafe', title: 'Coffee Shop', user: 'Customer', ai: 'Barista', icon: 'fa-mug-hot' },
+                { id: 'immi', title: 'Immigration', user: 'Traveler', ai: 'Officer', icon: 'fa-passport' }
+            ],
+            jp: [
+                { id: 'izakaya', title: '居酒屋', user: '客', ai: '店員', icon: 'fa-beer-mug-empty' },
+                { id: 'lost', title: '交番', user: '遺失者', ai: '警察官', icon: 'fa-shield-halved' }
+            ],
+            kr: [
+                { id: 'k-rest', title: '餐廳點餐', user: '顧客', ai: '阿姨', icon: 'fa-utensils' }
+            ]
+        };
+
+        // --- CORE LOGIC: AUTO DISCOVERY ---
+        async function findBestModel() {
+            const logEl = document.getElementById('connection-log');
+            const statusEl = document.getElementById('model-status');
+            
+            if (!state.apiKey) {
+                logEl.innerText = "尚未設定 API Key";
+                return;
+            }
+
+            logEl.innerText = "正在偵測可用模型...";
+            statusEl.innerText = "Model: Detecting...";
+
+            try {
+                // Step 1: List Models (權限門檻最低)
+                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${state.apiKey}`;
+                const res = await fetch(listUrl);
+                
+                if (!res.ok) throw new Error(`連線失敗 (${res.status}) - 請檢查 API Key 是否正確啟用`);
+                
+                const data = await res.json();
+                
+                // Step 2: Filter Models
+                // 優先尋找名稱包含 'flash' 或 'pro' 且支援 generateContent 的模型
+                const chatModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'));
+                
+                if (chatModels.length === 0) throw new Error("此 API Key 沒有權限存取任何對話模型");
+
+                // 優先順序: flash > pro > 其他
+                let bestModel = chatModels.find(m => m.name.includes('flash'));
+                if (!bestModel) bestModel = chatModels.find(m => m.name.includes('pro'));
+                if (!bestModel) bestModel = chatModels[0];
+
+                // Step 3: Save Model Name (e.g., "models/gemini-1.5-flash-001")
+                state.discoveredModel = bestModel.name;
+                
+                logEl.innerText = `✅ 成功! 將使用模型: ${bestModel.name}`;
+                statusEl.innerText = `Model: ${bestModel.name.replace('models/', '')}`;
+                logEl.classList.add('text-green-600');
+
+            } catch (e) {
+                console.error(e);
+                logEl.innerText = `❌ 錯誤: ${e.message}`;
+                statusEl.innerText = "Model: Error";
+                logEl.classList.add('text-red-600');
+                // Fallback (try generic if auto-detect fails, though unlikely to work if list failed)
+                state.discoveredModel = 'models/gemini-1.5-flash';
+            }
+        }
+
+        // --- UI FUNCTIONS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${tabId}`).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const active = btn.dataset.target === tabId;
+                btn.className = `nav-btn w-16 flex flex-col items-center gap-1 ${active ? 'text-ios-blue active-nav' : 'text-gray-400'}`;
+            });
+        }
+
+        function setLang(l) {
+            state.lang = l;
+            localStorage.setItem('ml_lang', l);
+            renderHome();
+        }
+
+        function setLevel(l) {
+            state.level = l;
+            localStorage.setItem('ml_level', l);
+            renderHome();
+        }
+
+        function renderHome() {
+            // Update Lang Buttons
+            document.querySelectorAll('.lang-btn').forEach(b => {
+                b.className = `flex-1 py-2 rounded-lg text-sm font-bold transition-all lang-btn ${b.dataset.lang === state.lang ? 'bg-white shadow-sm text-black' : 'text-gray-500'}`;
+            });
+
+            // Update Level Labels
+            const std = levelData[state.lang];
+            document.getElementById('sub-beg').innerText = std.beginner;
+            document.getElementById('sub-int').innerText = std.intermediate;
+            document.getElementById('sub-adv').innerText = std.advanced;
+            
+            // Highlight Level
+            ['beginner', 'intermediate', 'advanced'].forEach(lvl => {
+                const btn = document.getElementById(lvl === 'beginner' ? 'btn-beg' : lvl === 'intermediate' ? 'btn-int' : 'btn-adv');
+                if (state.level === lvl) {
+                    btn.classList.add('ring-2', 'ring-ios-blue', 'text-ios-blue');
+                    btn.classList.remove('text-gray-500');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-ios-blue', 'text-ios-blue');
+                }
+            });
+
+            // Scenarios
+            const list = document.getElementById('scenario-list');
+            list.innerHTML = '';
+            const data = scenarios[state.lang] || scenarios.en;
+            data.forEach(s => {
+                list.innerHTML += `
+                    <div onclick="openRoleModal('${s.id}')" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 active:bg-gray-50">
+                        <div class="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-ios-blue"><i class="fa-solid ${s.icon}"></i></div>
+                        <div class="flex-1">
+                            <h3 class="font-bold">${s.title}</h3>
+                            <div class="text-[10px] text-gray-500">You: ${s.user} | AI: ${s.ai}</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                    </div>
+                `;
+            });
+        }
+
+        // --- CHAT LOGIC ---
+        function startFreeChat() {
+            // Free Chat: No Roles, No Mission Words
+            document.getElementById('mission-bar').classList.add('hidden');
+            state.missionWords = [];
+            state.currentPrompt = `You are a helpful language tutor. Language: ${state.lang}. Level: ${state.level}. Do not roleplay, just chat naturally. Correct mistakes if made.`;
+            
+            switchTab('chat');
+            document.getElementById('chat-container').innerHTML = '';
+            addBubble('ai', `(Free Talk Mode) Hello! How can I help you practice ${state.lang.toUpperCase()} today?`);
+        }
+
+        function openRoleModal(id) {
+            const data = (scenarios[state.lang] || scenarios.en).find(s => s.id === id);
+            state.pendingScenario = data;
+            document.getElementById('modal-user-role').innerText = data.user;
+            document.getElementById('modal-ai-role').innerText = data.ai;
+            document.getElementById('role-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('role-modal').style.display = 'none';
+        }
+
+        function confirmStartChat() {
+            closeModal();
+            const s = state.pendingScenario;
+            
+            // Generate Mission Words (Mock)
+            const words = state.lang === 'en' ? ['Time', 'Please', 'Help'] : ['時間', 'お願いします', '助けて'];
+            document.getElementById('mission-words').innerHTML = words.map(w => `<span class="bg-white/50 px-1 rounded">${w}</span>`).join('');
+            document.getElementById('mission-bar').classList.remove('hidden');
+
+            state.currentPrompt = `Act as ${s.ai}. I am ${s.user}. Context: ${s.title}. Language: ${state.lang}. Level: ${state.level}.`;
+            
+            switchTab('chat');
+            document.getElementById('chat-container').innerHTML = '';
+            addBubble('ai', `(Roleplay: ${s.title}) *Eyes contact*`);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addBubble('user', text);
+            input.value = '';
+
+            const indicator = document.getElementById('typing-indicator');
+            indicator.classList.remove('hidden');
+
+            // CRITICAL: Ensure model is discovered
+            if (!state.discoveredModel) await findBestModel();
+
+            try {
+                // Use the dynamically discovered model name
+                const url = `https://generativelanguage.googleapis.com/v1beta/${state.discoveredModel}:generateContent?key=${state.apiKey}`;
+                
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: state.currentPrompt + `\nUser says: ${text}\n(Respond in JSON: {"reply": "...", "correction": null})` }] }],
+                    generationConfig: { response_mime_type: "application/json" }
+                };
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Goog-User-Project': state.projectId || '' }, // Project ID optional but sent if exists
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error(`API Error: ${res.status}`);
+
+                const data = await res.json();
+                const json = JSON.parse(data.candidates[0].content.parts[0].text);
+                
+                indicator.classList.add('hidden');
+                addBubble('ai', json.reply, json.correction);
+
+            } catch (e) {
+                indicator.classList.add('hidden');
+                addBubble('ai', `連線錯誤: ${e.message}。請檢查設定。`);
+            }
+        }
+
+        function addBubble(role, text, correction) {
+            const div = document.createElement('div');
+            div.className = `flex flex-col ${role === 'user' ? 'items-end' : 'items-start'}`;
+            div.innerHTML = `<div class="chat-bubble chat-${role}">${marked.parseInline(text)}</div>`;
+            document.getElementById('chat-container').appendChild(div);
+        }
+
+        function saveSettings() {
+            state.apiKey = document.getElementById('api-key').value;
+            state.projectId = document.getElementById('project-id').value;
+            localStorage.setItem('ml_api_key', state.apiKey);
+            localStorage.setItem('ml_project_id', state.projectId);
+            findBestModel(); // Trigger discovery immediately
+        }
+
+        // Init
+        document.getElementById('api-key').value = state.apiKey;
+        document.getElementById('project-id').value = state.projectId;
+        renderHome();
+        if (state.apiKey) findBestModel();
+
+    </script>
+</body>
+</html>
