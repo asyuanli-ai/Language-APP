@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>My Learning</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f2f2f7">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* iOS Base Styles */
+        :root {
+            --ios-bg: #f2f2f7;
+            --ios-card: #ffffff;
+            --ios-blue: #007aff;
+            --ios-nav-blur: rgba(255, 255, 255, 0.95);
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            background-color: var(--ios-bg);
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Page Logic */
+        .ios-page {
+            display: none;
+            padding-top: calc(var(--safe-top) + 60px);
+            padding-bottom: calc(var(--safe-bottom) + 80px);
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .ios-page.active-page {
+            display: block !important;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        /* Detail Page (Slide in from right) */
+        .detail-page {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--ios-bg);
+            z-index: 200; /* Higher than everything */
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            padding-top: calc(var(--safe-top) + 50px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-page.show {
+            transform: translateX(0);
+        }
+
+        /* Chat Specifics */
+        #page-chat.active-page {
+            padding-bottom: 0; 
+            overflow: hidden;
+            display: flex !important;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .ios-header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: calc(var(--safe-top) + 50px);
+            padding-top: var(--safe-top);
+            background: var(--ios-nav-blur);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 17px;
+            transition: all 0.3s;
+        }
+
+        .header-btn-left {
+            position: absolute;
+            left: 16px;
+            bottom: 12px;
+            color: var(--ios-blue);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-btn-right {
+            position: absolute;
+            right: 16px;
+            bottom: 12px;
+            color: var(--ios-blue);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Tab Bar */
+        .ios-tab-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: calc(var(--safe-bottom) + 55px);
+            padding-bottom: var(--safe-bottom);
+            background: var(--ios-nav-blur);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 50;
+            transition: transform 0.3s ease;
+        }
+        
+        body.chat-mode .ios-tab-bar { transform: translateY(100%); }
+
+        .tab-item {
+            color: #8e8e93;
+            font-size: 10px;
+            text-align: center;
+            flex: 1;
+        }
+        .tab-item.active { color: var(--ios-blue); }
+
+        /* Chat UI */
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 100px;
+            background-color: var(--ios-bg);
+        }
+
+        #chat-input-area {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(249, 249, 249, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 10px 16px;
+            padding-bottom: calc(var(--safe-bottom) + 10px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 70;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        body.chat-mode #chat-input-area { transform: translateY(0); }
+
+        .ios-card {
+            background: var(--ios-card);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .bubble-user {
+            background-color: var(--ios-blue);
+            color: white;
+            border-radius: 18px 18px 0 18px;
+            padding: 10px 14px;
+            max-width: 85%;
+            margin-left: auto;
+            margin-bottom: 12px;
+            font-size: 16px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .bubble-ai {
+            background-color: #e5e5ea;
+            color: black;
+            border-radius: 18px 18px 18px 0;
+            padding: 10px 14px;
+            max-width: 85%;
+            margin-right: auto;
+            margin-bottom: 12px;
+            font-size: 16px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .correction-box {
+            background-color: #fff8c4;
+            border-left: 4px solid #f59e0b;
+            padding: 8px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #4b3600;
+        }
+
+        /* Float Translate */
+        #float-translate-btn {
+            position: fixed;
+            background: #222;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        
+        /* Key Sentences Card */
+        .key-sentence-item {
+            background: #f0f7ff;
+            border-left: 3px solid #007aff;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <header class="ios-header">
+        <div id="header-back-btn" class="header-btn-left" style="display:none;" onclick="handleHeaderBack()">
+            <i class="fas fa-chevron-left"></i> <span id="back-text">返回</span>
+        </div>
+        
+        <span id="header-title">My Learning</span>
+        
+        <div id="audio-toggle" class="header-btn-right" style="display:none;" onclick="toggleAutoAudio()">
+            <span id="audio-icon"><i class="fas fa-volume-up"></i> 朗讀</span>
+        </div>
+        <div id="close-detail-btn" class="header-btn-right" style="display:none;" onclick="closeCourseDetail()">
+            <i class="fas fa-times text-lg"></i>
+        </div>
+    </header>
+
+    <div id="float-translate-btn"><i class="fas fa-language"></i> 翻譯並收藏</div>
+
+    <div id="page-home" class="ios-page active-page">
+        <div id="api-warning" class="ios-card bg-red-50 border border-red-100 hidden">
+            <h3 class="text-red-600 font-bold mb-1"><i class="fas fa-exclamation-triangle"></i> 尚未設定 API Key</h3>
+            <p class="text-xs text-red-500">請前往「設定」頁面輸入 Google Gemini API Key。</p>
+        </div>
+
+        <div class="ios-card">
+            <h2 class="text-lg font-bold mb-3">學習設定</h2>
+            
+            <label class="block text-sm text-gray-500 mb-1">目標語言</label>
+            <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
+                <button onclick="setLang('en')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm" data-lang="en">English</button>
+                <button onclick="setLang('jp')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
+                <button onclick="setLang('kr')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
+            </div>
+
+            <label class="block text-sm text-gray-500 mb-1">難易度</label>
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="setLevel('beginner')" class="level-btn py-2 border rounded-lg text-sm text-center active-level border-blue-500 bg-blue-50 text-blue-600" data-lvl="beginner">
+                    <div class="font-bold">初級</div>
+                    <div class="text-xs scale-75" id="lvl-desc-1">Survival</div>
+                </button>
+                <button onclick="setLevel('intermediate')" class="level-btn py-2 border rounded-lg text-sm text-center border-gray-200" data-lvl="intermediate">
+                    <div class="font-bold">中級</div>
+                    <div class="text-xs scale-75" id="lvl-desc-2">Life</div>
+                </button>
+                <button onclick="setLevel('advanced')" class="level-btn py-2 border rounded-lg text-sm text-center border-gray-200" data-lvl="advanced">
+                    <div class="font-bold">高級</div>
+                    <div class="text-xs scale-75" id="lvl-desc-3">Business</div>
+                </button>
+            </div>
+        </div>
+
+        <div class="px-4 mb-2 mt-6">
+            <h3 class="text-gray-500 text-sm font-bold uppercase">情境模擬 (AI Roleplay)</h3>
+        </div>
+        <div class="grid grid-cols-2 gap-4 px-4 pb-4" id="scenario-grid">
+            </div>
+        
+        <div class="px-4">
+             <div onclick="startChat('free')" class="ios-card m-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white flex items-center justify-between cursor-pointer shadow-lg active:scale-95 transition">
+                <div>
+                    <h3 class="font-bold">自由對話 (Free Talk)</h3>
+                    <p class="text-xs opacity-90">不限主題 • 隨機任務</p>
+                </div>
+                <i class="fas fa-comments text-2xl opacity-80"></i>
+             </div>
+        </div>
+    </div>
+
+    <div id="page-chat" class="ios-page">
+        <div class="bg-yellow-50 px-4 py-2 border-b border-yellow-100 flex justify-between items-center text-xs shadow-sm flex-none z-10" id="mission-bar">
+            <span class="font-bold text-yellow-800 mr-2 flex-none">Mission:</span>
+            <div id="mission-words" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
+        </div>
+        
+        <div id="chat-container">
+            <div class="text-center text-gray-400 text-xs mt-8">正在連線至 Gemini...</div>
+        </div>
+
+        <div id="chat-input-area">
+            <button id="mic-btn" class="w-9 h-9 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center transition-all active:scale-95 flex-none">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <input type="text" id="chat-input" class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-base focus:outline-none focus:border-blue-500" placeholder="輸入訊息..." autocomplete="off">
+            <button id="send-btn" class="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md active:scale-95 flex-none">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="page-learn" class="ios-page">
+        <div class="px-4 pt-2">
+            <div class="flex items-center gap-2 mb-4">
+                <h2 class="text-2xl font-bold">主題課程</h2>
+                <span id="course-level-badge" class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">LEVEL</span>
+            </div>
+            
+            <div id="learn-content">
+                </div>
+            
+            <div class="text-center text-xs text-gray-400 mt-6 pb-6">
+                完成對話練習可解鎖成就 (模擬)
+            </div>
+        </div>
+    </div>
+
+    <div id="page-course-detail" class="detail-page">
+        <div class="px-5 pb-20">
+            <div id="course-detail-body"></div>
+        </div>
+    </div>
+
+    <div id="page-vocab" class="ios-page">
+        <div class="px-4 pt-2">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">單字本</h2>
+                <button onclick="toggleQuizMode()" class="text-blue-500 text-sm font-bold bg-blue-50 px-3 py-1 rounded-full">
+                    <span id="quiz-btn-text">進入測驗模式</span>
+                </button>
+            </div>
+            <div id="vocab-list" class="space-y-3 pb-8"></div>
+        </div>
+    </div>
+
+    <div id="page-settings" class="ios-page">
+        <div class="px-4 pt-2">
+            <h2 class="text-2xl font-bold mb-4">設定</h2>
+            
+            <div class="ios-card m-0 mb-4">
+                <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase">API 連線</h3>
+                <input type="password" id="api-key-input" class="w-full bg-gray-100 rounded-lg p-3 text-sm mb-2" placeholder="貼上您的 API Key">
+                <button onclick="saveApiKey()" class="w-full bg-blue-500 text-white py-3 rounded-lg text-sm font-bold shadow">儲存金鑰</button>
+            </div>
+
+            <div class="ios-card m-0">
+                <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase">資料備份</h3>
+                <div class="flex gap-3">
+                    <button onclick="backupData()" class="flex-1 bg-gray-100 py-3 rounded-lg text-sm font-bold text-gray-800">匯出</button>
+                    <button onclick="document.getElementById('restore-file').click()" class="flex-1 bg-gray-100 py-3 rounded-lg text-sm font-bold text-gray-800">還原</button>
+                    <input type="file" id="restore-file" style="display:none" onchange="restoreData(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="ios-tab-bar">
+        <div class="tab-item active" onclick="switchPage('home', this)">
+            <i class="fas fa-home"></i> 首頁
+        </div>
+        <div class="tab-item" onclick="switchPage('learn', this)">
+            <i class="fas fa-book-open"></i> 課程
+        </div>
+        <div class="tab-item" onclick="switchPage('vocab', this)">
+            <i class="fas fa-star"></i> 單字
+        </div>
+        <div class="tab-item" onclick="switchPage('settings', this)">
+            <i class="fas fa-cog"></i> 設定
+        </div>
+    </nav>
+
+<script>
+/* =========================================
+   1. API LOGIC (Vercel Serverless Version)
+   ========================================= */
+// 改為呼叫 Vercel 後端 API，Key 藏在伺服器端
+async function callGemini(contents) {
+   // 這裡的路徑 '/api/chat' 對應你在 Vercel 專案下的 api/chat.js 檔案
+   const url = '/api/chat'; 
+   
+   try {
+       const response = await fetch(url, {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ contents })
+       });
+     
+       const data = await response.json();
+       
+       if (!response.ok) {
+           throw new Error(data.error || "Server Error");
+       }
+       
+       // 確保後端回傳的結構符合這個預期
+       return data.text; 
+   } catch (error) {
+       console.error("API Call Failed:", error);
+       throw error;
+   }
+}
+
+/* =========================================
+   2. APP DATA (Expanded Courses)
+   ========================================= */
+// Helper to create course objects
+function createCourse(id, title, desc, sentences, aiRole, userRole, context) {
+    return { id, title, desc, sentences, aiRole, userRole, context };
+}
+
+const APP_DATA = {
+    langs: {
+        en: { 
+            name: "English", 
+            levels: { beginner: "CEFR A1/A2", intermediate: "CEFR B1/B2", advanced: "CEFR C1" },
+            scenarios: [
+                { id: 'cafe', title: 'Coffee Shop', role: 'Barista', user: 'Customer', icon: 'fa-coffee' },
+                { id: 'interview', title: 'Job Interview', role: 'Interviewer', user: 'Applicant', icon: 'fa-user-tie' }
+            ]
+        },
+        jp: { 
+            name: "日本語", 
+            levels: { beginner: "JLPT N4/N5", intermediate: "JLPT N2/N3", advanced: "JLPT N1" },
+            scenarios: [
+                { id: 'izakaya', title: '居酒屋', role: '店員', user: '客', icon: 'fa-wine-glass' },
+                { id: 'konbini', title: '便利商店', role: '店員', user: '客', icon: 'fa-store' }
+            ]
+        },
+        kr: { 
+            name: "한국어", 
+            levels: { beginner: "TOPIK I", intermediate: "TOPIK II (Mid)", advanced: "TOPIK II (High)" },
+            scenarios: [
+                { id: 'market', title: '傳統市場', role: '阿姨', user: '顧客', icon: 'fa-shopping-basket' },
+                { id: 'taxi', title: '計程車', role: '司機', user: '乘客', icon: 'fa-taxi' }
+            ]
+        }
+    },
+    courses: {
+        en: {
+            beginner: [
+                createCourse(101, "Self Introduction", "Learn to introduce yourself naturally.", ["My name is...", "I am from...", "Nice to meet you"], "New Neighbor", "New Resident", "Meeting a new neighbor at the apartment lobby."),
+                createCourse(102, "Ordering Food", "Order your favorite meal.", ["I would like...", "How much is this?", "No spicy, please"], "Waiter", "Customer", "Ordering at a fast food restaurant."),
+                createCourse(103, "Asking Directions", "Never get lost again.", ["Where is the...", "Go straight", "Turn left"], "Police Officer", "Lost Tourist", "Asking for directions on the street."),
+                createCourse(104, "Checking into Hotel", "Hotel check-in essentials.", ["I have a reservation", "Breakfast included?", "What is the WiFi password?"], "Receptionist", "Guest", "Checking in at the front desk."),
+                createCourse(105, "Taking a Taxi", "Getting to your destination.", ["Please take me to...", "Stop here, please", "Keep the change"], "Taxi Driver", "Passenger", "In a taxi going to the airport.")
+            ],
+            intermediate: [
+                createCourse(201, "Job Interview", "Answer common interview questions.", ["My strength is...", "I have experience in...", "I am a team player"], "Hiring Manager", "Applicant", "Job interview for a marketing role."),
+                createCourse(202, "Doctor Visit", "Explain your symptoms.", ["I have a headache", "It hurts when I...", "Since yesterday"], "Doctor", "Patient", "Consulting a doctor at a clinic."),
+                createCourse(203, "Restaurant Complaint", "Politely solving food issues.", ["This is not what I ordered", "It is too cold", "Could you check the bill?"], "Manager", "Customer", "Complain politely about wrong food."),
+                createCourse(204, "Making Friends", "Small talk at a party.", ["How do you know the host?", "What do you do?", "Have you been here before?"], "Party Guest", "Guest", "Casual chat at a house party."),
+                createCourse(205, "Shopping for Clothes", "Finding the right size.", ["Do you have this in medium?", "Where is the fitting room?", "It fits perfectly"], "Shop Assistant", "Shopper", "Buying a jacket in a clothing store.")
+            ],
+            advanced: [
+                createCourse(301, "Business Negotiation", "Negotiating a deal.", ["We can offer...", "That is our bottom line", "Let's meet halfway"], "Client", "Sales Manager", "Negotiating a contract price."),
+                createCourse(302, "Presentation Q&A", "Handling tough questions.", ["That is a great question", "To elaborate on that...", "Data shows that..."], "Audience Member", "Presenter", "Q&A session after a product launch."),
+                createCourse(303, "Academic Discussion", "Debating current events.", ["I beg to differ", "From my perspective", "Evidence suggests"], "Professor", "Student", "Discussing climate change policies."),
+                createCourse(304, "Tech Support", "Solving technical issues.", ["Have you tried restarting?", "The system is down", "Troubleshoot the error"], "IT Support", "Employee", "Reporting a server crash."),
+                createCourse(305, "Networking", "Professional connection building.", ["I admire your work", "Here is my card", "Let's keep in touch"], "Industry Expert", "Attendee", "Networking at a tech conference.")
+            ]
+        },
+        jp: {
+            beginner: [
+                createCourse(401, "自己紹介 (Jikoshoukai)", "基本の挨拶と自己紹介。", ["はじめまして", "～から来ました", "よろしくお願いします"], "新しい同僚", "あなた", "会社の初日に挨拶をする。"),
+                createCourse(402, "コンビニ (Konbini)", "コンビニでの買い物。", ["これをお願いします", "温めてください", "袋はいりません"], "店員", "客", "コンビニでお弁当を買う。"),
+                createCourse(403, "道を尋ねる", "迷子になった時。", ["すみません、駅はどこですか", "歩いてどのくらいですか", "ありがとうございます"], "親切な通行人", "観光客", "道に迷って助けを求める。"),
+                createCourse(404, "注文 (Order)", "レストランでの注文。", ["これを二つください", "おすすめは何ですか", "お会計をお願いします"], "店員", "客", "居酒屋で注文する。"),
+                createCourse(405, "電車 (Train)", "電車の乗り方。", ["この電車は～に行きますか", "切符を失くしました", "乗り換えはどこですか"], "駅員", "乗客", "駅の改札口での会話。")
+            ],
+            intermediate: [
+                createCourse(501, "電話予約", "レストランの予約。", ["予約をしたいのですが", "三名です", "アレルギーがあります"], "店員", "客", "電話で席を予約する。"),
+                createCourse(502, "体調不良", "病院で症状を説明。", ["熱があります", "昨日から喉が痛いです", "薬はありますか"], "医者", "患者", "内科での診察。"),
+                createCourse(503, "買い物 (服)", "試着とサイズ確認。", ["試着してもいいですか", "少し大きいです", "違う色はありますか"], "店員", "客", "服屋でジーンズを探す。"),
+                createCourse(504, "友達とランチ", "近況報告。", ["久しぶり！元気？", "最近どう？", "また遊ぼう"], "旧友", "あなた", "カフェで友達と再会。"),
+                createCourse(505, "ホテルのトラブル", "部屋の問題を伝える。", ["お湯が出ません", "隣がうるさいです", "部屋を変えてください"], "フロント", "宿泊客", "ホテルの部屋からフロントに電話。")
+            ],
+            advanced: [
+                createCourse(601, "ビジネス敬語", "取引先への挨拶。", ["いつもお世話になっております", "ご足労いただき恐縮です", "今後ともよろしくお願いいたします"], "取引先", "営業担当", "名刺交換と挨拶。"),
+                createCourse(602, "会議での提案", "意見を述べる。", ["私は～と考えます", "具体的には...", "ご検討いただけますか"], "上司", "部下", "新プロジェクトの提案会議。"),
+                createCourse(603, "謝罪 (Apology)", "ミスの報告と謝罪。", ["申し訳ございません", "私の不手際です", "すぐに修正いたします"], "クライアント", "担当者", "納期の遅れを謝罪する。"),
+                createCourse(604, "ニュース議論", "社会問題について。", ["少子化についてどう思う？", "対策が必要だと思う", "経済への影響が心配だ"], "同僚", "あなた", "昼休みにニュースについて話す。"),
+                createCourse(605, "面接 (Interview)", "志望動機を話す。", ["御社の理念に共感しました", "私の強みは～です", "貢献できると思います"], "面接官", "応募者", "最終面接。")
+            ]
+        },
+        kr: {
+            beginner: [
+                createCourse(701, "자기소개 (Self Intro)", "이름과 국적 말하기.", ["안녕하세요", "저는 대만 사람입니다", "반갑습니다"], "한국 친구", "나", "언어 교환 모임에서 자기소개."),
+                createCourse(702, "식당 주문", "음식 주문하기.", ["이거 주세요", "덜 맵게 해주세요", "물 좀 주세요"], "종업원", "손님", "김밥천국에서 주문하기."),
+                createCourse(703, "길 묻기", "길 찾기.", ["실례합니다", "지하철역이 어디예요?", "멀어요?"], "행인", "여행객", "서울 길거리에서 길 묻기."),
+                createCourse(704, "쇼핑", "가격 묻고 깎기.", ["얼마예요?", "너무 비싸요", "좀 깎아주세요"], "시장 상인", "손님", "동대문 시장에서 옷 사기."),
+                createCourse(705, "택시", "목적지 말하기.", ["홍대입구로 가주세요", "여기서 세워주세요", "카드 돼요?"], "기사님", "승객", "택시 타고 이동하기.")
+            ],
+            intermediate: [
+                createCourse(801, "약국", "증상 설명하고 약 사기.", ["머리가 아파요", "소화제 주세요", "하루에 몇 번 먹어요?"], "약사", "손님", "약국에서 약 사기."),
+                createCourse(802, "호텔 체크인", "예약 확인.", ["예약했는데요", "조식 포함인가요?", "체크아웃은 몇 시예요?"], "호텔 직원", "투숙객", "호텔 프론트 데스크."),
+                createCourse(803, "친구 약속", "시간 정하기.", ["우리 언제 만날까?", "어디서 볼까?", "내가 거기로 갈게"], "친구", "나", "카톡으로 약속 잡기."),
+                createCourse(804, "미용실", "스타일 요청.", ["다듬어 주세요", "염색하고 싶어요", "앞머리는 자르지 마세요"], "미용사", "손님", "강남 미용실에서 머리하기."),
+                createCourse(805, "카페", "커피 주문 옵션.", ["아이스 아메리카노 주세요", "사이즈 업 해주세요", "가지고 갈게요"], "알바생", "손님", "카페에서 주문하기.")
+            ],
+            advanced: [
+                createCourse(901, "회사 회의", "의견 제시.", ["제 생각은 좀 다릅니다", "그 부분에 동의합니다", "결론적으로 말씀드리면..."], "팀장", "팀원", "주간 회의 시간."),
+                createCourse(902, "면접", "경력 소개.", ["저는 ~경험이 있습니다", "문제를 해결한 적이 있습니다", "입사하게 된다면..."], "면접관", "지원자", "대기업 면접."),
+                createCourse(903, "부동산", "집 구하기.", ["전세 대출 가능한가요?", "관리비는 얼마예요?", "남향인가요?"], "중개사", "세입자", "부동산에서 방 구하기."),
+                createCourse(904, "환불 요청", "논리적으로 따지기.", ["제품에 하자가 있습니다", "환불 규정을 확인했습니다", "매니저 불러주세요"], "고객센터", "고객", "전화로 환불 요청."),
+                createCourse(905, "토론", "문화 차이 이야기.", ["한국 문화의 특징은...", "대만과는 이런 점이 다릅니다", "이해하기 어렵네요"], "한국 동료", "나", "회식 자리에서 문화 토론.")
+            ]
+        }
+    }
+};
+
+let appState = {
+    lang: 'en',
+    level: 'beginner',
+    currentScenario: null, // object
+    courseMode: false, // NEW: Track if in course
+    chatHistory: [],
+    missionWords: [],
+    completedMissions: [],
+    vocabList: JSON.parse(localStorage.getItem('my_vocab') || '[]'),
+    autoAudio: true
+};
+
+/* =========================================
+   3. UI CONTROLLER
+   ========================================= */
+
+function init() {
+    const savedKey = localStorage.getItem('v21_key');
+    if(savedKey) {
+        document.getElementById('api-key-input').value = savedKey;
+    } else {
+        document.getElementById('api-warning').classList.remove('hidden');
+    }
+    renderHome();
+    updateLevelDesc();
+    renderVocab();
+}
+
+function switchPage(pageId, tabEl) {
+    document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
+    const target = document.getElementById('page-' + pageId);
+    if(target) target.classList.add('active-page');
+    
+    if(tabEl) {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+    }
+
+    if(pageId === 'home') renderHome();
+    if(pageId === 'learn') renderLearn();
+    
+    // Close detail if open
+    document.getElementById('page-course-detail').classList.remove('show');
+}
+
+// Header & Navigation Logic
+function handleHeaderBack() {
+    // If Course Detail is open, close it
+    const detailPage = document.getElementById('page-course-detail');
+    if (detailPage.classList.contains('show')) {
+        closeCourseDetail();
+        return;
+    }
+    // Otherwise, assume we are in chat mode
+    endChat();
+}
+
+function setLang(lang) {
+    appState.lang = lang;
+    document.querySelectorAll('.lang-btn').forEach(b => {
+        const isActive = b.dataset.lang === lang;
+        b.className = isActive 
+            ? 'lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black' 
+            : 'lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
+    });
+    updateLevelDesc();
+    renderHome();
+    renderLearn(); // Refresh courses if on learn page
+}
+
+function setLevel(lvl) {
+    appState.level = lvl;
+    document.querySelectorAll('.level-btn').forEach(b => {
+        if(b.dataset.lvl === lvl) {
+            b.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-600');
+            b.classList.remove('border-gray-200');
+        } else {
+            b.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600');
+            b.classList.add('border-gray-200');
+        }
+    });
+    updateLevelDesc();
+    renderLearn(); // Refresh courses
+}
+
+function updateLevelDesc() {
+    const config = APP_DATA.langs[appState.lang].levels;
+    document.getElementById('lvl-desc-1').innerText = config.beginner;
+    document.getElementById('lvl-desc-2').innerText = config.intermediate;
+    document.getElementById('lvl-desc-3').innerText = config.advanced;
+}
+
+function renderHome() {
+    const grid = document.getElementById('scenario-grid');
+    grid.innerHTML = '';
+    const scenarios = APP_DATA.langs[appState.lang].scenarios;
+    
+    scenarios.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'ios-card m-0 flex flex-col items-center justify-center py-6 cursor-pointer active:scale-95 transition bg-white';
+        div.onclick = () => startChat(s);
+        div.innerHTML = `
+            <i class="fas ${s.icon} text-3xl text-blue-500 mb-3"></i>
+            <span class="font-bold text-sm text-center text-gray-800">${s.title}</span>
+        `;
+        grid.appendChild(div);
+    });
+}
+
+// --- Course & Learn Logic (SPEAK App Style) ---
+function renderLearn() {
+    const content = document.getElementById('learn-content');
+    const badge = document.getElementById('course-level-badge');
+    
+    // Get correct course list based on Lang AND Level
+    const courses = APP_DATA.courses[appState.lang] ? APP_DATA.courses[appState.lang][appState.level] : [];
+    
+    badge.innerText = appState.level.toUpperCase();
+    content.innerHTML = '';
+    
+    if(!courses || courses.length === 0) {
+        content.innerHTML = '<div class="text-center text-gray-400 mt-10">此等級目前尚無課程資料</div>';
+        return;
+    }
+
+    courses.forEach(c => {
+        content.innerHTML += `
+            <div class="ios-card m-0 mb-4 border border-gray-100 active:scale-95 transition cursor-pointer relative overflow-hidden" onclick="openCourse(${c.id})">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+                <div class="flex flex-col gap-1 pl-2">
+                    <h3 class="font-bold text-lg text-gray-800">${c.title}</h3>
+                    <p class="text-gray-500 text-sm mb-2 line-clamp-1">${c.desc}</p>
+                    <div class="flex gap-2 mt-1">
+                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">3 個關鍵句</span>
+                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">AI 模擬演練</span>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
+            </div>
+        `;
+    });
+}
+
+function openCourse(courseId) {
+    const courses = APP_DATA.courses[appState.lang][appState.level];
+    const course = courses.find(c => c.id === courseId);
+    if(!course) return;
+
+    // Build Detail View
+    let sentencesHtml = '';
+    course.sentences.forEach(s => {
+        sentencesHtml += `<div class="key-sentence-item font-medium text-gray-800"><i class="fas fa-quote-left text-blue-300 text-xs mr-2"></i>${s}</div>`;
+    });
+
+    const html = `
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold mb-2">${course.title}</h1>
+            <p class="text-gray-500">${course.desc}</p>
+        </div>
+        
+        <div class="mb-6">
+            <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-star text-yellow-400"></i> 本課關鍵句 (Key Sentences)</h3>
+            <div class="space-y-2">
+                ${sentencesHtml}
+            </div>
+            <p class="text-xs text-gray-400 mt-2">請在接下來的對話練習中，嘗試使用這些句子。</p>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="font-bold text-gray-900 mb-3"><i class="fas fa-user-friends text-blue-500"></i> 模擬情境</h3>
+            <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700">
+                <div class="mb-2"><span class="font-bold text-gray-900">您的角色:</span> ${course.userRole}</div>
+                <div class="mb-2"><span class="font-bold text-gray-900">AI 角色:</span> ${course.aiRole}</div>
+                <div><span class="font-bold text-gray-900">情境:</span> ${course.context}</div>
+            </div>
+        </div>
+
+        <button onclick="startCourseChat(${courseId})" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
+            <i class="fas fa-microphone"></i> 開始口說練習
+        </button>
+        <div class="h-10"></div>
+    `;
+
+    document.getElementById('course-detail-body').innerHTML = html;
+    
+    // Header adjustments
+    document.getElementById('header-title').innerText = "課程詳情";
+    document.getElementById('header-back-btn').style.display = 'flex';
+    document.getElementById('back-text').innerText = "列表";
+    document.getElementById('close-detail-btn').style.display = 'block';
+    
+    // Show overlay
+    document.getElementById('page-course-detail').classList.add('show');
+}
+
+function closeCourseDetail() {
+    document.getElementById('page-course-detail').classList.remove('show');
+    // Reset Header
+    document.getElementById('header-title').innerText = "My Learning";
+    document.getElementById('header-back-btn').style.display = 'none';
+    document.getElementById('close-detail-btn').style.display = 'none';
+}
+
+/* =========================================
+   4. CHAT SYSTEM (Updated for Course Mode)
+   ========================================= */
+
+// Start Chat from Course
+function startCourseChat(courseId) {
+    if(!localStorage.getItem('v21_key')) {
+        alert("請先設定 API Key");
+        return;
+    }
+    
+    const courses = APP_DATA.courses[appState.lang][appState.level];
+    const course = courses.find(c => c.id === courseId);
+    
+    // Close detail page
+    document.getElementById('page-course-detail').classList.remove('show');
+    document.getElementById('close-detail-btn').style.display = 'none';
+
+    // Set State
+    appState.currentScenario = {
+        title: course.title,
+        role: course.aiRole,
+        user: course.userRole,
+        context: course.context // Special context
+    };
+    appState.courseMode = true; // Mark as course mode
+    appState.chatHistory = [];
+    appState.completedMissions = [];
+    appState.missionWords = course.sentences; // Mission = Course Sentences
+
+    // Switch UI
+    document.getElementById('header-title').innerText = "課程練習";
+    document.getElementById('header-back-btn').style.display = 'flex';
+    document.getElementById('back-text').innerText = "結束";
+    document.getElementById('audio-toggle').style.display = 'block';
+    
+    updateMissionUI();
+    
+    const container = document.getElementById('chat-container');
+    container.innerHTML = `<div class="text-center text-gray-400 text-xs mt-8 mb-4">
+        課程模式: ${course.title}<br>
+        目標: 使用關鍵句
+    </div>`;
+
+    document.body.classList.add('chat-mode');
+    document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
+    document.getElementById('page-chat').classList.add('active-page');
+
+    triggerAIResponse(true);
+}
+
+// Start Normal Chat
+function startChat(scenario) {
+    if(!localStorage.getItem('v21_key')) {
+        alert("請先設定 API Key");
+        switchPage('settings', document.querySelectorAll('.tab-item')[3]);
+        return;
+    }
+
+    appState.currentScenario = scenario;
+    appState.courseMode = false;
+    appState.chatHistory = [];
+    appState.completedMissions = [];
+    
+    // Free/Random Missions
+    const pool = ['Hello', 'Thank you', 'Please']; // Simplified fallback
+    appState.missionWords = pool; // Ideally fetch from DB based on level
+    
+    // UI Update
+    document.getElementById('header-title').innerText = scenario === 'free' ? "自由對話" : scenario.title;
+    document.getElementById('header-back-btn').style.display = 'flex';
+    document.getElementById('back-text').innerText = "結束";
+    document.getElementById('audio-toggle').style.display = 'block';
+    updateMissionUI();
+    
+    const container = document.getElementById('chat-container');
+    container.innerHTML = `<div class="text-center text-gray-400 text-xs mt-8 mb-4">
+        對話已就緒 (${APP_DATA.langs[appState.lang].name})
+    </div>`;
+
+    document.body.classList.add('chat-mode');
+    document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
+    document.getElementById('page-chat').classList.add('active-page');
+
+    triggerAIResponse(true);
+}
+
+function endChat() {
+    document.body.classList.remove('chat-mode');
+    document.getElementById('header-back-btn').style.display = 'none';
+    document.getElementById('audio-toggle').style.display = 'none';
+    document.getElementById('header-title').innerText = "My Learning";
+    window.speechSynthesis.cancel();
+    
+    // Return logic: if was course, go to learn, else home
+    if(appState.courseMode) {
+        switchPage('learn', document.querySelectorAll('.tab-item')[1]);
+    } else {
+        switchPage('home', document.querySelectorAll('.tab-item')[0]);
+    }
+}
+
+function updateMissionUI() {
+    const container = document.getElementById('mission-words');
+    container.innerHTML = '';
+    appState.missionWords.forEach(word => {
+        const isDone = appState.completedMissions.some(m => word.toLowerCase().includes(m.toLowerCase()) || m.toLowerCase().includes(word.toLowerCase()));
+        const span = document.createElement('span');
+        // Handle long sentences in course mode
+        const displayWord = word.length > 15 ? word.substring(0, 12) + "..." : word;
+        
+        span.className = `flex-none px-2 py-1 rounded border text-xs whitespace-nowrap transition-all ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-600'}`;
+        span.innerHTML = isDone ? `<i class="fas fa-check mr-1"></i>${displayWord}` : displayWord;
+        container.appendChild(span);
+    });
+}
+
+// Audio Toggle
+function toggleAutoAudio() {
+    appState.autoAudio = !appState.autoAudio;
+    const btn = document.getElementById('audio-icon');
+    if(appState.autoAudio) {
+        btn.innerHTML = '<i class="fas fa-volume-up"></i> 朗讀';
+        btn.classList.remove('opacity-50');
+    } else {
+        btn.innerHTML = '<i class="fas fa-volume-mute"></i> 靜音';
+        btn.classList.add('opacity-50');
+    }
+}
+
+// Chat Send Logic
+async function handleUserSend() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if(!text) return;
+    
+    window.speechSynthesis.cancel();
+    input.value = '';
+    
+    // Fuzzy match for sentences
+    appState.missionWords.forEach(target => {
+        // Very basic check: does user text contain significant part of target?
+        // For demo: simple includes check
+        if(text.toLowerCase().includes(target.toLowerCase()) || target.toLowerCase().includes(text.toLowerCase())) {
+           if(!appState.completedMissions.includes(target)) appState.completedMissions.push(target);
+        }
+    });
+    updateMissionUI();
+
+    addBubble(text, 'user');
+    await triggerAIResponse(false, text);
+}
+
+document.getElementById('send-btn').addEventListener('click', handleUserSend);
+document.getElementById('chat-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleUserSend(); });
+
+function addBubble(text, type, correction = null) {
+    const container = document.getElementById('chat-container');
+    const div = document.createElement('div');
+    div.className = type === 'user' ? 'bubble-user' : 'bubble-ai';
+    
+    let html = '';
+    if (correction) {
+        html += `<div class="correction-box">
+            <div class="font-bold flex items-center gap-1"><i class="fas fa-magic"></i> 優化建議</div>
+            <div class="text-gray-800">${correction.correction}</div>
+            <div class="text-[11px] mt-1 opacity-80 border-t border-yellow-300 pt-1">${correction.reason}</div>
+        </div>`;
+    }
+    html += `<div>${text}</div>`;
+    
+    if(type === 'ai') {
+        const cleanText = text.replace(/"/g, "&quot;");
+        html += `<div onclick="speakText(this.nextElementSibling.innerText)" class="absolute -left-10 bottom-0 text-gray-400 p-2 cursor-pointer"><i class="fas fa-volume-up"></i></div><div style="display:none">${cleanText}</div>`;
+    }
+
+    div.innerHTML = html;
+    container.appendChild(div);
+    setTimeout(() => { container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }); }, 100);
+}
+
+async function triggerAIResponse(isInit, userText) {
+    const container = document.getElementById('chat-container');
+    const loaderId = 'loader-' + Date.now();
+    
+    if(!isInit) {
+        const loader = document.createElement('div');
+        loader.id = loaderId;
+        loader.className = 'bubble-ai';
+        loader.innerHTML = '<div class="flex gap-1"><span class="animate-bounce">●</span><span class="animate-bounce" style="animation-delay:0.1s">●</span><span class="animate-bounce" style="animation-delay:0.2s">●</span></div>';
+        container.appendChild(loader);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    try {
+        let contents = [];
+        let sysPrompt = "";
+        const langName = APP_DATA.langs[appState.lang].name;
+
+        if (appState.courseMode) {
+             sysPrompt = `
+             System: Roleplay for Language Learning (${langName}). Level: ${appState.level}.
+             Scenario: ${appState.currentScenario.context}
+             Your Role: ${appState.currentScenario.role}
+             User Role: ${appState.currentScenario.user}
+             Goal: Help user practice these sentences: ${appState.missionWords.join(', ')}.
+             
+             Instructions:
+             1. Stay in character.
+             2. Be encouraging.
+             3. If user makes grammar mistake, start with JSON {"correction": "...", "reason": "..."}.
+             4. Keep replies concise.
+             `;
+        } else {
+             // Normal Mode
+             const scenarioInfo = appState.currentScenario === 'free' 
+                ? "Mode: Free Talk." 
+                : `Scenario: ${appState.currentScenario.title}. Role: ${appState.currentScenario.role}.`;
+             sysPrompt = `System: Tutor for ${langName}. Level: ${appState.level}. ${scenarioInfo}. If mistake, JSON {"correction":...}.`;
+        }
+
+        contents.push({ role: "user", parts: [{ text: sysPrompt }] });
+        appState.chatHistory.slice(-6).forEach(msg => {
+            contents.push({ role: msg.role, parts: [{ text: msg.text }] });
+        });
+
+        if(!isInit) {
+            contents.push({ role: "user", parts: [{ text: userText }] });
+            appState.chatHistory.push({ role: "user", text: userText });
+        } else {
+            contents.push({ role: "user", parts: [{ text: "Start the conversation naturally based on the scenario." }] });
+        }
+
+        const rawText = await callGemini(contents);
+        
+        const loader = document.getElementById(loaderId);
+        if(loader) loader.remove();
+
+        let replyText = rawText;
+        let correctionData = null;
+        const jsonMatch = rawText.match(/\{[\s\S]*"correction"[\s\S]*\}/);
+        if(jsonMatch) {
+            try {
+                correctionData = JSON.parse(jsonMatch[0]);
+                replyText = rawText.replace(jsonMatch[0], '').trim();
+            } catch(e) {}
+        }
+
+        addBubble(replyText, 'ai', correctionData);
+        appState.chatHistory.push({ role: "model", text: rawText });
+
+        if(appState.autoAudio && replyText) speakText(replyText);
+
+    } catch (err) {
+        const loader = document.getElementById(loaderId);
+        if(loader) loader.remove();
+        if(!isInit) alert("Error: " + err.message);
+    }
+}
+
+// --- UTILS ---
+function speakText(text) {
+    if(!text) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const map = { 'en': 'en-US', 'jp': 'ja-JP', 'kr': 'ko-KR' };
+    u.lang = map[appState.lang];
+    u.rate = 0.9; 
+    window.speechSynthesis.speak(u);
+}
+
+// STT
+const micBtn = document.getElementById('mic-btn');
+if ('webkitSpeechRecognition' in window) {
+    const recognition = new webkitSpeechRecognition();
+    recognition.continuous = false;
+    micBtn.onclick = () => {
+        if(micBtn.classList.contains('recording')) {
+            recognition.stop();
+        } else {
+            const map = { 'en': 'en-US', 'jp': 'ja-JP', 'kr': 'ko-KR' };
+            recognition.lang = map[appState.lang];
+            recognition.start();
+            micBtn.classList.add('recording', 'bg-red-500', 'text-white');
+            micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        }
+    };
+    recognition.onresult = (e) => {
+        document.getElementById('chat-input').value = e.results[0][0].transcript;
+        micBtn.classList.remove('recording', 'bg-red-500', 'text-white');
+        micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    };
+    recognition.onend = () => {
+        micBtn.classList.remove('recording', 'bg-red-500', 'text-white');
+        micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    };
+} else { micBtn.style.display = 'none'; }
+
+// Vocab Quiz Toggle
+let isQuizMode = false;
+function toggleQuizMode() {
+    isQuizMode = !isQuizMode;
+    const btnText = document.getElementById('quiz-btn-text');
+    const list = document.getElementById('vocab-list');
+    
+    if(isQuizMode) {
+        btnText.innerText = "退出測驗";
+        // Simple Quiz Mode: Blur Translations
+        const items = document.querySelectorAll('.vocab-trans');
+        items.forEach(el => {
+            el.classList.add('blur-md', 'bg-gray-200', 'cursor-pointer');
+            el.onclick = () => el.classList.remove('blur-md', 'bg-gray-200');
+        });
+        alert("測驗模式開啟：\n點擊模糊區塊以查看答案");
+    } else {
+        btnText.innerText = "進入測驗模式";
+        renderVocab(); // Reset view
+    }
+}
+
+// General Vocab Render
+function renderVocab() {
+    const list = document.getElementById('vocab-list');
+    if(!appState.vocabList.length) {
+        list.innerHTML = '<div class="text-center text-gray-400 mt-10">尚無單字</div>';
+        return;
+    }
+    list.innerHTML = '';
+    appState.vocabList.forEach(v => {
+        list.innerHTML += `
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div>
+                <div class="font-bold text-lg text-gray-800">${v.word}</div>
+                <div class="text-gray-500 text-sm vocab-trans transition">${v.trans}</div>
+            </div>
+            <button onclick="delVocab(${v.id})" class="text-gray-300 hover:text-red-500 px-2"><i class="fas fa-times"></i></button>
+        </div>`;
+    });
+}
+function delVocab(id) {
+    appState.vocabList = appState.vocabList.filter(v => v.id !== id);
+    localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
+    renderVocab();
+}
+
+// Selection Translate
+document.addEventListener('selectionchange', () => {
+    const sel = window.getSelection();
+    const btn = document.getElementById('float-translate-btn');
+    const chatPage = document.getElementById('page-chat');
+    
+    if (sel.toString().trim().length > 0 && chatPage.classList.contains('active-page')) {
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        btn.style.display = 'block';
+        btn.style.top = (rect.top - 45) + 'px';
+        btn.style.left = (rect.left + (rect.width/2) - 60) + 'px';
+        
+        btn.onclick = async (e) => {
+            e.stopPropagation();
+            const text = sel.toString();
+            btn.style.display = 'none';
+            sel.removeAllRanges();
+            
+            const id = Date.now();
+            appState.vocabList.unshift({ id, word: text, trans: "翻譯中...", lang: appState.lang });
+            renderVocab();
+            
+            try {
+                const res = await callGemini([{ role: "user", parts: [{ text: `Translate "${text}" to Traditional Chinese. Just output translation.` }] }]);
+                const item = appState.vocabList.find(i => i.id === id);
+                if(item) {
+                    item.trans = res.trim();
+                    localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
+                    renderVocab();
+                }
+            } catch(e) {}
+        };
+    } else {
+        btn.style.display = 'none';
+    }
+});
+
+function saveApiKey() {
+    const key = document.getElementById('api-key-input').value.trim();
+    if(key) { localStorage.setItem('v21_key', key); alert("API Key 已儲存"); location.reload(); }
+}
+function backupData() {
+    const data = { key: localStorage.getItem('v21_key'), vocab: appState.vocabList };
+    const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = "mylearning_backup.json";
+    a.click();
+}
+function restoreData(input) {
+    const file = input.files[0];
+    if(!file) return;
+    const r = new FileReader();
+    r.onload = (e) => {
+        try {
+            const d = JSON.parse(e.target.result);
+            if(d.key) localStorage.setItem('v21_key', d.key);
+            if(d.vocab) localStorage.setItem('my_vocab', JSON.stringify(d.vocab));
+            alert("還原成功！");
+            location.reload();
+        } catch(err) {}
+    };
+    r.readAsText(file);
+}
+
+init();
+</script>
+</body>
+</html>
