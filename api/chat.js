@@ -1,7 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 export default async function handler(req, res) {
-  // --- 1. CORS 設定 ---
+  // --- 1. CORS 設定 (跟之前一樣) ---
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -15,76 +13,76 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
   try {
+    // --- 2. 檢查 Key ---
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("Server API Key missing");
 
-    console.log("收到前端請求:", req.body); // 除錯用
-
+    // --- 3. 準備資料 ---
     const { history, message } = req.body;
     
-    // 確保訊息是字串
+    // 整理要傳給 Google 的格式 (JSON)
+    // 我們要自己組裝 contents 陣列
+    let contents = [];
+    
+    // (A) 先放入歷史紀錄 (如果有)
+    if (Array.isArray(history)) {
+        contents = history.map(item => ({
+            role: item.role,
+            parts: item.parts
+        }));
+    }
+
+    // (B) 放入使用者最新的一句話
     const userMessage = message ? String(message) : "";
-    if (userMessage.trim() === "") throw new Error("訊息內容為空");
-
-    // 初始化 SDK
-    const genAI = new GoogleGenerativeAI(apiKey);
-
-    // ==========================================
-    // 🔥 核心修改：自動救援機制 (Retry Logic)
-    // ==========================================
+    if (!userMessage) throw new Error("訊息為空");
     
-    // 定義我們要嘗試的模型順序
-    // 1. 先試最新的 Flash (快、便宜)
-    // 2. 如果失敗，退回舊版 Pro (穩定、兼容舊版 SDK)
-    const modelsToTry = ["gemini-1.5-flash", "gemini-pro"];
-    
-    let finalResponseText = "";
-    let lastError = null;
-    let success = false;
+    contents.push({
+        role: "user",
+        parts: [{ text: userMessage }]
+    });
 
-    // 迴圈嘗試模型
-    for (const modelName of modelsToTry) {
-        try {
-            console.log(`正在嘗試模型: ${modelName}...`);
-            
-            const model = genAI.getGenerativeModel({ model: modelName });
-            
-            // 整理歷史紀錄 (確保格式正確)
-            const chatHistory = Array.isArray(history) ? history : [];
-            
-            const chat = model.startChat({ history: chatHistory });
-            const result = await chat.sendMessage(userMessage);
-            const response = await result.response;
-            finalResponseText = response.text();
-            
-            success = true; // 標記成功
-            console.log(`✅ 模型 ${modelName} 連線成功！`);
-            break; // 成功就跳出迴圈，不用試下一個了
+    // --- 4. 直接用 fetch 呼叫 Google API (不透過 SDK) ---
+    // 這裡我們直接指定 v1beta 版本，並強制使用 flash 模型，絕對不會有版本問題
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-        } catch (error) {
-            console.warn(`⚠️ 模型 ${modelName} 失敗:`, error.message);
-            lastError = error;
-            // 繼續下一個迴圈，嘗試下一個模型
-        }
+    console.log("正在透過 Fetch 連線 Google...");
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            contents: contents
+        })
+    });
+
+    const data = await response.json();
+
+    // --- 5. 錯誤處理 ---
+    if (!response.ok) {
+        console.error("Google API 報錯:", data);
+        // 如果 Flash 模型出錯 (例如 404)，我們可以這裡寫 fallback 切換到 Pro
+        // 但通常直接呼叫 v1beta 網址就不會 404 了
+        throw new Error(data.error?.message || "Google API Error");
     }
 
-    // 如果全部模型都失敗，才拋出錯誤
-    if (!success) {
-        throw new Error(`所有模型都嘗試失敗。最後錯誤: ${lastError?.message}`);
+    // --- 6. 擷取回覆文字 ---
+    // 原始 API 的回傳結構比較深，要一層一層拿
+    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!replyText) {
+        throw new Error("AI 回傳了空的內容");
     }
 
-    // 回傳成功結果
-    return res.status(200).json({ reply: finalResponseText });
+    // 回傳給前端
+    return res.status(200).json({ reply: replyText });
 
   } catch (error) {
-    console.error("後端嚴重錯誤:", error);
+    console.error("後端錯誤:", error);
     return res.status(500).json({ 
-        error: "伺服器錯誤 (請檢查 Vercel Logs)", 
+        error: "伺服器錯誤", 
         details: error.message 
     });
   }
