@@ -401,27 +401,59 @@ async function callGemini(contents) {
    // 這裡的路徑 '/api/chat' 對應你在 Vercel 專案下的 api/chat.js 檔案
    const url = '/api/chat'; 
    
+   // --- 資料格式轉換 (關鍵步驟) ---
+   // 我們的後端需要把「最新訊息」跟「歷史紀錄」分開
+   let messageToSend = "";
+   let historyToSend = [];
+
+   // 判斷傳進來的 contents 是陣列(有歷史) 還是 純文字
+   if (Array.isArray(contents) && contents.length > 0) {
+       // 1. 抓出最後一則訊息 (使用者剛輸入的)
+       const lastItem = contents[contents.length - 1];
+       // 確保結構正確 (Google SDK 格式通常是 parts[0].text)
+       if (lastItem.parts && lastItem.parts[0]) {
+           messageToSend = lastItem.parts[0].text;
+       } else {
+           messageToSend = JSON.stringify(lastItem); // 預防格式不對
+       }
+
+       // 2. 剩下的部分當作歷史紀錄
+       historyToSend = contents.slice(0, -1);
+   } else {
+       // 如果 contents 本身就是字串
+       messageToSend = String(contents);
+   }
+
    try {
        const response = await fetch(url, {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ contents })
+           // 這裡要配合後端 api/chat.js 要求的變數名稱 (message, history)
+           body: JSON.stringify({ 
+               message: messageToSend,
+               history: historyToSend
+           })
        });
      
        const data = await response.json();
        
        if (!response.ok) {
-           throw new Error(data.error || "Server Error");
+           // 把後端傳回來的詳細錯誤印出來，方便除錯
+           throw new Error(data.error || data.details || "Server Error");
        }
        
-       // 確保後端回傳的結構符合這個預期
-       return data.text; 
+       // --- 接收變數名稱修改 ---
+       // 我給你的後端 (api/chat.js) 回傳的是 { reply: ... }
+       // 所以這裡要用 data.reply，而不是 data.text
+       return data.reply; 
+
    } catch (error) {
        console.error("API Call Failed:", error);
+       // 可以在這裡加一個 alert 讓手機版測試時看得到錯誤
+       alert("連線錯誤: " + error.message);
        throw error;
    }
 }
-
 /* =========================================
    2. APP DATA (Expanded Courses)
    ========================================= */
@@ -1147,4 +1179,5 @@ function restoreData(input) {
 init();
 </script>
 </body>
+
 </html>
