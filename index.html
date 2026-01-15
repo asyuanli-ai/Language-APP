@@ -136,12 +136,14 @@
         .tab-item.active { color: var(--ios-blue); }
 
         /* Chat UI */
-        #chat-container {
+       #chat-container {
             flex: 1;
             overflow-y: auto;
             padding: 16px;
-            padding-bottom: 100px;
+            /* 修正：加大底部留白至 180px，防止被輸入框擋住 */
+            padding-bottom: 180px; 
             background-color: var(--ios-bg);
+            scroll-behavior: smooth; 
         }
 
         #chat-input-area {
@@ -230,6 +232,31 @@
         }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* === 新增：單字卡測驗專用樣式 === */
+        .flashcard {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            margin-top: 40px;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .flashcard:active {
+            transform: scale(0.98);
+        }
+        .flashcard.revealed {
+            border-color: var(--ios-blue);
+            background-color: #f0f9ff;
+        }
     </style>
 </head>
 <body>
@@ -1110,47 +1137,140 @@ if ('webkitSpeechRecognition' in window) {
 } else { micBtn.style.display = 'none'; }
 
 // Vocab Quiz Toggle
-let isQuizMode = false;
+/* =========================================
+   Vocab & Quiz Logic (Updated)
+   ========================================= */
+
+// 新增測驗相關狀態
+appState.quizIndex = 0;
+appState.quizRevealed = false;
+
+// 切換測驗模式
 function toggleQuizMode() {
+    // 檢查是否有單字
+    if(appState.vocabList.length === 0) {
+        alert("單字本是空的，請先去對話中收藏單字！");
+        return;
+    }
+
     isQuizMode = !isQuizMode;
     const btnText = document.getElementById('quiz-btn-text');
-    const list = document.getElementById('vocab-list');
     
     if(isQuizMode) {
+        // 進入測驗模式
         btnText.innerText = "退出測驗";
-        // Simple Quiz Mode: Blur Translations
-        const items = document.querySelectorAll('.vocab-trans');
-        items.forEach(el => {
-            el.classList.add('blur-md', 'bg-gray-200', 'cursor-pointer');
-            el.onclick = () => el.classList.remove('blur-md', 'bg-gray-200');
-        });
-        alert("測驗模式開啟：\n點擊模糊區塊以查看答案");
+        appState.quizIndex = 0;
+        appState.quizRevealed = false;
+        // 打亂單字順序 (Shuffle)
+        appState.shuffledVocab = [...appState.vocabList].sort(() => 0.5 - Math.random());
+        renderQuizCard();
     } else {
+        // 回到列表模式
         btnText.innerText = "進入測驗模式";
-        renderVocab(); // Reset view
+        renderVocab();
     }
 }
 
-// General Vocab Render
+// 渲染單字卡 (Flashcard UI)
+function renderQuizCard() {
+    const list = document.getElementById('vocab-list');
+    
+    // 檢查是否測驗結束
+    if(appState.quizIndex >= appState.shuffledVocab.length) {
+        list.innerHTML = `
+        <div class="text-center mt-10">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-xl font-bold mb-2">測驗完成！</h3>
+            <p class="text-gray-500 mb-6">你複習了 ${appState.shuffledVocab.length} 個單字</p>
+            <button onclick="toggleQuizMode()" class="bg-blue-500 text-white px-6 py-3 rounded-full font-bold shadow-lg">回到單字本</button>
+        </div>`;
+        return;
+    }
+
+    const item = appState.shuffledVocab[appState.quizIndex];
+    const currentCount = appState.quizIndex + 1;
+    const totalCount = appState.shuffledVocab.length;
+
+    // 根據是否揭曉答案 (Revealed) 決定顯示內容
+    // 狀態 1: 未揭曉 -> 顯示單字 + "點擊看答案"
+    // 狀態 2: 已揭曉 -> 顯示單字 + 翻譯 + "點擊下一張"
+    
+    let contentHtml = '';
+    let hintHtml = '';
+
+    if (!appState.quizRevealed) {
+        // 正面：只顯示單字
+        contentHtml = `<div class="text-4xl font-bold text-gray-800 mb-2">${item.word}</div>`;
+        hintHtml = `<div class="text-gray-400 text-sm mt-8 animate-pulse">👆 點擊查看答案</div>`;
+    } else {
+        // 背面：顯示單字 + 答案
+        contentHtml = `
+            <div class="text-2xl font-bold text-gray-500 mb-4">${item.word}</div>
+            <div class="text-3xl font-bold text-blue-600">${item.trans}</div>
+        `;
+        hintHtml = `<div class="text-blue-400 text-sm mt-8 font-bold">👆 點擊下一張</div>`;
+    }
+
+    list.innerHTML = `
+        <div class="flex justify-between text-xs text-gray-400 px-2 mb-2">
+            <span>Progress</span>
+            <span>${currentCount} / ${totalCount}</span>
+        </div>
+        <div class="w-full bg-gray-200 h-1.5 rounded-full mb-6">
+            <div class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: ${(currentCount/totalCount)*100}%"></div>
+        </div>
+
+        <div class="flashcard ${appState.quizRevealed ? 'revealed' : ''}" onclick="handleCardClick()">
+            ${contentHtml}
+            ${hintHtml}
+        </div>
+    `;
+}
+
+// 卡片點擊邏輯
+function handleCardClick() {
+    if (!appState.quizRevealed) {
+        // 動作 1: 翻牌 (顯示答案)
+        appState.quizRevealed = true;
+        
+        // 播放語音 (可選，增強記憶)
+        const item = appState.shuffledVocab[appState.quizIndex];
+        speakText(item.word);
+        
+        renderQuizCard();
+    } else {
+        // 動作 2: 下一張
+        appState.quizIndex++;
+        appState.quizRevealed = false;
+        renderQuizCard();
+    }
+}
+
+// 一般列表渲染 (保持不變，但放在一起方便管理)
 function renderVocab() {
+    // 如果正在測驗模式，不要渲染列表
+    if(isQuizMode) return;
+
     const list = document.getElementById('vocab-list');
     if(!appState.vocabList.length) {
-        list.innerHTML = '<div class="text-center text-gray-400 mt-10">尚無單字</div>';
+        list.innerHTML = '<div class="text-center text-gray-400 mt-10">尚無單字<br>請在對話中長按文字進行收藏</div>';
         return;
     }
     list.innerHTML = '';
     appState.vocabList.forEach(v => {
         list.innerHTML += `
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center relative">
             <div>
                 <div class="font-bold text-lg text-gray-800">${v.word}</div>
-                <div class="text-gray-500 text-sm vocab-trans transition">${v.trans}</div>
+                <div class="text-gray-500 text-sm mt-1">${v.trans}</div>
             </div>
-            <button onclick="delVocab(${v.id})" class="text-gray-300 hover:text-red-500 px-2"><i class="fas fa-times"></i></button>
+            <button onclick="delVocab(${v.id})" class="text-gray-300 hover:text-red-500 px-4 py-2"><i class="fas fa-trash"></i></button>
         </div>`;
     });
 }
+
 function delVocab(id) {
+    if(!confirm("確定要刪除這個單字嗎？")) return;
     appState.vocabList = appState.vocabList.filter(v => v.id !== id);
     localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
     renderVocab();
