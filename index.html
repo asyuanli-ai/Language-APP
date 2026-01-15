@@ -937,12 +937,18 @@ async function handleUserSend() {
     window.speechSynthesis.cancel();
     input.value = '';
     
-    // Fuzzy match for sentences
+    // === 修正任務判定邏輯 (模糊比對) ===
+    // 移除標點符號並轉小寫，增加辨識成功率
+    const cleanInput = text.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+    
     appState.missionWords.forEach(target => {
-        // Very basic check: does user text contain significant part of target?
-        // For demo: simple includes check
-        if(text.toLowerCase().includes(target.toLowerCase()) || target.toLowerCase().includes(text.toLowerCase())) {
-           if(!appState.completedMissions.includes(target)) appState.completedMissions.push(target);
+        const cleanTarget = target.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+        
+        // 只要句子包含關鍵字，或是關鍵字包含句子(針對短語)，都算過關
+        if(cleanInput.includes(cleanTarget) || cleanTarget.includes(cleanInput)) {
+           if(!appState.completedMissions.includes(target)) {
+               appState.completedMissions.push(target);
+           }
         }
     });
     updateMissionUI();
@@ -976,7 +982,14 @@ function addBubble(text, type, correction = null) {
 
     div.innerHTML = html;
     container.appendChild(div);
-    setTimeout(() => { container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }); }, 100);
+    
+    // === 修正捲動邏輯 ===
+    // 使用 requestAnimationFrame 確保畫面渲染完才捲動
+    requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight;
+    });
+    // 雙重保險，防止圖片載入造成的高度變化
+    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
 }
 
 async function triggerAIResponse(isInit, userText) {
@@ -1144,42 +1157,64 @@ function delVocab(id) {
 }
 
 // Selection Translate
+// === 修正選取翻譯邏輯 ===
 document.addEventListener('selectionchange', () => {
     const sel = window.getSelection();
     const btn = document.getElementById('float-translate-btn');
     const chatPage = document.getElementById('page-chat');
     
+    // 只有在聊天頁面且有選取文字時才顯示
     if (sel.toString().trim().length > 0 && chatPage.classList.contains('active-page')) {
-        const range = sel.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
+        // 改為固定位置顯示在頂部，避免被手機原生選單遮擋
         btn.style.display = 'block';
-        btn.style.top = (rect.top - 45) + 'px';
-        btn.style.left = (rect.left + (rect.width/2) - 60) + 'px';
+        btn.style.top = '100px'; // 固定在 Header 下方
+        btn.style.left = '50%';
+        btn.style.transform = 'translateX(-50%)';
+        btn.style.zIndex = '9999'; // 確保最上層
         
-        btn.onclick = async (e) => {
+        // 使用 onmousedown 防止點擊時失去焦點導致選取消失
+        btn.onmousedown = async (e) => {
+            e.preventDefault(); // 關鍵：防止按鈕點擊取消了文字選取
             e.stopPropagation();
+            
             const text = sel.toString();
             btn.style.display = 'none';
-            sel.removeAllRanges();
+            sel.removeAllRanges(); // 翻譯後取消選取
             
-            const id = Date.now();
-            appState.vocabList.unshift({ id, word: text, trans: "翻譯中...", lang: appState.lang });
-            renderVocab();
-            
-            try {
-                const res = await callGemini([{ role: "user", parts: [{ text: `Translate "${text}" to Traditional Chinese. Just output translation.` }] }]);
-                const item = appState.vocabList.find(i => i.id === id);
-                if(item) {
-                    item.trans = res.trim();
-                    localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
-                    renderVocab();
-                }
-            } catch(e) {}
+            await doTranslate(text);
         };
     } else {
         btn.style.display = 'none';
     }
 });
+
+async function doTranslate(text) {
+    const id = Date.now();
+    // 先顯示載入中狀態
+    appState.vocabList.unshift({ id, word: text, trans: "翻譯中...", lang: appState.lang });
+    renderVocab();
+    
+    try {
+        // 呼叫 API (這裡會使用你剛改好的 Vercel 連線版 callGemini)
+        const res = await callGemini([{ role: "user", parts: [{ text: `Translate "${text}" to Traditional Chinese. Just output translation.` }] }]);
+        
+        // 更新結果
+        const item = appState.vocabList.find(i => i.id === id);
+        if(item) {
+            item.trans = res.trim();
+            localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
+            renderVocab();
+            // 簡單提示
+            alert(`已收藏：\n${text}\n⬇\n${res.trim()}`);
+        }
+    } catch(e) {
+        console.error(e);
+        alert("翻譯失敗，請檢查網路或 API Key");
+        // 失敗則移除該項目
+        appState.vocabList = appState.vocabList.filter(v => v.id !== id);
+        renderVocab();
+    }
+}
 
 function saveApiKey() {
     const key = document.getElementById('api-key-input').value.trim();
