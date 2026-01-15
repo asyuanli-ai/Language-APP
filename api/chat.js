@@ -1,4 +1,4 @@
-// api/chat.js - 最終修正版 (使用 Gemini 2.0 Flash)
+// api/chat.js - 修正配額限制版 (改用實驗版模型)
 
 export default async function handler(req, res) {
   // --- 1. CORS 設定 ---
@@ -24,12 +24,10 @@ export default async function handler(req, res) {
     if (!apiKey) throw new Error("Server API Key missing");
 
     const { history, message } = req.body;
-    
-    // 確保有訊息
     const userMessage = message ? String(message) : "";
     if (!userMessage) throw new Error("Message is empty");
 
-    // --- 2. 準備 Google 需要的格式 ---
+    // --- 2. 準備資料 ---
     let contents = [];
     if (Array.isArray(history)) {
         contents = [...history];
@@ -40,8 +38,8 @@ export default async function handler(req, res) {
     });
 
     // --- 3. 設定模型 (關鍵修改) ---
-    // 根據你的診斷結果，我們改用 gemini-2.0-flash
-    let targetModel = "gemini-2.0-flash"; 
+    // 改用 'gemini-2.0-flash-exp'，因為你的正式版配額是 0
+    let targetModel = "gemini-2.0-flash-exp"; 
     let apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
 
     console.log(`正在連線至: ${targetModel}`);
@@ -52,10 +50,13 @@ export default async function handler(req, res) {
         body: JSON.stringify({ contents: contents })
     });
 
-    // --- 4. 自動救援 (如果 2.0 失敗，換 2.5) ---
-    if (!response.ok && response.status === 404) {
-        console.warn("2.0 模型連線失敗，嘗試切換至 gemini-2.5-flash...");
-        targetModel = "gemini-2.5-flash"; // 你的清單裡也有這個
+    // --- 4. 自動救援機制 (擴大範圍) ---
+    // 如果實驗版也不行 (404 或 429 配額不足)，就試試看 'gemini-flash-latest'
+    // 這裡同時捕捉 404 (找不到) 和 429 (配額不足)
+    if (!response.ok && (response.status === 404 || response.status === 429)) {
+        console.warn(`${targetModel} 連線失敗 (${response.status})，嘗試切換至 gemini-flash-latest...`);
+        
+        targetModel = "gemini-flash-latest"; 
         apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
         
         response = await fetch(apiUrl, {
@@ -69,15 +70,17 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
         console.error("Google API 錯誤:", data);
-        throw new Error(data.error?.message || "Google API Error");
+        // 如果還是配額不足，回傳清楚的訊息
+        const errorMsg = data.error?.message || "API Error";
+        if (errorMsg.includes("Quota exceeded")) {
+             throw new Error("所有可用模型的免費配額皆為 0 或已用盡，請確認 Google Cloud Billing 是否需要啟用。");
+        }
+        throw new Error(errorMsg);
     }
 
-    // 解析回傳
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
     if (!text) throw new Error("AI 回傳空內容");
 
-    // 回傳給前端
     return res.status(200).json({ reply: text });
 
   } catch (error) {
