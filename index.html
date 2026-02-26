@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>My Learning</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f2f2f7">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         /* iOS Base Styles */
         :root {
@@ -21,6 +23,7 @@
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
             background-color: var(--ios-bg);
@@ -29,7 +32,7 @@
             height: 100vh;
             overflow: hidden;
         }
-        
+
         /* Page Logic */
         .ios-page {
             display: none;
@@ -39,7 +42,7 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-        
+
         .ios-page.active-page {
             display: block !important;
             animation: fadeIn 0.2s ease-out;
@@ -48,9 +51,13 @@
         /* Detail Page (Slide in from right) */
         .detail-page {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: var(--ios-bg);
-            z-index: 200; /* Higher than everything */
+            z-index: 200;
+            /* Higher than everything */
             transform: translateX(100%);
             transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             padding-top: calc(var(--safe-top) + 50px);
@@ -58,27 +65,30 @@
             display: flex;
             flex-direction: column;
         }
+
         .detail-page.show {
             transform: translateX(0);
         }
 
         /* Chat Specifics */
         #page-chat.active-page {
-            padding-bottom: 0; 
+            padding-bottom: 0;
             overflow: hidden;
             display: flex !important;
             flex-direction: column;
         }
-        
+
         /* Header */
         .ios-header {
             position: fixed;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             height: calc(var(--safe-top) + 50px);
             padding-top: var(--safe-top);
             background: var(--ios-nav-blur);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             z-index: 60;
             display: flex;
             align-items: center;
@@ -112,20 +122,24 @@
         /* Tab Bar */
         .ios-tab-bar {
             position: fixed;
-            bottom: 0; left: 0; right: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
             height: calc(var(--safe-bottom) + 55px);
             padding-bottom: var(--safe-bottom);
             background: var(--ios-nav-blur);
             backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0,0,0,0.1);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 50;
             transition: transform 0.3s ease;
         }
-        
-        body.chat-mode .ios-tab-bar { transform: translateY(100%); }
+
+        body.chat-mode .ios-tab-bar {
+            transform: translateY(100%);
+        }
 
         .tab-item {
             color: #8e8e93;
@@ -133,27 +147,32 @@
             text-align: center;
             flex: 1;
         }
-        .tab-item.active { color: var(--ios-blue); }
+
+        .tab-item.active {
+            color: var(--ios-blue);
+        }
 
         /* Chat UI */
-       #chat-container {
+        #chat-container {
             flex: 1;
             overflow-y: auto;
             padding: 16px;
             /* 修正：加大底部留白至 180px，防止被輸入框擋住 */
-            padding-bottom: 180px; 
+            padding-bottom: 180px;
             background-color: var(--ios-bg);
-            scroll-behavior: smooth; 
+            scroll-behavior: smooth;
         }
 
         #chat-input-area {
             position: absolute;
-            bottom: 0; left: 0; right: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: rgba(249, 249, 249, 0.95);
             backdrop-filter: blur(10px);
             padding: 10px 16px;
             padding-bottom: calc(var(--safe-bottom) + 10px);
-            border-top: 1px solid rgba(0,0,0,0.1);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -162,14 +181,16 @@
             transition: transform 0.3s ease;
         }
 
-        body.chat-mode #chat-input-area { transform: translateY(0); }
+        body.chat-mode #chat-input-area {
+            transform: translateY(0);
+        }
 
         .ios-card {
             background: var(--ios-card);
             border-radius: 12px;
             padding: 16px;
             margin: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .bubble-user {
@@ -184,6 +205,7 @@
             line-height: 1.4;
             word-wrap: break-word;
         }
+
         .bubble-ai {
             background-color: #e5e5ea;
             color: black;
@@ -218,10 +240,10 @@
             font-size: 14px;
             display: none;
             z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             cursor: pointer;
         }
-        
+
         /* Key Sentences Card */
         .key-sentence-item {
             background: #f0f7ff;
@@ -231,12 +253,21 @@
             border-radius: 6px;
         }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-/* === 新增：單字卡測驗專用樣式 === */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* === 新增：單字卡測驗專用樣式 === */
         .flashcard {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             height: 300px;
             display: flex;
             flex-direction: column;
@@ -250,24 +281,27 @@
             position: relative;
             overflow: hidden;
         }
+
         .flashcard:active {
             transform: scale(0.98);
         }
+
         .flashcard.revealed {
             border-color: var(--ios-blue);
             background-color: #f0f9ff;
         }
     </style>
 </head>
+
 <body>
 
     <header class="ios-header">
         <div id="header-back-btn" class="header-btn-left" style="display:none;" onclick="handleHeaderBack()">
             <i class="fas fa-chevron-left"></i> <span id="back-text">返回</span>
         </div>
-        
+
         <span id="header-title">My Learning</span>
-        
+
         <div id="audio-toggle" class="header-btn-right" style="display:none;" onclick="toggleAutoAudio()">
             <span id="audio-icon"><i class="fas fa-volume-up"></i> 朗讀</span>
         </div>
@@ -286,25 +320,36 @@
 
         <div class="ios-card">
             <h2 class="text-lg font-bold mb-3">學習設定</h2>
-            
+
             <label class="block text-sm text-gray-500 mb-1">目標語言</label>
             <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
-                <button onclick="setLang('en')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm" data-lang="en">English</button>
-                <button onclick="setLang('jp')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
-                <button onclick="setLang('kr')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
+                <button onclick="setLang('en')"
+                    class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm"
+                    data-lang="en">English</button>
+                <button onclick="setLang('jp')"
+                    class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
+                    data-lang="jp">日本語</button>
+                <button onclick="setLang('kr')"
+                    class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
+                    data-lang="kr">한국어</button>
             </div>
 
             <label class="block text-sm text-gray-500 mb-1">難易度</label>
             <div class="grid grid-cols-3 gap-2">
-                <button onclick="setLevel('beginner')" class="level-btn py-2 border rounded-lg text-sm text-center active-level border-blue-500 bg-blue-50 text-blue-600" data-lvl="beginner">
+                <button onclick="setLevel('beginner')"
+                    class="level-btn py-2 border rounded-lg text-sm text-center active-level border-blue-500 bg-blue-50 text-blue-600"
+                    data-lvl="beginner">
                     <div class="font-bold">初級</div>
                     <div class="text-xs scale-75" id="lvl-desc-1">Survival</div>
                 </button>
-                <button onclick="setLevel('intermediate')" class="level-btn py-2 border rounded-lg text-sm text-center border-gray-200" data-lvl="intermediate">
+                <button onclick="setLevel('intermediate')"
+                    class="level-btn py-2 border rounded-lg text-sm text-center border-gray-200"
+                    data-lvl="intermediate">
                     <div class="font-bold">中級</div>
                     <div class="text-xs scale-75" id="lvl-desc-2">Life</div>
                 </button>
-                <button onclick="setLevel('advanced')" class="level-btn py-2 border rounded-lg text-sm text-center border-gray-200" data-lvl="advanced">
+                <button onclick="setLevel('advanced')"
+                    class="level-btn py-2 border rounded-lg text-sm text-center border-gray-200" data-lvl="advanced">
                     <div class="font-bold">高級</div>
                     <div class="text-xs scale-75" id="lvl-desc-3">Business</div>
                 </button>
@@ -315,35 +360,41 @@
             <h3 class="text-gray-500 text-sm font-bold uppercase">情境模擬 (AI Roleplay)</h3>
         </div>
         <div class="grid grid-cols-2 gap-4 px-4 pb-4" id="scenario-grid">
-            </div>
-        
+        </div>
+
         <div class="px-4">
-             <div onclick="startChat('free')" class="ios-card m-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white flex items-center justify-between cursor-pointer shadow-lg active:scale-95 transition">
+            <div onclick="startChat('free')"
+                class="ios-card m-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white flex items-center justify-between cursor-pointer shadow-lg active:scale-95 transition">
                 <div>
                     <h3 class="font-bold">自由對話 (Free Talk)</h3>
                     <p class="text-xs opacity-90">不限主題 • 隨機任務</p>
                 </div>
                 <i class="fas fa-comments text-2xl opacity-80"></i>
-             </div>
+            </div>
         </div>
     </div>
 
     <div id="page-chat" class="ios-page">
-        <div class="bg-yellow-50 px-4 py-2 border-b border-yellow-100 flex justify-between items-center text-xs shadow-sm flex-none z-10" id="mission-bar">
+        <div class="bg-yellow-50 px-4 py-2 border-b border-yellow-100 flex justify-between items-center text-xs shadow-sm flex-none z-10"
+            id="mission-bar">
             <span class="font-bold text-yellow-800 mr-2 flex-none">Mission:</span>
             <div id="mission-words" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
         </div>
-        
+
         <div id="chat-container">
             <div class="text-center text-gray-400 text-xs mt-8">正在連線至 Gemini...</div>
         </div>
 
         <div id="chat-input-area">
-            <button id="mic-btn" class="w-9 h-9 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center transition-all active:scale-95 flex-none">
+            <button id="mic-btn"
+                class="w-9 h-9 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center transition-all active:scale-95 flex-none">
                 <i class="fas fa-microphone"></i>
             </button>
-            <input type="text" id="chat-input" class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-base focus:outline-none focus:border-blue-500" placeholder="輸入訊息..." autocomplete="off">
-            <button id="send-btn" class="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md active:scale-95 flex-none">
+            <input type="text" id="chat-input"
+                class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-base focus:outline-none focus:border-blue-500"
+                placeholder="輸入訊息..." autocomplete="off">
+            <button id="send-btn"
+                class="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md active:scale-95 flex-none">
                 <i class="fas fa-arrow-up"></i>
             </button>
         </div>
@@ -353,12 +404,13 @@
         <div class="px-4 pt-2">
             <div class="flex items-center gap-2 mb-4">
                 <h2 class="text-2xl font-bold">主題課程</h2>
-                <span id="course-level-badge" class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">LEVEL</span>
+                <span id="course-level-badge"
+                    class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">LEVEL</span>
             </div>
-            
+
             <div id="learn-content">
-                </div>
-            
+            </div>
+
             <div class="text-center text-xs text-gray-400 mt-6 pb-6">
                 完成對話練習可解鎖成就 (模擬)
             </div>
@@ -375,29 +427,57 @@
         <div class="px-4 pt-2">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold">單字本</h2>
-                <button onclick="toggleQuizMode()" class="text-blue-500 text-sm font-bold bg-blue-50 px-3 py-1 rounded-full">
+                <button onclick="openQuizModal()"
+                    class="text-blue-500 text-sm font-bold bg-blue-50 px-3 py-1 rounded-full">
                     <span id="quiz-btn-text">進入測驗模式</span>
                 </button>
             </div>
+            <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
+                <button onclick="setVocabLang('en')"
+                    class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black"
+                    data-lang="en">English</button>
+                <button onclick="setVocabLang('jp')"
+                    class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
+                    data-lang="jp">日本語</button>
+                <button onclick="setVocabLang('kr')"
+                    class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
+                    data-lang="kr">한국어</button>
+            </div>
             <div id="vocab-list" class="space-y-3 pb-8"></div>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[999] hidden flex justify-center items-center">
+        <div class="bg-white rounded-2xl p-6 w-11/12 max-w-sm max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold border-b-2 border-transparent">單字測驗</h3>
+                <button onclick="closeQuizModal()" class="text-gray-400 hover:text-gray-600"><i
+                        class="fas fa-times text-xl"></i></button>
+            </div>
+            <div id="quiz-content"></div>
         </div>
     </div>
 
     <div id="page-settings" class="ios-page">
         <div class="px-4 pt-2">
             <h2 class="text-2xl font-bold mb-4">設定</h2>
-            
+
             <div class="ios-card m-0 mb-4">
                 <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase">API 連線</h3>
-                <input type="password" id="api-key-input" class="w-full bg-gray-100 rounded-lg p-3 text-sm mb-2" placeholder="貼上您的 API Key">
-                <button onclick="saveApiKey()" class="w-full bg-blue-500 text-white py-3 rounded-lg text-sm font-bold shadow">儲存金鑰</button>
+                <input type="password" id="api-key-input" class="w-full bg-gray-100 rounded-lg p-3 text-sm mb-2"
+                    placeholder="貼上您的 API Key">
+                <button onclick="saveApiKey()"
+                    class="w-full bg-blue-500 text-white py-3 rounded-lg text-sm font-bold shadow">儲存金鑰</button>
             </div>
 
             <div class="ios-card m-0">
                 <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase">資料備份</h3>
                 <div class="flex gap-3">
-                    <button onclick="backupData()" class="flex-1 bg-gray-100 py-3 rounded-lg text-sm font-bold text-gray-800">匯出</button>
-                    <button onclick="document.getElementById('restore-file').click()" class="flex-1 bg-gray-100 py-3 rounded-lg text-sm font-bold text-gray-800">還原</button>
+                    <button onclick="backupData()"
+                        class="flex-1 bg-gray-100 py-3 rounded-lg text-sm font-bold text-gray-800">匯出</button>
+                    <button onclick="document.getElementById('restore-file').click()"
+                        class="flex-1 bg-gray-100 py-3 rounded-lg text-sm font-bold text-gray-800">還原</button>
                     <input type="file" id="restore-file" style="display:none" onchange="restoreData(this)">
                 </div>
             </div>
@@ -419,336 +499,488 @@
         </div>
     </nav>
 
-<script>
-/* =========================================
-   1. API LOGIC (Core)
-   ========================================= */
-async function autoDetectModel(apiKey) {
-   try {
-       const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-       const res = await fetch(listUrl);
-       const data = await res.json();
-       if (res.ok && data.models) {
-           const model = data.models.find(m => m.supportedGenerationMethods?.includes("generateContent"));
-           if (model) return model.name.replace('models/', '');
-       }
-       return 'gemini-1.5-flash';
-    }
-    catch (e) { return 'gemini-1.5-flash'; }
-}
- 
-// ==========================================
-//  改良版 callGemini (放在 index.html <script> 內)
-// ==========================================
-async function callGemini(contents) {
-    const url = '/api/chat'; 
-    
-    console.log("【除錯】原始資料:", contents); // 這行會顯示在 F12 Console，幫我們抓蟲
+    <script>
+        /* =========================================
+           1. API LOGIC (Core)
+           ========================================= */
+        async function autoDetectModel(apiKey) {
+            try {
+                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+                const res = await fetch(listUrl);
+                const data = await res.json();
+                if (res.ok && data.models) {
+                    const model = data.models.find(m => m.supportedGenerationMethods?.includes("generateContent"));
+                    if (model) return model.name.replace('models/', '');
+                }
+                return 'gemini-1.5-flash';
+            }
+            catch (e) { return 'gemini-1.5-flash'; }
+        }
 
-    // --- 1. 資料格式轉換 ---
-    // 目的：不管 contents 是什麼格式，我們都要努力抓出「使用者說的話」
-    let messageToSend = "";
-    let historyToSend = [];
+        // ==========================================
+        //  改良版 callGemini (放在 index.html <script> 內)
+        // ==========================================
+        async function callGemini(contents) {
+            // == [新增自動除錯] 本地直連機制 ==
+            // 當偵測到你是用本地檔案開啟 (file://) 或 localhost 時，自動改由前端直連 Gemini，不用管後端壞掉的問題！
+            const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const apiKey = localStorage.getItem('v21_key');
+            if (isLocal && apiKey) {
+                console.log("【模式提示】偵測為本地測試，自動使用前端直連 Gemini 模式");
+                const model = (await autoDetectModel(apiKey)) || 'gemini-1.5-flash';
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-    try {
-        if (Array.isArray(contents) && contents.length > 0) {
-            // 情況 A：它是標準的歷史紀錄陣列
-            // 抓出最後一則 (最新的那句話)
-            const lastItem = contents[contents.length - 1];
-            
-            // 嘗試解析 Google 的 parts 結構
-            if (lastItem.parts && Array.isArray(lastItem.parts) && lastItem.parts.length > 0) {
-                messageToSend = lastItem.parts[0].text;
-            } else if (lastItem.role && lastItem.parts) {
-                 // 有些寫法是直接放物件
-                 messageToSend = lastItem.parts;
-            } else {
-                // 如果結構很怪，就轉成字串硬傳
-                messageToSend = JSON.stringify(lastItem);
+                let geminiContents = [];
+                if (Array.isArray(contents)) {
+                    geminiContents = contents.map(item => {
+                        if (item.parts) return item;
+                        return { role: item.role || "user", parts: [{ text: item.text || JSON.stringify(item) }] };
+                    });
+                } else {
+                    geminiContents = [{ role: "user", parts: [{ text: typeof contents === 'string' ? contents : JSON.stringify(contents) }] }];
+                }
+
+                try {
+                    const res = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: geminiContents })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error?.message || "本地直連請求失敗");
+                    return data.candidates[0].content.parts[0].text;
+                } catch (e) {
+                    console.error("Gemini 本地呼叫發生錯誤:", e);
+                    throw e;
+                }
             }
 
-            // 剩下的前面部分當作歷史
-            historyToSend = contents.slice(0, -1);
+            // 以下為原本你的後端連線 (`/api/chat`) 原始邏輯（完全沒改）：
+            const url = '/api/chat';
 
-        } else if (typeof contents === 'string') {
-            // 情況 B：它只是單純的字串
-            messageToSend = contents;
-        } else {
-            // 情況 C：看不懂的格式，轉成 JSON 字串硬傳
-            messageToSend = JSON.stringify(contents);
+            console.log("【除錯】原始資料:", contents); // 這行會顯示在 F12 Console，幫我們抓蟲
+
+            // --- 1. 資料格式轉換 ---
+            // 目的：不管 contents 是什麼格式，我們都要努力抓出「使用者說的話」
+            let messageToSend = "";
+            let historyToSend = [];
+
+            try {
+                if (Array.isArray(contents) && contents.length > 0) {
+                    // 情況 A：它是標準的歷史紀錄陣列
+                    // 抓出最後一則 (最新的那句話)
+                    const lastItem = contents[contents.length - 1];
+
+                    // 嘗試解析 Google 的 parts 結構
+                    if (lastItem.parts && Array.isArray(lastItem.parts) && lastItem.parts.length > 0) {
+                        messageToSend = lastItem.parts[0].text;
+                    } else if (lastItem.role && lastItem.parts) {
+                        // 有些寫法是直接放物件
+                        messageToSend = lastItem.parts;
+                    } else {
+                        // 如果結構很怪，就轉成字串硬傳
+                        messageToSend = JSON.stringify(lastItem);
+                    }
+
+                    // 剩下的前面部分當作歷史
+                    historyToSend = contents.slice(0, -1);
+
+                } else if (typeof contents === 'string') {
+                    // 情況 B：它只是單純的字串
+                    messageToSend = contents;
+                } else {
+                    // 情況 C：看不懂的格式，轉成 JSON 字串硬傳
+                    messageToSend = JSON.stringify(contents);
+                }
+
+                console.log("【除錯】準備發送 ->", { message: messageToSend, historyLength: historyToSend.length });
+
+            } catch (e) {
+                console.error("資料解析失敗:", e);
+                messageToSend = "Error parsing input"; // 避免當機
+            }
+
+            // --- 2. 發送到 Vercel 後端 ---
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: messageToSend,
+                        history: historyToSend
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // 顯示詳細錯誤
+                    const errorMsg = data.error || data.details || "伺服器發生未知錯誤";
+                    console.error("伺服器回傳錯誤:", errorMsg);
+                    throw new Error(errorMsg);
+                }
+
+                // 回傳成功結果 (注意：這裡用 data.reply)
+                return data.reply;
+
+            } catch (error) {
+                console.error("連線或處理失敗:", error);
+                alert("系統錯誤: " + error.message); // 手機上會跳出視窗告訴你錯在哪
+                throw error;
+            }
+        }
+        /* =========================================
+           2. APP DATA (Expanded Courses)
+           ========================================= */
+        // Helper to create course objects
+        function createCourse(id, title, desc, sentences, aiRole, userRole, context) {
+            return { id, title, desc, sentences, aiRole, userRole, context };
         }
 
-        console.log("【除錯】準備發送 ->", { message: messageToSend, historyLength: historyToSend.length });
+        const APP_DATA = {
+            langs: {
+                en: {
+                    name: "English",
+                    levels: { beginner: "CEFR A1/A2", intermediate: "CEFR B1/B2", advanced: "CEFR C1" },
+                    scenarios: {
+                        beginner: [
+                            { id: 'en_cafe_b', title: 'Coffee Shop', role: 'Barista', user: 'Customer', icon: 'fa-mug-hot' },
+                            { id: 'en_hotel_b', title: 'Hotel Check-in', role: 'Receptionist', user: 'Guest', icon: 'fa-bell' },
+                            { id: 'en_supermarket_b', title: 'Supermarket', role: 'Cashier', user: 'Shopper', icon: 'fa-shopping-cart' },
+                            { id: 'en_taxi_b', title: 'Taking a Taxi', role: 'Driver', user: 'Passenger', icon: 'fa-taxi' }
+                        ],
+                        intermediate: [
+                            { id: 'en_job_i', title: 'Job Interview', role: 'Interviewer', user: 'Applicant', icon: 'fa-user-tie' },
+                            { id: 'en_meeting_i', title: 'Company Meeting', role: 'Project Lead', user: 'Designer', icon: 'fa-users' },
+                            { id: 'en_return_i', title: 'Returning an Item', role: 'Clerk', user: 'Customer', icon: 'fa-undo' },
+                            { id: 'en_directions_i', title: 'Asking Directions', role: 'Local', user: 'Tourist', icon: 'fa-map' }
+                        ],
+                        advanced: [
+                            { id: 'en_nego_a', title: 'Business Negotiation', role: 'Client', user: 'Sales Manager', icon: 'fa-handshake' },
+                            { id: 'en_academic_a', title: 'Academic Debate', role: 'Professor', user: 'Student', icon: 'fa-graduation-cap' },
+                            { id: 'en_presentation_a', title: 'Presentation Q&A', role: 'Audience', user: 'Presenter', icon: 'fa-chalkboard-teacher' },
+                            { id: 'en_conflict_a', title: 'Resolving Conflict', role: 'Coworker', user: 'Manager', icon: 'fa-comments-dollar' }
+                        ]
+                    }
+                },
+                jp: {
+                    name: "日本語",
+                    levels: { beginner: "JLPT N4/N5", intermediate: "JLPT N2/N3", advanced: "JLPT N1" },
+                    scenarios: {
+                        beginner: [
+                            { id: 'jp_izakaya_b', title: '居酒屋打工', role: '客', user: '店員', icon: 'fa-beer' },
+                            { id: 'jp_konbini_b', title: '便利商店打工', role: '客', user: '店員', icon: 'fa-store' },
+                            { id: 'jp_station_b', title: '車站問路', role: '駅員', user: '乗客', icon: 'fa-train' },
+                            { id: 'jp_restaurant_b', title: '餐廳點餐', role: '店員', user: '客', icon: 'fa-utensils' }
+                        ],
+                        intermediate: [
+                            { id: 'jp_hotel_i', title: '旅館櫃檯', role: '宿泊客', user: 'フロント', icon: 'fa-concierge-bell' },
+                            { id: 'jp_shop_i', title: '服飾店店員', role: '客', user: '店員', icon: 'fa-tshirt' },
+                            { id: 'jp_hospital_i', title: '醫院看診', role: '医者', user: '患者', icon: 'fa-hospital' },
+                            { id: 'jp_friend_i', title: '朋友聚會', role: '友達', user: 'あなた', icon: 'fa-user-friends' }
+                        ],
+                        advanced: [
+                            { id: 'jp_corptalk_a', title: '公司內部匯報', role: '上司', user: '部下', icon: 'fa-building' },
+                            { id: 'jp_client_a', title: '客戶商談', role: '取引先', user: '営業', icon: 'fa-briefcase' },
+                            { id: 'jp_apology_a', title: '客訴處理與道歉', role: '怒る客', user: '店長', icon: 'fa-exclamation-triangle' },
+                            { id: 'jp_interview_a', title: '外商面試', role: '面接官', user: '応募者', icon: 'fa-id-badge' }
+                        ]
+                    }
+                },
+                kr: {
+                    name: "한국어",
+                    levels: { beginner: "TOPIK I", intermediate: "TOPIK II (Mid)", advanced: "TOPIK II (High)" },
+                    scenarios: {
+                        beginner: [
+                            { id: 'kr_market_b', title: '傳統市場', role: '시장 상인', user: '손님', icon: 'fa-shopping-basket' },
+                            { id: 'kr_cafe_b', title: '咖啡廳點餐', role: '알바생', user: '손님', icon: 'fa-coffee' },
+                            { id: 'kr_subway_b', title: '地鐵站問路', role: '행인', user: '관광객', icon: 'fa-subway' },
+                            { id: 'kr_restaurant_b', title: '烤肉店點餐', role: '종업원', user: '손님', icon: 'fa-fire' }
+                        ],
+                        intermediate: [
+                            { id: 'kr_taxi_i', title: '計程車', role: '기사님', user: '승객', icon: 'fa-taxi' },
+                            { id: 'kr_salon_i', title: '美容室', role: '미용사', user: '손님', icon: 'fa-cut' },
+                            { id: 'kr_hospital_i', title: '藥局買藥', role: '약사', user: '환자', icon: 'fa-pills' },
+                            { id: 'kr_friend_i', title: '約會計畫', role: '친구', user: '나', icon: 'fa-calendar-alt' }
+                        ],
+                        advanced: [
+                            { id: 'kr_corptalk_a', title: '公司內部開會', role: '팀장', user: '팀원', icon: 'fa-users' },
+                            { id: 'kr_interview_a', title: '外商面試', role: '면접관', user: '지원자', icon: 'fa-id-badge' },
+                            { id: 'kr_realestate_a', title: '看房子', role: '부동산 중개인', user: '세입자', icon: 'fa-home' },
+                            { id: 'kr_debate_a', title: '社會議題討論', role: '동료', user: '나', icon: 'fa-comments' }
+                        ]
+                    }
+                }
+            },
+            courses: {
+                en: {
+                    beginner: [
+                        createCourse(101, "Self Introduction", "Learn to introduce yourself naturally.", [{ text: "My name is...", trans: "我的名字是..." }, { text: "I am from...", trans: "我來自..." }, { text: "Nice to meet you", trans: "很高興認識你" }], "New Neighbor", "New Resident", "Meeting a new neighbor at the apartment lobby."),
+                        createCourse(102, "Ordering Food", "Order your favorite meal.", [{ text: "I would like...", trans: "我想要點..." }, { text: "How much is this?", trans: "這個多少錢？" }, { text: "No spicy, please", trans: "請不要加辣" }], "Waiter", "Customer", "Ordering at a fast food restaurant."),
+                        createCourse(103, "Asking Directions", "Never get lost again.", [{ text: "Where is the...", trans: "請問...在哪裡？" }, { text: "Go straight", trans: "直走" }, { text: "Turn left", trans: "左轉" }], "Police Officer", "Lost Tourist", "Asking for directions on the street."),
+                        createCourse(104, "Checking into Hotel", "Hotel check-in essentials.", [{ text: "I have a reservation", trans: "我有預訂" }, { text: "Breakfast included?", trans: "有含早餐嗎？" }, { text: "What is the WiFi password?", trans: "WiFi密碼是多少？" }], "Receptionist", "Guest", "Checking in at the front desk."),
+                        createCourse(105, "Taking a Taxi", "Getting to your destination.", [{ text: "Please take me to...", trans: "請載我到..." }, { text: "Stop here, please", trans: "請停在這裡" }, { text: "Keep the change", trans: "不用找零了" }], "Taxi Driver", "Passenger", "In a taxi going to the airport.")
+                    ],
+                    intermediate: [
+                        createCourse(201, "Job Interview", "Answer common interview questions.", [{ text: "My strength is...", trans: "我的強項是..." }, { text: "I have experience in...", trans: "我有...的經驗" }, { text: "I am a team player", trans: "我很有團隊精神" }], "Hiring Manager", "Applicant", "Job interview for a marketing role."),
+                        createCourse(202, "Doctor Visit", "Explain your symptoms.", [{ text: "I have a headache", trans: "我頭痛" }, { text: "It hurts when I...", trans: "當我...時會痛" }, { text: "Since yesterday", trans: "從昨天開始" }], "Doctor", "Patient", "Consulting a doctor at a clinic."),
+                        createCourse(203, "Restaurant Complaint", "Politely solving food issues.", [{ text: "This is not what I ordered", trans: "這不是我點的" }, { text: "It is too cold", trans: "這太冷了" }, { text: "Could you check the bill?", trans: "能幫我確認一下帳單嗎？" }], "Manager", "Customer", "Complain politely about wrong food."),
+                        createCourse(204, "Making Friends", "Small talk at a party.", [{ text: "How do you know the host?", trans: "你怎麼認識主人的？" }, { text: "What do you do?", trans: "你是做什麼工作的？" }, { text: "Have you been here before?", trans: "你以前來過這嗎？" }], "Party Guest", "Guest", "Casual chat at a house party."),
+                        createCourse(205, "Shopping for Clothes", "Finding the right size.", [{ text: "Do you have this in medium?", trans: "這有M號嗎？" }, { text: "Where is the fitting room?", trans: "試衣間在哪？" }, { text: "It fits perfectly", trans: "大小剛剛好" }], "Shop Assistant", "Shopper", "Buying a jacket in a clothing store.")
+                    ],
+                    advanced: [
+                        createCourse(301, "Business Negotiation", "Negotiating a deal.", [{ text: "We can offer...", trans: "我們可以提供..." }, { text: "That is our bottom line", trans: "這是我們的底線" }, { text: "Let's meet halfway", trans: "我們各退一步吧" }], "Client", "Sales Manager", "Negotiating a contract price."),
+                        createCourse(302, "Presentation Q&A", "Handling tough questions.", [{ text: "That is a great question", trans: "這是個好問題" }, { text: "To elaborate on that...", trans: "為了進一步說明..." }, { text: "Data shows that...", trans: "數據顯示..." }], "Audience Member", "Presenter", "Q&A session after a product launch."),
+                        createCourse(303, "Academic Discussion", "Debating current events.", [{ text: "I beg to differ", trans: "恕我不能同意" }, { text: "From my perspective", trans: "從我的觀點來看" }, { text: "Evidence suggests", trans: "證據顯示" }], "Professor", "Student", "Discussing climate change policies."),
+                        createCourse(304, "Tech Support", "Solving technical issues.", [{ text: "Have you tried restarting?", trans: "你試過重開機嗎？" }, { text: "The system is down", trans: "系統當機了" }, { text: "Troubleshoot the error", trans: "排除錯誤" }], "IT Support", "Employee", "Reporting a server crash."),
+                        createCourse(305, "Networking", "Professional connection building.", [{ text: "I admire your work", trans: "我很欣賞你的作品" }, { text: "Here is my card", trans: "這是我的名片" }, { text: "Let's keep in touch", trans: "保持聯絡" }], "Industry Expert", "Attendee", "Networking at a tech conference.")
+                    ]
+                },
+                jp: {
+                    beginner: [
+                        createCourse(401, "自己紹介 (Jikoshoukai)", "基本の挨拶と自己紹介。", [{ text: "はじめまして", trans: "初次見面" }, { text: "～から来ました", trans: "我來自～" }, { text: "よろしくお願いします", trans: "請多指教" }], "新しい同僚", "あなた", "会社の初日に挨拶をする。"),
+                        createCourse(402, "コンビニ (Konbini)", "コンビニでの買い物。", [{ text: "これをお願いします", trans: "請給我這個" }, { text: "温めてください", trans: "請幫我微波" }, { text: "袋はいりません", trans: "不需要袋子" }], "店員", "客", "コンビニでお弁当を買う。"),
+                        createCourse(403, "道を尋ねる", "迷子になった時。", [{ text: "すみません、駅はどこですか", trans: "不好意思，車站請問在哪？" }, { text: "歩いてどのくらいですか", trans: "走路大概要多久？" }, { text: "ありがとうございます", trans: "非常感謝" }], "親切な通行人", "観光客", "道に迷って助けを求める。"),
+                        createCourse(404, "注文 (Order)", "レストランでの注文。", [{ text: "これを二つください", trans: "請給我兩個這個" }, { text: "おすすめは何ですか", trans: "有什麼推薦的嗎？" }, { text: "お会計をお願いします", trans: "麻煩結帳" }], "店員", "客", "居酒屋で注文する。"),
+                        createCourse(405, "電車 (Train)", "電車の乗り方。", [{ text: "この電車は～に行きますか", trans: "這班電車會到～嗎？" }, { text: "切符を失くしました", trans: "我把車票弄丟了" }, { text: "乗り換えはどこですか", trans: "要在哪裡轉車？" }], "駅員", "乗客", "駅の改札口での会話。")
+                    ],
+                    intermediate: [
+                        createCourse(501, "電話予約", "レストランの予約。", [{ text: "予約をしたいのですが", trans: "我想要預約" }, { text: "三名です", trans: "總共三位" }, { text: "アレルギーがあります", trans: "我有過敏" }], "店員", "客", "電話で席を予約する。"),
+                        createCourse(502, "体調不良", "病院で症状を説明。", [{ text: "熱があります", trans: "我發燒了" }, { text: "昨日から喉が痛いです", trans: "從昨天開始喉嚨痛" }, { text: "薬はありますか", trans: "有開藥嗎？" }], "医者", "患者", "内科での診察。"),
+                        createCourse(503, "買い物 (服)", "試着とサイズ確認。", [{ text: "試着してもいいですか", trans: "可以試穿嗎？" }, { text: "少し大きいです", trans: "稍微有點大" }, { text: "違う色はありますか", trans: "有別的顏色嗎？" }], "店員", "客", "服屋でジーンズを探す。"),
+                        createCourse(504, "友達とランチ", "近況報告。", [{ text: "久しぶり！元気？", trans: "好久不見！你好嗎？" }, { text: "最近どう？", trans: "最近怎麼樣？" }, { text: "また遊ぼう", trans: "下次再一起玩吧" }], "旧友", "あなた", "カフェで友達と再会。"),
+                        createCourse(505, "ホテルのトラブル", "部屋の問題を伝える。", [{ text: "お湯が出ません", trans: "沒有熱水" }, { text: "隣がうるさいです", trans: "隔壁很吵" }, { text: "部屋を変えてください", trans: "請幫我換房間" }], "フロント", "宿泊客", "ホテルの部屋からフロントに電話。")
+                    ],
+                    advanced: [
+                        createCourse(601, "ビジネス敬語", "取引先への挨拶。", [{ text: "いつもお世話になっております", trans: "一直以來承蒙您的關照" }, { text: "ご足労いただき恐縮です", trans: "勞煩您跑一趟實在不好意思" }, { text: "今後ともよろしくお願いいたします", trans: "今後也請多多指教" }], "取引先", "営業担当", "名刺交換と挨拶。"),
+                        createCourse(602, "会議での提案", "意見を述べる。", [{ text: "私は～と考えます", trans: "我認為～" }, { text: "具体的には...", trans: "具體來說..." }, { text: "ご検討いただけますか", trans: "能否請您評估看看？" }], "上司", "部下", "新プロジェクトの提案会議。"),
+                        createCourse(603, "謝罪 (Apology)", "ミスの報告と謝罪。", [{ text: "申し訳ございません", trans: "非常抱歉" }, { text: "私の不手際です", trans: "是我的疏失" }, { text: "すぐに修正いたします", trans: "我馬上修正" }], "クライアント", "担当者", "納期の遅れを謝罪する。"),
+                        createCourse(604, "ニュース議論", "社会問題について。", [{ text: "少子化についてどう思う？", trans: "你覺得少子化怎麼樣？" }, { text: "対策が必要だと思う", trans: "我覺得需要有對策" }, { text: "経済への影響が心配だ", trans: "我很擔心對經濟的影響" }], "同僚", "あなた", "昼休みにニュースについて話す。"),
+                        createCourse(605, "面接 (Interview)", "志望動機を話す。", [{ text: "御社の理念に共感しました", trans: "我非常認同貴公司的理念" }, { text: "私の強みは～です", trans: "我的優勢是～" }, { text: "貢献できると思います", trans: "我相信能為公司帶來貢獻" }], "面接官", "応募者", "最終面接。")
+                    ]
+                },
+                kr: {
+                    beginner: [
+                        createCourse(701, "자기소개 (Self Intro)", "이름과 국적 말하기.", [{ text: "안녕하세요", trans: "你好" }, { text: "저는 대만 사람입니다", trans: "我是台灣人" }, { text: "반갑습니다", trans: "很高興認識你" }], "한국 친구", "나", "언어 교환 모임에서 자기소개."),
+                        createCourse(702, "식당 주문", "음식 주문하기.", [{ text: "이거 주세요", trans: "請給我這個" }, { text: "덜 맵게 해주세요", trans: "請不要太辣" }, { text: "물 좀 주세요", trans: "請給我一點水" }], "종업원", "손님", "김밥천국에서 주문하기."),
+                        createCourse(703, "길 묻기", "길 찾기.", [{ text: "실례합니다", trans: "不好意思" }, { text: "지하철역이 어디예요?", trans: "地鐵站在哪裡？" }, { text: "멀어요?", trans: "很遠嗎？" }], "행인", "여행객", "서울 길거리에서 길 묻기."),
+                        createCourse(704, "쇼핑", "가격 묻고 깎기.", [{ text: "얼마예요?", trans: "多少錢？" }, { text: "너무 비싸요", trans: "太貴了" }, { text: "좀 깎아주세요", trans: "請算便宜一點" }], "시장 상인", "손님", "동대문 시장에서 옷 사기."),
+                        createCourse(705, "택시", "목적지 말하기.", [{ text: "홍대입구로 가주세요", trans: "請到弘大入口" }, { text: "여기서 세워주세요", trans: "請停在這裡" }, { text: "카드 돼요?", trans: "可以刷卡嗎？" }], "기사님", "승객", "택시 타고 이동하기.")
+                    ],
+                    intermediate: [
+                        createCourse(801, "약국", "증상 설명하고 약 사기.", [{ text: "머리가 아파요", trans: "我頭痛" }, { text: "소화제 주세요", trans: "請給我助消化的藥" }, { text: "하루에 몇 번 먹어요?", trans: "一天要吃幾次？" }], "약사", "손님", "약국에서 약 사기."),
+                        createCourse(802, "호텔 체크인", "예약 확인.", [{ text: "예약했는데요", trans: "我有預約" }, { text: "조식 포함인가요?", trans: "有包含早餐嗎？" }, { text: "체크아웃은 몇 시예요?", trans: "退房是幾點？" }], "호텔 직원", "투숙객", "호텔 프론트 데스크."),
+                        createCourse(803, "친구 약속", "시간 정하기.", [{ text: "우리 언제 만날까?", trans: "我們什麼時候見面？" }, { text: "어디서 볼까?", trans: "要在哪裡見？" }, { text: "내가 거기로 갈게", trans: "我過去那邊找你" }], "친구", "나", "카톡으로 약속 잡기."),
+                        createCourse(804, "미용실", "스타일 요청.", [{ text: "다듬어 주세요", trans: "請幫我修剪就好" }, { text: "염색하고 싶어요", trans: "我想要染髮" }, { text: "앞머리는 자르지 마세요", trans: "請不要剪瀏海" }], "미용사", "손님", "강남 미용실에서 머리하기."),
+                        createCourse(805, "카페", "커피 주문 옵션.", [{ text: "아이스 아메리카노 주세요", trans: "請給我一杯冰美式" }, { text: "사이즈 업 해주세요", trans: "請幫我升級大杯" }, { text: "가지고 갈게요", trans: "我要外帶" }], "알바생", "손님", "카페에서 주문하기.")
+                    ],
+                    advanced: [
+                        createCourse(901, "회사 회의", "의견 제시.", [{ text: "제 생각은 좀 다릅니다", trans: "我的想法有點不同" }, { text: "그 부분에 동의합니다", trans: "我同意這個部分" }, { text: "결론적으로 말씀드리면...", trans: "結論來說的話..." }], "팀장", "팀원", "주간 회의 시간."),
+                        createCourse(902, "면접", "경력 소개.", [{ text: "저는 ~경험이 있습니다", trans: "我有～的經驗" }, { text: "문제를 해결한 적이 있습니다", trans: "我有解決過問題的經驗" }, { text: "입사하게 된다면...", trans: "如果能入職的話..." }], "면접관", "지원자", "대기업 면접."),
+                        createCourse(903, "부동산", "집 구하기.", [{ text: "전세 대출 가능한가요?", trans: "能申請全租貸款嗎？" }, { text: "관리비는 얼마예요?", trans: "管理費是多少？" }, { text: "남향인가요?", trans: "是坐北朝南的嗎？" }], "중개사", "세입자", "부동산에서 방 구하기."),
+                        createCourse(904, "환불 요청", "논리적으로 따지기.", [{ text: "제품에 하자가 있습니다", trans: "商品有瑕疵" }, { text: "환불 규정을 확인했습니다", trans: "我確認過退款規定了" }, { text: "매니저 불러주세요", trans: "請把經理叫來" }], "고객센터", "고객", "전화로 환불 요청."),
+                        createCourse(905, "토론", "문화 차이 이야기.", [{ text: "한국 문화의 특징은...", trans: "韓國文化的特點是..." }, { text: "대만과는 이런 점이 다릅니다", trans: "和台灣有這一點不同" }, { text: "이해하기 어렵네요", trans: "很難理解呢" }], "한국 동료", "나", "회식 자리에서 문화 토론.")
+                    ]
+                }
+            }
+        };
 
-    } catch (e) {
-        console.error("資料解析失敗:", e);
-        messageToSend = "Error parsing input"; // 避免當機
-    }
+        const MISSION_DATA = {
+            en: {
+                en_cafe_b: { beginner: ['coffee', 'how much', 'here'] },
+                en_hotel_b: { beginner: ['reservation', 'name', 'key'] },
+                en_supermarket_b: { beginner: ['bag', 'receipt', 'card'] },
+                en_taxi_b: { beginner: ['address', 'stop', 'change'] },
+                en_job_i: { intermediate: ['experience', 'skills', 'team'] },
+                en_meeting_i: { intermediate: ['project', 'deadline', 'update'] },
+                en_return_i: { intermediate: ['receipt', 'refund', 'wrong'] },
+                en_directions_i: { intermediate: ['straight', 'left', 'block'] },
+                en_nego_a: { advanced: ['offer', 'discount', 'contract'] },
+                en_academic_a: { advanced: ['agree', 'point', 'evidence'] },
+                en_presentation_a: { advanced: ['data', 'explain', 'question'] },
+                en_conflict_a: { advanced: ['understand', 'resolve', 'compromise'] },
+                free: { beginner: ['hello', 'fine', 'goodbye'], intermediate: ['interest', 'weekend', 'hobby'], advanced: ['opinion', 'society', 'challenge'] }
+            },
+            jp: {
+                jp_izakaya_b: { beginner: ['ビール', 'メニュー', 'お会計'] },
+                jp_konbini_b: { beginner: ['お弁当', '袋', 'いくら'] },
+                jp_station_b: { beginner: ['どこ', '切符', '歩いて'] },
+                jp_restaurant_b: { beginner: ['注文', '水', 'おすすめ'] },
+                jp_hotel_i: { intermediate: ['チェックイン', '鍵', '朝食'] },
+                jp_shop_i: { intermediate: ['試着', 'サイズ', '違う色'] },
+                jp_hospital_i: { intermediate: ['熱', '喉', '薬'] },
+                jp_friend_i: { intermediate: ['久しぶり', '最近', '遊ぼう'] },
+                jp_corptalk_a: { advanced: ['資料', '会議', '報告'] },
+                jp_client_a: { advanced: ['契約', '提案', '見積もり'] },
+                jp_apology_a: { advanced: ['申し訳', '不手際', '対応'] },
+                jp_interview_a: { advanced: ['志望動機', '経験', '貢献'] },
+                free: { beginner: ['こんにちは', 'ありがとう', 'すみません'], intermediate: ['趣味', '週末', '旅行'], advanced: ['社会', '経験', '意見'] }
+            },
+            kr: {
+                kr_market_b: { beginner: ['얼마', '이거', '주세요'] },
+                kr_cafe_b: { beginner: ['아메리카노', '사이즈', '포장'] },
+                kr_subway_b: { beginner: ['역', '멀어요', '어디'] },
+                kr_restaurant_b: { beginner: ['맥주', '맵다', '맛있다'] },
+                kr_taxi_i: { intermediate: ['얼마나 걸려요', '우회전', '카드'] },
+                kr_salon_i: { intermediate: ['염색', '다듬어', '앞머리'] },
+                kr_hospital_i: { intermediate: ['아프다', '소화제', '하루'] },
+                kr_friend_i: { intermediate: ['언제', '어디', '약속'] },
+                kr_corptalk_a: { advanced: ['회의', '보고서', '결재'] },
+                kr_interview_a: { advanced: ['경험', '지원', '장점'] },
+                kr_realestate_a: { advanced: ['대출', '관리비', '남향'] },
+                kr_debate_a: { advanced: ['생각', '동의', '특징'] },
+                free: { beginner: ['안녕하세요', '감사합니다', '네'], intermediate: ['취미', '주말', '영화'], advanced: ['의견', '사회', '문화'] }
+            }
+        };
 
-    // --- 2. 發送到 Vercel 後端 ---
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                message: messageToSend,
-                history: historyToSend
-            })
-        });
-      
-        const data = await response.json();
-        
-        if (!response.ok) {
-            // 顯示詳細錯誤
-            const errorMsg = data.error || data.details || "伺服器發生未知錯誤";
-            console.error("伺服器回傳錯誤:", errorMsg);
-            throw new Error(errorMsg);
+        function getCourseVocab(courseId) {
+            const courseVocabs = {
+                101: ['introduce', 'neighborhood', 'glad'], 102: ['burger', 'drink', 'spicy'], 103: ['straight', 'corner', 'block'], 104: ['reservation', 'included', 'passport'], 105: ['airport', 'change', 'hurry'],
+                201: ['strength', 'experience', 'team'], 202: ['symptom', 'pain', 'medicine'], 203: ['order', 'mistake', 'waiter'], 204: ['host', 'delicious', 'work'], 205: ['fitting room', 'medium', 'color'],
+                301: ['negotiate', 'offer', 'budget'], 302: ['data', 'explain', 'question'], 303: ['perspective', 'evidence', 'differ'], 304: ['restart', 'server', 'error'], 305: ['admire', 'card', 'touch'],
+                401: ['同僚', '出身', '配属'], 402: ['温める', '袋', 'レシート'], 403: ['迷子', '駅', '徒歩'], 404: ['注文', 'おすすめ', '追加'], 405: ['切符', '乗り換え', '特急'],
+                501: ['予約', 'アレルギー', '禁煙席'], 502: ['熱', '喉', '処方箋'], 503: ['試着', 'サイズ', '色違い'], 504: ['久しぶり', '最近', '仕事'], 505: ['お湯', 'うるさい', '部屋'],
+                601: ['世話', '恐縮', '挨拶'], 602: ['提案', '検討', '具体'], 603: ['申し訳', '不手際', '修正'], 604: ['少子化', '対策', '影響'], 605: ['理念', '貢献', '強み'],
+                701: ['대만', '친구', '만나다'], 702: ['주세요', '맵다', '물'], 703: ['어디', '멀다', '역'], 704: ['얼마', '비싸다', '깎다'], 705: ['홍대', '세우다', '카드'],
+                801: ['아프다', '소화제', '하루'], 802: ['호텔', '조식', '체크아웃'], 803: ['언제', '어디', '약속'], 804: ['염색', '앞머리', '다듬다'], 805: ['아이스', '사이즈', '포장'],
+                901: ['의견', '동의', '결론'], 902: ['경험', '해결', '입사'], 903: ['전세', '관리비', '남향'], 904: ['환불', '하자', '매니저'], 905: ['차이', '특징', '이해']
+            };
+            return courseVocabs[courseId] || ['hello', 'word'];
         }
-        
-        // 回傳成功結果 (注意：這裡用 data.reply)
-        return data.reply; 
 
-    } catch (error) {
-        console.error("連線或處理失敗:", error);
-        alert("系統錯誤: " + error.message); // 手機上會跳出視窗告訴你錯在哪
-        throw error;
-    }
-}
-/* =========================================
-   2. APP DATA (Expanded Courses)
-   ========================================= */
-// Helper to create course objects
-function createCourse(id, title, desc, sentences, aiRole, userRole, context) {
-    return { id, title, desc, sentences, aiRole, userRole, context };
-}
+        let appState = {
+            lang: 'en',
+            level: 'beginner',
+            currentScenario: null, // object
+            courseMode: false, // NEW: Track if in course
+            chatHistory: [],
+            missionWords: [],
+            completedMissions: [],
+            vocabList: JSON.parse(localStorage.getItem('my_vocab') || '[]'),
+            vocabLang: 'en',
+            autoAudio: true
+        };
 
-const APP_DATA = {
-    langs: {
-        en: { 
-            name: "English", 
-            levels: { beginner: "CEFR A1/A2", intermediate: "CEFR B1/B2", advanced: "CEFR C1" },
-            scenarios: [
-                { id: 'cafe', title: 'Coffee Shop', role: 'Barista', user: 'Customer', icon: 'fa-coffee' },
-                { id: 'interview', title: 'Job Interview', role: 'Interviewer', user: 'Applicant', icon: 'fa-user-tie' }
-            ]
-        },
-        jp: { 
-            name: "日本語", 
-            levels: { beginner: "JLPT N4/N5", intermediate: "JLPT N2/N3", advanced: "JLPT N1" },
-            scenarios: [
-                { id: 'izakaya', title: '居酒屋', role: '店員', user: '客', icon: 'fa-wine-glass' },
-                { id: 'konbini', title: '便利商店', role: '店員', user: '客', icon: 'fa-store' }
-            ]
-        },
-        kr: { 
-            name: "한국어", 
-            levels: { beginner: "TOPIK I", intermediate: "TOPIK II (Mid)", advanced: "TOPIK II (High)" },
-            scenarios: [
-                { id: 'market', title: '傳統市場', role: '阿姨', user: '顧客', icon: 'fa-shopping-basket' },
-                { id: 'taxi', title: '計程車', role: '司機', user: '乘客', icon: 'fa-taxi' }
-            ]
+        /* =========================================
+           3. UI CONTROLLER
+           ========================================= */
+
+        function init() {
+            const savedKey = localStorage.getItem('v21_key');
+            if (savedKey) {
+                document.getElementById('api-key-input').value = savedKey;
+            } else {
+                document.getElementById('api-warning').classList.remove('hidden');
+            }
+            renderHome();
+            updateLevelDesc();
+            renderVocab();
         }
-    },
-    courses: {
-        en: {
-            beginner: [
-                createCourse(101, "Self Introduction", "Learn to introduce yourself naturally.", ["My name is...", "I am from...", "Nice to meet you"], "New Neighbor", "New Resident", "Meeting a new neighbor at the apartment lobby."),
-                createCourse(102, "Ordering Food", "Order your favorite meal.", ["I would like...", "How much is this?", "No spicy, please"], "Waiter", "Customer", "Ordering at a fast food restaurant."),
-                createCourse(103, "Asking Directions", "Never get lost again.", ["Where is the...", "Go straight", "Turn left"], "Police Officer", "Lost Tourist", "Asking for directions on the street."),
-                createCourse(104, "Checking into Hotel", "Hotel check-in essentials.", ["I have a reservation", "Breakfast included?", "What is the WiFi password?"], "Receptionist", "Guest", "Checking in at the front desk."),
-                createCourse(105, "Taking a Taxi", "Getting to your destination.", ["Please take me to...", "Stop here, please", "Keep the change"], "Taxi Driver", "Passenger", "In a taxi going to the airport.")
-            ],
-            intermediate: [
-                createCourse(201, "Job Interview", "Answer common interview questions.", ["My strength is...", "I have experience in...", "I am a team player"], "Hiring Manager", "Applicant", "Job interview for a marketing role."),
-                createCourse(202, "Doctor Visit", "Explain your symptoms.", ["I have a headache", "It hurts when I...", "Since yesterday"], "Doctor", "Patient", "Consulting a doctor at a clinic."),
-                createCourse(203, "Restaurant Complaint", "Politely solving food issues.", ["This is not what I ordered", "It is too cold", "Could you check the bill?"], "Manager", "Customer", "Complain politely about wrong food."),
-                createCourse(204, "Making Friends", "Small talk at a party.", ["How do you know the host?", "What do you do?", "Have you been here before?"], "Party Guest", "Guest", "Casual chat at a house party."),
-                createCourse(205, "Shopping for Clothes", "Finding the right size.", ["Do you have this in medium?", "Where is the fitting room?", "It fits perfectly"], "Shop Assistant", "Shopper", "Buying a jacket in a clothing store.")
-            ],
-            advanced: [
-                createCourse(301, "Business Negotiation", "Negotiating a deal.", ["We can offer...", "That is our bottom line", "Let's meet halfway"], "Client", "Sales Manager", "Negotiating a contract price."),
-                createCourse(302, "Presentation Q&A", "Handling tough questions.", ["That is a great question", "To elaborate on that...", "Data shows that..."], "Audience Member", "Presenter", "Q&A session after a product launch."),
-                createCourse(303, "Academic Discussion", "Debating current events.", ["I beg to differ", "From my perspective", "Evidence suggests"], "Professor", "Student", "Discussing climate change policies."),
-                createCourse(304, "Tech Support", "Solving technical issues.", ["Have you tried restarting?", "The system is down", "Troubleshoot the error"], "IT Support", "Employee", "Reporting a server crash."),
-                createCourse(305, "Networking", "Professional connection building.", ["I admire your work", "Here is my card", "Let's keep in touch"], "Industry Expert", "Attendee", "Networking at a tech conference.")
-            ]
-        },
-        jp: {
-            beginner: [
-                createCourse(401, "自己紹介 (Jikoshoukai)", "基本の挨拶と自己紹介。", ["はじめまして", "～から来ました", "よろしくお願いします"], "新しい同僚", "あなた", "会社の初日に挨拶をする。"),
-                createCourse(402, "コンビニ (Konbini)", "コンビニでの買い物。", ["これをお願いします", "温めてください", "袋はいりません"], "店員", "客", "コンビニでお弁当を買う。"),
-                createCourse(403, "道を尋ねる", "迷子になった時。", ["すみません、駅はどこですか", "歩いてどのくらいですか", "ありがとうございます"], "親切な通行人", "観光客", "道に迷って助けを求める。"),
-                createCourse(404, "注文 (Order)", "レストランでの注文。", ["これを二つください", "おすすめは何ですか", "お会計をお願いします"], "店員", "客", "居酒屋で注文する。"),
-                createCourse(405, "電車 (Train)", "電車の乗り方。", ["この電車は～に行きますか", "切符を失くしました", "乗り換えはどこですか"], "駅員", "乗客", "駅の改札口での会話。")
-            ],
-            intermediate: [
-                createCourse(501, "電話予約", "レストランの予約。", ["予約をしたいのですが", "三名です", "アレルギーがあります"], "店員", "客", "電話で席を予約する。"),
-                createCourse(502, "体調不良", "病院で症状を説明。", ["熱があります", "昨日から喉が痛いです", "薬はありますか"], "医者", "患者", "内科での診察。"),
-                createCourse(503, "買い物 (服)", "試着とサイズ確認。", ["試着してもいいですか", "少し大きいです", "違う色はありますか"], "店員", "客", "服屋でジーンズを探す。"),
-                createCourse(504, "友達とランチ", "近況報告。", ["久しぶり！元気？", "最近どう？", "また遊ぼう"], "旧友", "あなた", "カフェで友達と再会。"),
-                createCourse(505, "ホテルのトラブル", "部屋の問題を伝える。", ["お湯が出ません", "隣がうるさいです", "部屋を変えてください"], "フロント", "宿泊客", "ホテルの部屋からフロントに電話。")
-            ],
-            advanced: [
-                createCourse(601, "ビジネス敬語", "取引先への挨拶。", ["いつもお世話になっております", "ご足労いただき恐縮です", "今後ともよろしくお願いいたします"], "取引先", "営業担当", "名刺交換と挨拶。"),
-                createCourse(602, "会議での提案", "意見を述べる。", ["私は～と考えます", "具体的には...", "ご検討いただけますか"], "上司", "部下", "新プロジェクトの提案会議。"),
-                createCourse(603, "謝罪 (Apology)", "ミスの報告と謝罪。", ["申し訳ございません", "私の不手際です", "すぐに修正いたします"], "クライアント", "担当者", "納期の遅れを謝罪する。"),
-                createCourse(604, "ニュース議論", "社会問題について。", ["少子化についてどう思う？", "対策が必要だと思う", "経済への影響が心配だ"], "同僚", "あなた", "昼休みにニュースについて話す。"),
-                createCourse(605, "面接 (Interview)", "志望動機を話す。", ["御社の理念に共感しました", "私の強みは～です", "貢献できると思います"], "面接官", "応募者", "最終面接。")
-            ]
-        },
-        kr: {
-            beginner: [
-                createCourse(701, "자기소개 (Self Intro)", "이름과 국적 말하기.", ["안녕하세요", "저는 대만 사람입니다", "반갑습니다"], "한국 친구", "나", "언어 교환 모임에서 자기소개."),
-                createCourse(702, "식당 주문", "음식 주문하기.", ["이거 주세요", "덜 맵게 해주세요", "물 좀 주세요"], "종업원", "손님", "김밥천국에서 주문하기."),
-                createCourse(703, "길 묻기", "길 찾기.", ["실례합니다", "지하철역이 어디예요?", "멀어요?"], "행인", "여행객", "서울 길거리에서 길 묻기."),
-                createCourse(704, "쇼핑", "가격 묻고 깎기.", ["얼마예요?", "너무 비싸요", "좀 깎아주세요"], "시장 상인", "손님", "동대문 시장에서 옷 사기."),
-                createCourse(705, "택시", "목적지 말하기.", ["홍대입구로 가주세요", "여기서 세워주세요", "카드 돼요?"], "기사님", "승객", "택시 타고 이동하기.")
-            ],
-            intermediate: [
-                createCourse(801, "약국", "증상 설명하고 약 사기.", ["머리가 아파요", "소화제 주세요", "하루에 몇 번 먹어요?"], "약사", "손님", "약국에서 약 사기."),
-                createCourse(802, "호텔 체크인", "예약 확인.", ["예약했는데요", "조식 포함인가요?", "체크아웃은 몇 시예요?"], "호텔 직원", "투숙객", "호텔 프론트 데스크."),
-                createCourse(803, "친구 약속", "시간 정하기.", ["우리 언제 만날까?", "어디서 볼까?", "내가 거기로 갈게"], "친구", "나", "카톡으로 약속 잡기."),
-                createCourse(804, "미용실", "스타일 요청.", ["다듬어 주세요", "염색하고 싶어요", "앞머리는 자르지 마세요"], "미용사", "손님", "강남 미용실에서 머리하기."),
-                createCourse(805, "카페", "커피 주문 옵션.", ["아이스 아메리카노 주세요", "사이즈 업 해주세요", "가지고 갈게요"], "알바생", "손님", "카페에서 주문하기.")
-            ],
-            advanced: [
-                createCourse(901, "회사 회의", "의견 제시.", ["제 생각은 좀 다릅니다", "그 부분에 동의합니다", "결론적으로 말씀드리면..."], "팀장", "팀원", "주간 회의 시간."),
-                createCourse(902, "면접", "경력 소개.", ["저는 ~경험이 있습니다", "문제를 해결한 적이 있습니다", "입사하게 된다면..."], "면접관", "지원자", "대기업 면접."),
-                createCourse(903, "부동산", "집 구하기.", ["전세 대출 가능한가요?", "관리비는 얼마예요?", "남향인가요?"], "중개사", "세입자", "부동산에서 방 구하기."),
-                createCourse(904, "환불 요청", "논리적으로 따지기.", ["제품에 하자가 있습니다", "환불 규정을 확인했습니다", "매니저 불러주세요"], "고객센터", "고객", "전화로 환불 요청."),
-                createCourse(905, "토론", "문화 차이 이야기.", ["한국 문화의 특징은...", "대만과는 이런 점이 다릅니다", "이해하기 어렵네요"], "한국 동료", "나", "회식 자리에서 문화 토론.")
-            ]
+
+        function switchPage(pageId, tabEl) {
+            document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
+            const target = document.getElementById('page-' + pageId);
+            if (target) target.classList.add('active-page');
+
+            if (tabEl) {
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                tabEl.classList.add('active');
+            }
+
+            if (pageId === 'home') renderHome();
+            if (pageId === 'learn') renderLearn();
+
+            // Close detail if open
+            document.getElementById('page-course-detail').classList.remove('show');
         }
-    }
-};
 
-let appState = {
-    lang: 'en',
-    level: 'beginner',
-    currentScenario: null, // object
-    courseMode: false, // NEW: Track if in course
-    chatHistory: [],
-    missionWords: [],
-    completedMissions: [],
-    vocabList: JSON.parse(localStorage.getItem('my_vocab') || '[]'),
-    autoAudio: true
-};
-
-/* =========================================
-   3. UI CONTROLLER
-   ========================================= */
-
-function init() {
-    const savedKey = localStorage.getItem('v21_key');
-    if(savedKey) {
-        document.getElementById('api-key-input').value = savedKey;
-    } else {
-        document.getElementById('api-warning').classList.remove('hidden');
-    }
-    renderHome();
-    updateLevelDesc();
-    renderVocab();
-}
-
-function switchPage(pageId, tabEl) {
-    document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
-    const target = document.getElementById('page-' + pageId);
-    if(target) target.classList.add('active-page');
-    
-    if(tabEl) {
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        tabEl.classList.add('active');
-    }
-
-    if(pageId === 'home') renderHome();
-    if(pageId === 'learn') renderLearn();
-    
-    // Close detail if open
-    document.getElementById('page-course-detail').classList.remove('show');
-}
-
-// Header & Navigation Logic
-function handleHeaderBack() {
-    // If Course Detail is open, close it
-    const detailPage = document.getElementById('page-course-detail');
-    if (detailPage.classList.contains('show')) {
-        closeCourseDetail();
-        return;
-    }
-    // Otherwise, assume we are in chat mode
-    endChat();
-}
-
-function setLang(lang) {
-    appState.lang = lang;
-    document.querySelectorAll('.lang-btn').forEach(b => {
-        const isActive = b.dataset.lang === lang;
-        b.className = isActive 
-            ? 'lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black' 
-            : 'lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
-    });
-    updateLevelDesc();
-    renderHome();
-    renderLearn(); // Refresh courses if on learn page
-}
-
-function setLevel(lvl) {
-    appState.level = lvl;
-    document.querySelectorAll('.level-btn').forEach(b => {
-        if(b.dataset.lvl === lvl) {
-            b.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-600');
-            b.classList.remove('border-gray-200');
-        } else {
-            b.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600');
-            b.classList.add('border-gray-200');
+        // Header & Navigation Logic
+        function handleHeaderBack() {
+            // If Course Detail is open, close it
+            const detailPage = document.getElementById('page-course-detail');
+            if (detailPage.classList.contains('show')) {
+                closeCourseDetail();
+                return;
+            }
+            // Otherwise, assume we are in chat mode
+            endChat();
         }
-    });
-    updateLevelDesc();
-    renderLearn(); // Refresh courses
-}
 
-function updateLevelDesc() {
-    const config = APP_DATA.langs[appState.lang].levels;
-    document.getElementById('lvl-desc-1').innerText = config.beginner;
-    document.getElementById('lvl-desc-2').innerText = config.intermediate;
-    document.getElementById('lvl-desc-3').innerText = config.advanced;
-}
+        function setLang(lang) {
+            appState.lang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => {
+                const isActive = b.dataset.lang === lang;
+                b.className = isActive
+                    ? 'lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black'
+                    : 'lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
+            });
+            updateLevelDesc();
+            renderHome();
+            renderLearn(); // Refresh courses if on learn page
+        }
 
-function renderHome() {
-    const grid = document.getElementById('scenario-grid');
-    grid.innerHTML = '';
-    const scenarios = APP_DATA.langs[appState.lang].scenarios;
-    
-    scenarios.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'ios-card m-0 flex flex-col items-center justify-center py-6 cursor-pointer active:scale-95 transition bg-white';
-        div.onclick = () => startChat(s);
-        div.innerHTML = `
-            <i class="fas ${s.icon} text-3xl text-blue-500 mb-3"></i>
+        function setLevel(lvl) {
+            appState.level = lvl;
+            document.querySelectorAll('.level-btn').forEach(b => {
+                if (b.dataset.lvl === lvl) {
+                    b.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-600');
+                    b.classList.remove('border-gray-200');
+                } else {
+                    b.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600');
+                    b.classList.add('border-gray-200');
+                }
+            });
+            updateLevelDesc();
+            renderHome();
+            renderLearn(); // Refresh courses
+        }
+
+        function updateLevelDesc() {
+            const config = APP_DATA.langs[appState.lang].levels;
+            document.getElementById('lvl-desc-1').innerText = config.beginner;
+            document.getElementById('lvl-desc-2').innerText = config.intermediate;
+            document.getElementById('lvl-desc-3').innerText = config.advanced;
+        }
+
+        function renderHome() {
+            const grid = document.getElementById('scenario-grid');
+            grid.innerHTML = '';
+            // Update: Scenarios are now split by difficulty level
+            const scenarios = APP_DATA.langs[appState.lang].scenarios[appState.level] || [];
+
+            scenarios.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'ios-card m-0 flex flex-col items-center justify-center py-6 cursor-pointer active:scale-95 transition bg-white shadow-sm hover:shadow-md';
+                div.onclick = () => startChat(s);
+                div.innerHTML = `
+            <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                <i class="fas ${s.icon} text-2xl text-blue-500"></i>
+            </div>
             <span class="font-bold text-sm text-center text-gray-800">${s.title}</span>
         `;
-        grid.appendChild(div);
-    });
-}
+                grid.appendChild(div);
+            });
 
-// --- Course & Learn Logic (SPEAK App Style) ---
-function renderLearn() {
-    const content = document.getElementById('learn-content');
-    const badge = document.getElementById('course-level-badge');
-    
-    // Get correct course list based on Lang AND Level
-    const courses = APP_DATA.courses[appState.lang] ? APP_DATA.courses[appState.lang][appState.level] : [];
-    
-    badge.innerText = appState.level.toUpperCase();
-    content.innerHTML = '';
-    
-    if(!courses || courses.length === 0) {
-        content.innerHTML = '<div class="text-center text-gray-400 mt-10">此等級目前尚無課程資料</div>';
-        return;
-    }
+        }
 
-    courses.forEach(c => {
-        content.innerHTML += `
+        // --- Course & Learn Logic (SPEAK App Style) ---
+        function renderLearn() {
+            const content = document.getElementById('learn-content');
+            const badge = document.getElementById('course-level-badge');
+
+            // Get correct course list based on Lang AND Level
+            const courses = APP_DATA.courses[appState.lang] ? APP_DATA.courses[appState.lang][appState.level] : [];
+
+            badge.innerText = appState.level.toUpperCase();
+            content.innerHTML = '';
+
+            if (!courses || courses.length === 0) {
+                content.innerHTML = '<div class="text-center text-gray-400 mt-10">此等級目前尚無課程資料</div>';
+                return;
+            }
+
+            courses.forEach(c => {
+                content.innerHTML += `
             <div class="ios-card m-0 mb-4 border border-gray-100 active:scale-95 transition cursor-pointer relative overflow-hidden" onclick="openCourse(${c.id})">
                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
                 <div class="flex flex-col gap-1 pl-2">
@@ -762,32 +994,64 @@ function renderLearn() {
                 <i class="fas fa-chevron-right absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
             </div>
         `;
-    });
-}
+            });
+        }
 
-function openCourse(courseId) {
-    const courses = APP_DATA.courses[appState.lang][appState.level];
-    const course = courses.find(c => c.id === courseId);
-    if(!course) return;
+        function openCourse(courseId) {
+            const courses = APP_DATA.courses[appState.lang][appState.level];
+            const course = courses.find(c => c.id === courseId);
+            if (!course) return;
 
-    // Build Detail View
-    let sentencesHtml = '';
-    course.sentences.forEach(s => {
-        sentencesHtml += `<div class="key-sentence-item font-medium text-gray-800"><i class="fas fa-quote-left text-blue-300 text-xs mr-2"></i>${s}</div>`;
-    });
+            // Build Detail View
+            let sentencesHtml = '';
+            course.sentences.forEach((s, idx) => {
+                const escapedText = s.text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                sentencesHtml += `
+            <div class="key-sentence-item flex flex-col gap-2 bg-white p-3 rounded border border-gray-100 shadow-sm">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="font-bold text-gray-800 text-lg"><i class="fas fa-quote-left text-blue-300 text-xs mr-1"></i> ${s.text}</div>
+                        <div class="text-gray-500 text-sm mt-1 ml-4">${s.trans}</div>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-2 ml-4">
+                    <button onclick="speakText('${escapedText}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+                        <i class="fas fa-volume-up"></i> 朗讀
+                    </button>
+                    <button onmousedown="startPronunciationPractice('${escapedText}', 'result-${idx}')" onmouseup="stopPronunciationPractice()" onmouseleave="stopPronunciationPractice()" ontouchstart="startPronunciationPractice('${escapedText}', 'result-${idx}')" ontouchend="stopPronunciationPractice()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+                        <i class="fas fa-microphone"></i> 按住跟讀
+                    </button>
+                </div>
+                <div id="result-${idx}" class="text-sm mt-1 ml-4 empty:hidden transition-all duration-300"></div>
+            </div>`;
+            });
 
-    const html = `
+            // 加入情境推薦單字
+            const vocabs = getCourseVocab(courseId);
+            let vocabHtml = '<div class="flex flex-wrap gap-2 mb-4">';
+            vocabs.forEach(v => {
+                vocabHtml += `<span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full text-sm">${v}</span>`;
+            });
+            vocabHtml += '</div>';
+
+            const html = `
         <div class="mb-6">
             <h1 class="text-3xl font-bold mb-2">${course.title}</h1>
             <p class="text-gray-500">${course.desc}</p>
         </div>
         
         <div class="mb-6">
+            <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2"><i class="fas fa-book text-indigo-500"></i> 本課引導單字</h3>
+            ${vocabHtml}
+            <p class="text-xs text-gray-400">這些單字在目前的情境與難度非常實用，試著加入對話中吧！</p>
+        </div>
+
+        <div class="mb-6">
             <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-star text-yellow-400"></i> 本課關鍵句 (Key Sentences)</h3>
             <div class="space-y-2">
                 ${sentencesHtml}
             </div>
-            <p class="text-xs text-gray-400 mt-2">請在接下來的對話練習中，嘗試使用這些句子。</p>
+            <p class="text-xs text-gray-400 mt-2">請在接下來的對話練習中嘗試使用這些句子，系統會自動包容時態或連接詞差異。</p>
         </div>
 
         <div class="mb-8">
@@ -805,240 +1069,324 @@ function openCourse(courseId) {
         <div class="h-10"></div>
     `;
 
-    document.getElementById('course-detail-body').innerHTML = html;
-    
-    // Header adjustments
-    document.getElementById('header-title').innerText = "課程詳情";
-    document.getElementById('header-back-btn').style.display = 'flex';
-    document.getElementById('back-text').innerText = "列表";
-    document.getElementById('close-detail-btn').style.display = 'block';
-    
-    // Show overlay
-    document.getElementById('page-course-detail').classList.add('show');
-}
+            document.getElementById('course-detail-body').innerHTML = html;
 
-function closeCourseDetail() {
-    document.getElementById('page-course-detail').classList.remove('show');
-    // Reset Header
-    document.getElementById('header-title').innerText = "My Learning";
-    document.getElementById('header-back-btn').style.display = 'none';
-    document.getElementById('close-detail-btn').style.display = 'none';
-}
+            // Header adjustments
+            document.getElementById('header-title').innerText = "課程詳情";
+            document.getElementById('header-back-btn').style.display = 'flex';
+            document.getElementById('header-back-btn').onclick = closeCourseDetail;
+            document.getElementById('back-text').innerText = "列表";
 
-/* =========================================
-   4. CHAT SYSTEM (Updated for Course Mode)
-   ========================================= */
+            // Show overlay
+            document.getElementById('page-course-detail').classList.add('show');
+        }
 
-// Start Chat from Course
-function startCourseChat(courseId) {
-    if(!localStorage.getItem('v21_key')) {
-        alert("請先設定 API Key");
-        return;
-    }
-    
-    const courses = APP_DATA.courses[appState.lang][appState.level];
-    const course = courses.find(c => c.id === courseId);
-    
-    // Close detail page
-    document.getElementById('page-course-detail').classList.remove('show');
-    document.getElementById('close-detail-btn').style.display = 'none';
+        function closeCourseDetail() {
+            document.getElementById('page-course-detail').classList.remove('show');
+            // Reset Header
+            document.getElementById('header-title').innerText = "My Learning";
+            document.getElementById('header-back-btn').style.display = 'none';
+            document.getElementById('header-back-btn').onclick = endChat;
+        }
 
-    // Set State
-    appState.currentScenario = {
-        title: course.title,
-        role: course.aiRole,
-        user: course.userRole,
-        context: course.context // Special context
-    };
-    appState.courseMode = true; // Mark as course mode
-    appState.chatHistory = [];
-    appState.completedMissions = [];
-    appState.missionWords = course.sentences; // Mission = Course Sentences
+        /* =========================================
+           4. CHAT SYSTEM (Updated for Course Mode)
+           ========================================= */
 
-    // Switch UI
-    document.getElementById('header-title').innerText = "課程練習";
-    document.getElementById('header-back-btn').style.display = 'flex';
-    document.getElementById('back-text').innerText = "結束";
-    document.getElementById('audio-toggle').style.display = 'block';
-    
-    updateMissionUI();
-    
-    const container = document.getElementById('chat-container');
-    container.innerHTML = `<div class="text-center text-gray-400 text-xs mt-8 mb-4">
+        // Start Chat from Course
+        function startCourseChat(courseId) {
+            if (!localStorage.getItem('v21_key')) {
+                alert("請先設定 API Key");
+                return;
+            }
+
+            const courses = APP_DATA.courses[appState.lang][appState.level];
+            const course = courses.find(c => c.id === courseId);
+
+            // Close detail page properly
+            closeCourseDetail();
+
+            // Set State
+            appState.currentScenario = {
+                title: course.title,
+                role: course.aiRole,
+                user: course.userRole,
+                context: course.context // Special context
+            };
+            appState.courseMode = true; // Mark as course mode
+            appState.chatHistory = [];
+            appState.completedMissions = [];
+            appState.missionWords = course.sentences.map(s => s.text); // Mission = Course Sentences
+
+            // Switch UI
+            document.getElementById('header-title').innerText = "課程練習";
+            document.getElementById('header-back-btn').style.display = 'flex';
+            document.getElementById('back-text').innerText = "結束";
+            document.getElementById('audio-toggle').style.display = 'block';
+
+            updateMissionUI();
+
+            const container = document.getElementById('chat-container');
+            container.innerHTML = `<div class="text-center text-gray-400 text-xs mt-8 mb-4">
         課程模式: ${course.title}<br>
         目標: 使用關鍵句
     </div>`;
 
-    document.body.classList.add('chat-mode');
-    document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
-    document.getElementById('page-chat').classList.add('active-page');
+            document.body.classList.add('chat-mode');
+            document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById('page-chat').classList.add('active-page');
 
-    triggerAIResponse(true);
-}
+            triggerAIResponse(true);
+        }
 
-// Start Normal Chat
-function startChat(scenario) {
-    if(!localStorage.getItem('v21_key')) {
-        alert("請先設定 API Key");
-        switchPage('settings', document.querySelectorAll('.tab-item')[3]);
-        return;
-    }
+        // Start Normal Chat
+        function startChat(scenario) {
+            if (!localStorage.getItem('v21_key')) {
+                alert("請先設定 API Key");
+                switchPage('settings', document.querySelectorAll('.tab-item')[3]);
+                return;
+            }
 
-    appState.currentScenario = scenario;
-    appState.courseMode = false;
-    appState.chatHistory = [];
-    appState.completedMissions = [];
-    
-    // Free/Random Missions
-    const pool = ['Hello', 'Thank you', 'Please']; // Simplified fallback
-    appState.missionWords = pool; // Ideally fetch from DB based on level
-    
-    // UI Update
-    document.getElementById('header-title').innerText = scenario === 'free' ? "自由對話" : scenario.title;
-    document.getElementById('header-back-btn').style.display = 'flex';
-    document.getElementById('back-text').innerText = "結束";
-    document.getElementById('audio-toggle').style.display = 'block';
-    updateMissionUI();
-    
-    const container = document.getElementById('chat-container');
-    container.innerHTML = `<div class="text-center text-gray-400 text-xs mt-8 mb-4">
+            appState.currentScenario = scenario;
+            appState.courseMode = false;
+            appState.chatHistory = [];
+            appState.completedMissions = [];
+
+            // 依據語言與難度與情境載入過關單字
+            const scenarioId = scenario === 'free' ? 'free' : scenario.id;
+            const pool = MISSION_DATA[appState.lang][scenarioId][appState.level];
+            appState.missionWords = pool || ['Hello', 'Thank you', 'Please'];
+
+            // UI Update
+            document.getElementById('header-title').innerText = scenario === 'free' ? "自由對話" : scenario.title;
+            document.getElementById('header-back-btn').style.display = 'flex';
+            document.getElementById('back-text').innerText = "結束";
+            document.getElementById('audio-toggle').style.display = 'block';
+            updateMissionUI();
+
+            const container = document.getElementById('chat-container');
+            container.innerHTML = `<div class="text-center text-gray-400 text-xs mt-8 mb-4">
         對話已就緒 (${APP_DATA.langs[appState.lang].name})
     </div>`;
 
-    document.body.classList.add('chat-mode');
-    document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
-    document.getElementById('page-chat').classList.add('active-page');
+            document.body.classList.add('chat-mode');
+            document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
+            document.getElementById('page-chat').classList.add('active-page');
 
-    triggerAIResponse(true);
-}
-
-function endChat() {
-    document.body.classList.remove('chat-mode');
-    document.getElementById('header-back-btn').style.display = 'none';
-    document.getElementById('audio-toggle').style.display = 'none';
-    document.getElementById('header-title').innerText = "My Learning";
-    window.speechSynthesis.cancel();
-    
-    // Return logic: if was course, go to learn, else home
-    if(appState.courseMode) {
-        switchPage('learn', document.querySelectorAll('.tab-item')[1]);
-    } else {
-        switchPage('home', document.querySelectorAll('.tab-item')[0]);
-    }
-}
-
-function updateMissionUI() {
-    const container = document.getElementById('mission-words');
-    container.innerHTML = '';
-    appState.missionWords.forEach(word => {
-        const isDone = appState.completedMissions.some(m => word.toLowerCase().includes(m.toLowerCase()) || m.toLowerCase().includes(word.toLowerCase()));
-        const span = document.createElement('span');
-        // Handle long sentences in course mode
-        const displayWord = word.length > 15 ? word.substring(0, 12) + "..." : word;
-        
-        span.className = `flex-none px-2 py-1 rounded border text-xs whitespace-nowrap transition-all ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-600'}`;
-        span.innerHTML = isDone ? `<i class="fas fa-check mr-1"></i>${displayWord}` : displayWord;
-        container.appendChild(span);
-    });
-}
-
-// Audio Toggle
-function toggleAutoAudio() {
-    appState.autoAudio = !appState.autoAudio;
-    const btn = document.getElementById('audio-icon');
-    if(appState.autoAudio) {
-        btn.innerHTML = '<i class="fas fa-volume-up"></i> 朗讀';
-        btn.classList.remove('opacity-50');
-    } else {
-        btn.innerHTML = '<i class="fas fa-volume-mute"></i> 靜音';
-        btn.classList.add('opacity-50');
-    }
-}
-
-// Chat Send Logic
-async function handleUserSend() {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if(!text) return;
-    
-    window.speechSynthesis.cancel();
-    input.value = '';
-    
-    // === 修正任務判定邏輯 (模糊比對) ===
-    // 移除標點符號並轉小寫，增加辨識成功率
-    const cleanInput = text.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-    
-    appState.missionWords.forEach(target => {
-        const cleanTarget = target.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-        
-        // 只要句子包含關鍵字，或是關鍵字包含句子(針對短語)，都算過關
-        if(cleanInput.includes(cleanTarget) || cleanTarget.includes(cleanInput)) {
-           if(!appState.completedMissions.includes(target)) {
-               appState.completedMissions.push(target);
-           }
+            triggerAIResponse(true);
         }
-    });
-    updateMissionUI();
 
-    addBubble(text, 'user');
-    await triggerAIResponse(false, text);
-}
+        function endChat() {
+            document.body.classList.remove('chat-mode');
+            document.getElementById('header-back-btn').style.display = 'none';
+            document.getElementById('audio-toggle').style.display = 'none';
+            document.getElementById('header-title').innerText = "My Learning";
+            window.speechSynthesis.cancel();
 
-document.getElementById('send-btn').addEventListener('click', handleUserSend);
-document.getElementById('chat-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleUserSend(); });
+            // Return logic: if was course, go to learn, else home
+            if (appState.courseMode) {
+                switchPage('learn', document.querySelectorAll('.tab-item')[1]);
+            } else {
+                switchPage('home', document.querySelectorAll('.tab-item')[0]);
+            }
+        }
 
-function addBubble(text, type, correction = null) {
-    const container = document.getElementById('chat-container');
-    const div = document.createElement('div');
-    div.className = type === 'user' ? 'bubble-user' : 'bubble-ai';
-    
-    let html = '';
-    if (correction) {
-        html += `<div class="correction-box">
+        function updateMissionUI() {
+            const container = document.getElementById('mission-words');
+            container.innerHTML = '';
+            appState.missionWords.forEach(word => {
+                const isDone = appState.completedMissions.some(m => word.toLowerCase().includes(m.toLowerCase()) || m.toLowerCase().includes(word.toLowerCase()));
+                const span = document.createElement('span');
+                // Handle long sentences in course mode
+                const displayWord = word.length > 15 ? word.substring(0, 12) + "..." : word;
+
+                span.className = `flex-none px-2 py-1 rounded border text-xs whitespace-nowrap transition-all ${isDone ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-600'}`;
+                span.innerHTML = isDone ? `<i class="fas fa-check mr-1"></i>${displayWord}` : displayWord;
+                container.appendChild(span);
+            });
+        }
+
+        // Audio Toggle
+        function toggleAutoAudio() {
+            appState.autoAudio = !appState.autoAudio;
+            const btn = document.getElementById('audio-icon');
+            if (appState.autoAudio) {
+                btn.innerHTML = '<i class="fas fa-volume-up"></i> 朗讀';
+                btn.classList.remove('opacity-50');
+            } else {
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i> 靜音';
+                btn.classList.add('opacity-50');
+            }
+        }
+
+        // === 修正任務判定邏輯 (寬鬆比對/時態包容) 全域化 ===
+        function checkMissionStandalone(input, target, lang) {
+            const cleanIn = input.toLowerCase().replace(/[.,\/#!$%\\^&\\*;:{}=\\-_`~()?\s+]/g, " ");
+            const cleanTar = target.toLowerCase().replace(/[.,\/#!$%\\^&\\*;:{}=\\-_`~()?\s+]/g, " ");
+
+            if (cleanIn.replace(/\s+/g, "").includes(cleanTar.replace(/\s+/g, "")) ||
+                cleanTar.replace(/\s+/g, "").includes(cleanIn.replace(/\s+/g, ""))) return true;
+
+            if (lang === 'en') {
+                const stopWords = ['i', 'you', 'he', 'she', 'it', 'we', 'they', 'a', 'an', 'the', 'is', 'am', 'are', 'was', 'were', 'to', 'and', 'but', 'or', 'in', 'on', 'at'];
+                const wordsTar = cleanTar.split(/\s+/).filter(w => w.length > 2 && !stopWords.includes(w));
+                const wordsIn = cleanIn.split(/\s+/);
+                let matchCount = 0;
+                for (let wt of wordsTar) {
+                    const stem = wt.replace(/(ing|ed|s|ly|d)$/, '');
+                    if (wordsIn.some(wi => wi.includes(stem))) matchCount++;
+                }
+                if (wordsTar.length > 0 && (matchCount / wordsTar.length) >= 0.5) return true;
+            } else {
+                const charIn = cleanIn.replace(/\s+/g, "");
+                const charTar = cleanTar.replace(/\s+/g, "");
+                const minMatchLen = Math.max(2, Math.floor(charTar.length * 0.5));
+                for (let i = 0; i <= charTar.length - minMatchLen; i++) {
+                    const chunk = charTar.substring(i, i + minMatchLen);
+                    if (charIn.includes(chunk)) return true;
+                }
+            }
+            return false;
+        }
+
+        // --- 發音與跟讀練習模組 ---
+        let pronuncRecognition = null;
+
+        function startPronunciationPractice(targetText, elementId) {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("您的瀏覽器不支援語音辨識功能，請使用 Chrome 或 Safari.");
+                return;
+            }
+
+            const resEl = document.getElementById(elementId);
+            resEl.innerHTML = '<span class="text-blue-500 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> 聆聽中... 請說話</span>';
+            resEl.className = "text-sm mt-2 p-2 bg-blue-50 rounded border border-blue-100 empty:hidden transition-all";
+
+            if (pronuncRecognition) {
+                try { pronuncRecognition.stop(); } catch (e) { }
+            }
+
+            pronuncRecognition = new webkitSpeechRecognition();
+            pronuncRecognition.continuous = false;
+            const map = { 'en': 'en-US', 'jp': 'ja-JP', 'kr': 'ko-KR' };
+            pronuncRecognition.lang = map[appState.lang];
+
+            let handled = false;
+
+            pronuncRecognition.onresult = (e) => {
+                handled = true;
+                const transcript = e.results[0][0].transcript;
+                const isPass = checkMissionStandalone(transcript, targetText, appState.lang);
+
+                if (isPass) {
+                    resEl.innerHTML = '<span class="text-green-600 font-bold"><i class="fas fa-check-circle mr-1"></i> 發音標準！</span>';
+                    resEl.className = "text-sm mt-2 p-2 bg-green-50 rounded border border-green-200 empty:hidden active transition-all";
+                } else {
+                    resEl.innerHTML = `<span class="text-red-500 font-bold"><i class="fas fa-times-circle mr-1"></i> 聽起來像:</span> <span class="text-gray-700">${transcript}</span>`;
+                    resEl.className = "text-sm mt-2 p-2 bg-red-50 rounded border border-red-200 empty:hidden active transition-all";
+                }
+            };
+
+            pronuncRecognition.onerror = (e) => {
+                if (!handled) {
+                    resEl.innerHTML = '<span class="text-gray-500"><i class="fas fa-exclamation-circle mr-1"></i> 沒有偵測到聲音或發生錯誤</span>';
+                    resEl.className = "text-sm mt-2 p-2 bg-gray-50 rounded border border-gray-200 empty:hidden active transition-all";
+                }
+            };
+
+            pronuncRecognition.onend = () => {
+                if (!handled && resEl.innerHTML.includes('聆聽中')) {
+                    resEl.innerHTML = '<span class="text-gray-500"><i class="fas fa-stop-circle mr-1"></i> 錄音結束</span>';
+                    resEl.className = "text-sm mt-2 p-2 bg-gray-50 rounded border border-gray-200 empty:hidden active transition-all";
+                }
+            };
+
+            try { pronuncRecognition.start(); } catch (e) { }
+        }
+
+        function stopPronunciationPractice() {
+            if (pronuncRecognition) {
+                try { pronuncRecognition.stop(); } catch (e) { }
+            }
+        }
+
+        // Chat Send Logic
+        async function handleUserSend() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            window.speechSynthesis.cancel();
+            input.value = '';
+
+            appState.missionWords.forEach(target => {
+                if (checkMissionStandalone(text, target, appState.lang)) {
+                    if (!appState.completedMissions.includes(target)) {
+                        appState.completedMissions.push(target);
+                    }
+                }
+            });
+            updateMissionUI();
+
+            addBubble(text, 'user');
+            await triggerAIResponse(false, text);
+        }
+
+        document.getElementById('send-btn').addEventListener('click', handleUserSend);
+        document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUserSend(); });
+
+        function addBubble(text, type, correction = null) {
+            const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = type === 'user' ? 'bubble-user' : 'bubble-ai';
+
+            let html = '';
+            if (correction) {
+                html += `<div class="correction-box">
             <div class="font-bold flex items-center gap-1"><i class="fas fa-magic"></i> 優化建議</div>
             <div class="text-gray-800">${correction.correction}</div>
             <div class="text-[11px] mt-1 opacity-80 border-t border-yellow-300 pt-1">${correction.reason}</div>
         </div>`;
-    }
-    html += `<div>${text}</div>`;
-    
-    if(type === 'ai') {
-        const cleanText = text.replace(/"/g, "&quot;");
-        html += `<div onclick="speakText(this.nextElementSibling.innerText)" class="absolute -left-10 bottom-0 text-gray-400 p-2 cursor-pointer"><i class="fas fa-volume-up"></i></div><div style="display:none">${cleanText}</div>`;
-    }
+            }
+            html += `<div>${text}</div>`;
 
-    div.innerHTML = html;
-    container.appendChild(div);
-    
-    // === 修正捲動邏輯 ===
-    // 使用 requestAnimationFrame 確保畫面渲染完才捲動
-    requestAnimationFrame(() => {
-        container.scrollTop = container.scrollHeight;
-    });
-    // 雙重保險，防止圖片載入造成的高度變化
-    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
-}
+            if (type === 'ai') {
+                const cleanText = text.replace(/"/g, "&quot;");
+                html += `<div onclick="speakText(this.nextElementSibling.innerText)" class="absolute -left-10 bottom-0 text-gray-400 p-2 cursor-pointer"><i class="fas fa-volume-up"></i></div><div style="display:none">${cleanText}</div>`;
+            }
 
-async function triggerAIResponse(isInit, userText) {
-    const container = document.getElementById('chat-container');
-    const loaderId = 'loader-' + Date.now();
-    
-    if(!isInit) {
-        const loader = document.createElement('div');
-        loader.id = loaderId;
-        loader.className = 'bubble-ai';
-        loader.innerHTML = '<div class="flex gap-1"><span class="animate-bounce">●</span><span class="animate-bounce" style="animation-delay:0.1s">●</span><span class="animate-bounce" style="animation-delay:0.2s">●</span></div>';
-        container.appendChild(loader);
-        container.scrollTop = container.scrollHeight;
-    }
+            div.innerHTML = html;
+            container.appendChild(div);
 
-    try {
-        let contents = [];
-        let sysPrompt = "";
-        const langName = APP_DATA.langs[appState.lang].name;
+            // === 修正捲動邏輯 ===
+            // 使用 requestAnimationFrame 確保畫面渲染完才捲動
+            requestAnimationFrame(() => {
+                container.scrollTop = container.scrollHeight;
+            });
+            // 雙重保險，防止圖片載入造成的高度變化
+            setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
+        }
 
-        if (appState.courseMode) {
-             sysPrompt = `
+        async function triggerAIResponse(isInit, userText) {
+            const container = document.getElementById('chat-container');
+            const loaderId = 'loader-' + Date.now();
+
+            if (!isInit) {
+                const loader = document.createElement('div');
+                loader.id = loaderId;
+                loader.className = 'bubble-ai';
+                loader.innerHTML = '<div class="flex gap-1"><span class="animate-bounce">●</span><span class="animate-bounce" style="animation-delay:0.1s">●</span><span class="animate-bounce" style="animation-delay:0.2s">●</span></div>';
+                container.appendChild(loader);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            try {
+                let contents = [];
+                let sysPrompt = "";
+                const langName = APP_DATA.langs[appState.lang].name;
+
+                if (appState.courseMode) {
+                    sysPrompt = `
              System: Roleplay for Language Learning (${langName}). Level: ${appState.level}.
              Scenario: ${appState.currentScenario.context}
              Your Role: ${appState.currentScenario.role}
@@ -1051,214 +1399,184 @@ async function triggerAIResponse(isInit, userText) {
              3. If user makes grammar mistake, start with JSON {"correction": "...", "reason": "..."}.
              4. Keep replies concise.
              `;
-        } else {
-             // Normal Mode
-             const scenarioInfo = appState.currentScenario === 'free' 
-                ? "Mode: Free Talk." 
-                : `Scenario: ${appState.currentScenario.title}. Role: ${appState.currentScenario.role}.`;
-             sysPrompt = `System: Tutor for ${langName}. Level: ${appState.level}. ${scenarioInfo}. If mistake, JSON {"correction":...}.`;
+                } else {
+                    // Normal Mode
+                    const scenarioInfo = appState.currentScenario === 'free'
+                        ? "Mode: Free Talk."
+                        : `Scenario: ${appState.currentScenario.title}. Role: ${appState.currentScenario.role}.`;
+                    sysPrompt = `System: Tutor for ${langName}. Level: ${appState.level}. ${scenarioInfo}. If mistake, JSON {"correction":...}.`;
+                }
+
+                contents.push({ role: "user", parts: [{ text: sysPrompt }] });
+                appState.chatHistory.slice(-6).forEach(msg => {
+                    contents.push({ role: msg.role, parts: [{ text: msg.text }] });
+                });
+
+                if (!isInit) {
+                    contents.push({ role: "user", parts: [{ text: userText }] });
+                    appState.chatHistory.push({ role: "user", text: userText });
+                } else {
+                    contents.push({ role: "user", parts: [{ text: "Start the conversation naturally based on the scenario." }] });
+                }
+
+                const rawText = await callGemini(contents);
+
+                const loader = document.getElementById(loaderId);
+                if (loader) loader.remove();
+
+                let replyText = rawText;
+                let correctionData = null;
+                const jsonMatch = rawText.match(/\{[\s\S]*"correction"[\s\S]*\}/);
+                if (jsonMatch) {
+                    try {
+                        correctionData = JSON.parse(jsonMatch[0]);
+                        replyText = rawText.replace(jsonMatch[0], '').trim();
+                    } catch (e) { }
+                }
+
+                addBubble(replyText, 'ai', correctionData);
+                appState.chatHistory.push({ role: "model", text: rawText });
+
+                if (appState.autoAudio && replyText) speakText(replyText);
+
+            } catch (err) {
+                const loader = document.getElementById(loaderId);
+                if (loader) loader.remove();
+                if (!isInit) alert("Error: " + err.message);
+            }
         }
 
-        contents.push({ role: "user", parts: [{ text: sysPrompt }] });
-        appState.chatHistory.slice(-6).forEach(msg => {
-            contents.push({ role: msg.role, parts: [{ text: msg.text }] });
-        });
-
-        if(!isInit) {
-            contents.push({ role: "user", parts: [{ text: userText }] });
-            appState.chatHistory.push({ role: "user", text: userText });
-        } else {
-            contents.push({ role: "user", parts: [{ text: "Start the conversation naturally based on the scenario." }] });
-        }
-
-        const rawText = await callGemini(contents);
-        
-        const loader = document.getElementById(loaderId);
-        if(loader) loader.remove();
-
-        let replyText = rawText;
-        let correctionData = null;
-        const jsonMatch = rawText.match(/\{[\s\S]*"correction"[\s\S]*\}/);
-        if(jsonMatch) {
-            try {
-                correctionData = JSON.parse(jsonMatch[0]);
-                replyText = rawText.replace(jsonMatch[0], '').trim();
-            } catch(e) {}
-        }
-
-        addBubble(replyText, 'ai', correctionData);
-        appState.chatHistory.push({ role: "model", text: rawText });
-
-        if(appState.autoAudio && replyText) speakText(replyText);
-
-    } catch (err) {
-        const loader = document.getElementById(loaderId);
-        if(loader) loader.remove();
-        if(!isInit) alert("Error: " + err.message);
-    }
-}
-
-// --- UTILS ---
-function speakText(text) {
-    if(!text) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    const map = { 'en': 'en-US', 'jp': 'ja-JP', 'kr': 'ko-KR' };
-    u.lang = map[appState.lang];
-    u.rate = 0.9; 
-    window.speechSynthesis.speak(u);
-}
-
-// STT
-const micBtn = document.getElementById('mic-btn');
-if ('webkitSpeechRecognition' in window) {
-    const recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    micBtn.onclick = () => {
-        if(micBtn.classList.contains('recording')) {
-            recognition.stop();
-        } else {
+        // --- UTILS ---
+        function speakText(text) {
+            if (!text) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
             const map = { 'en': 'en-US', 'jp': 'ja-JP', 'kr': 'ko-KR' };
-            recognition.lang = map[appState.lang];
-            recognition.start();
-            micBtn.classList.add('recording', 'bg-red-500', 'text-white');
-            micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+            u.lang = map[appState.lang];
+            u.rate = 0.9;
+            window.speechSynthesis.speak(u);
         }
-    };
-    recognition.onresult = (e) => {
-        document.getElementById('chat-input').value = e.results[0][0].transcript;
-        micBtn.classList.remove('recording', 'bg-red-500', 'text-white');
-        micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-    };
-    recognition.onend = () => {
-        micBtn.classList.remove('recording', 'bg-red-500', 'text-white');
-        micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-    };
-} else { micBtn.style.display = 'none'; }
 
-// Vocab Quiz Toggle
-/* =========================================
-   Vocab & Quiz Logic (Updated)
-   ========================================= */
+        // STT
+        const micBtn = document.getElementById('mic-btn');
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            micBtn.onclick = () => {
+                if (micBtn.classList.contains('recording')) {
+                    recognition.stop();
+                } else {
+                    const map = { 'en': 'en-US', 'jp': 'ja-JP', 'kr': 'ko-KR' };
+                    recognition.lang = map[appState.lang];
+                    recognition.start();
+                    micBtn.classList.add('recording', 'bg-red-500', 'text-white');
+                    micBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                }
+            };
+            recognition.onresult = (e) => {
+                document.getElementById('chat-input').value = e.results[0][0].transcript;
+                micBtn.classList.remove('recording', 'bg-red-500', 'text-white');
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+            recognition.onend = () => {
+                micBtn.classList.remove('recording', 'bg-red-500', 'text-white');
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            };
+        } else { micBtn.style.display = 'none'; }
 
-// 新增測驗相關狀態
-appState.quizIndex = 0;
-appState.quizRevealed = false;
+        // Vocab Quiz Toggle
+        /* =========================================
+           Vocab & Quiz Logic (Updated)
+           ========================================= */
 
-// 切換測驗模式
-function toggleQuizMode() {
-    // 檢查是否有單字
-    if(appState.vocabList.length === 0) {
-        alert("單字本是空的，請先去對話中收藏單字！");
-        return;
-    }
+        function setVocabLang(lang) {
+            appState.vocabLang = lang;
+            document.querySelectorAll('.vocab-lang-btn').forEach(b => {
+                const isActive = b.dataset.lang === lang;
+                b.className = isActive
+                    ? 'vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black'
+                    : 'vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
+            });
+            renderVocab();
+        }
 
-    isQuizMode = !isQuizMode;
-    const btnText = document.getElementById('quiz-btn-text');
-    
-    if(isQuizMode) {
-        // 進入測驗模式
-        btnText.innerText = "退出測驗";
-        appState.quizIndex = 0;
-        appState.quizRevealed = false;
-        // 打亂單字順序 (Shuffle)
-        appState.shuffledVocab = [...appState.vocabList].sort(() => 0.5 - Math.random());
-        renderQuizCard();
-    } else {
-        // 回到列表模式
-        btnText.innerText = "進入測驗模式";
-        renderVocab();
-    }
-}
+        function openQuizModal() {
+            const filteredVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang);
+            if (filteredVocab.length < 4) {
+                alert("該語言的單字少於 4 個，選項不足，請多收藏一些單字再來測驗！");
+                return;
+            }
+            appState.quizVocab = [...filteredVocab].sort(() => 0.5 - Math.random());
+            appState.quizIndex = 0;
+            appState.quizScore = 0;
+            document.getElementById('quiz-modal').classList.remove('hidden');
+            renderQuizQuestion();
+        }
 
-// 渲染單字卡 (Flashcard UI)
-function renderQuizCard() {
-    const list = document.getElementById('vocab-list');
-    
-    // 檢查是否測驗結束
-    if(appState.quizIndex >= appState.shuffledVocab.length) {
-        list.innerHTML = `
-        <div class="text-center mt-10">
-            <div class="text-6xl mb-4">🎉</div>
-            <h3 class="text-xl font-bold mb-2">測驗完成！</h3>
-            <p class="text-gray-500 mb-6">你複習了 ${appState.shuffledVocab.length} 個單字</p>
-            <button onclick="toggleQuizMode()" class="bg-blue-500 text-white px-6 py-3 rounded-full font-bold shadow-lg">回到單字本</button>
-        </div>`;
-        return;
-    }
+        function closeQuizModal() {
+            document.getElementById('quiz-modal').classList.add('hidden');
+        }
 
-    const item = appState.shuffledVocab[appState.quizIndex];
-    const currentCount = appState.quizIndex + 1;
-    const totalCount = appState.shuffledVocab.length;
-
-    // 根據是否揭曉答案 (Revealed) 決定顯示內容
-    // 狀態 1: 未揭曉 -> 顯示單字 + "點擊看答案"
-    // 狀態 2: 已揭曉 -> 顯示單字 + 翻譯 + "點擊下一張"
-    
-    let contentHtml = '';
-    let hintHtml = '';
-
-    if (!appState.quizRevealed) {
-        // 正面：只顯示單字
-        contentHtml = `<div class="text-4xl font-bold text-gray-800 mb-2">${item.word}</div>`;
-        hintHtml = `<div class="text-gray-400 text-sm mt-8 animate-pulse">👆 點擊查看答案</div>`;
-    } else {
-        // 背面：顯示單字 + 答案
-        contentHtml = `
-            <div class="text-2xl font-bold text-gray-500 mb-4">${item.word}</div>
-            <div class="text-3xl font-bold text-blue-600">${item.trans}</div>
+        function renderQuizQuestion() {
+            const container = document.getElementById('quiz-content');
+            if (appState.quizIndex >= appState.quizVocab.length) {
+                container.innerHTML = `
+            <div class="text-center py-6">
+                <div class="text-5xl mb-4">🎉</div>
+                <h3 class="text-xl font-bold mb-2">測驗完成！</h3>
+                <p class="text-gray-500">得分: ${appState.quizScore} / ${appState.quizVocab.length}</p>
+                <button onclick="closeQuizModal()" class="mt-6 w-full bg-blue-500 text-white py-3 rounded-lg font-bold shadow-md">關閉</button>
+            </div>
         `;
-        hintHtml = `<div class="text-blue-400 text-sm mt-8 font-bold">👆 點擊下一張</div>`;
-    }
+                return;
+            }
 
-    list.innerHTML = `
-        <div class="flex justify-between text-xs text-gray-400 px-2 mb-2">
-            <span>Progress</span>
-            <span>${currentCount} / ${totalCount}</span>
-        </div>
-        <div class="w-full bg-gray-200 h-1.5 rounded-full mb-6">
-            <div class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: ${(currentCount/totalCount)*100}%"></div>
-        </div>
+            const currentWord = appState.quizVocab[appState.quizIndex];
+            const otherVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang && v.id !== currentWord.id);
+            const shuffledOthers = [...otherVocab].sort(() => 0.5 - Math.random()).slice(0, 3);
+            const options = [...shuffledOthers, currentWord].sort(() => 0.5 - Math.random());
 
-        <div class="flashcard ${appState.quizRevealed ? 'revealed' : ''}" onclick="handleCardClick()">
-            ${contentHtml}
-            ${hintHtml}
+            let optionsHtml = '';
+            options.forEach(opt => {
+                optionsHtml += `<button onclick="checkQuizAnswer('${opt.id}', '${currentWord.id}')" class="w-full text-left p-3 mb-3 border border-gray-200 rounded-lg hover:bg-blue-50 active:bg-blue-100 transition-all outline-none font-medium text-gray-800">${opt.trans}</button>`;
+            });
+
+            container.innerHTML = `
+        <div class="mb-4 flex justify-between text-sm text-gray-500 font-medium">
+            <span>第 ${appState.quizIndex + 1} 題 / 共 ${appState.quizVocab.length} 題</span>
+            <span>分數: ${appState.quizScore}</span>
+        </div>
+        <div class="text-center py-8 mb-6 bg-gray-50 rounded-xl border border-gray-100 shadow-sm flex items-center justify-center min-h-[120px]">
+            <h4 class="text-3xl font-bold text-blue-600 break-words w-full px-4">${currentWord.word}</h4>
+        </div>
+        <div class="space-y-1">
+            ${optionsHtml}
         </div>
     `;
-}
+        }
 
-// 卡片點擊邏輯
-function handleCardClick() {
-    if (!appState.quizRevealed) {
-        // 動作 1: 翻牌 (顯示答案)
-        appState.quizRevealed = true;
-        
-        // 播放語音 (可選，增強記憶)
-        const item = appState.shuffledVocab[appState.quizIndex];
-        speakText(item.word);
-        
-        renderQuizCard();
-    } else {
-        // 動作 2: 下一張
-        appState.quizIndex++;
-        appState.quizRevealed = false;
-        renderQuizCard();
-    }
-}
+        function checkQuizAnswer(selectedId, correctId) {
+            if (String(selectedId) === String(correctId)) {
+                appState.quizScore++;
+            } else {
+                const correctWord = appState.quizVocab.find(v => String(v.id) === String(correctId));
+                alert(`❌ 答錯了！\n正確答案是: ${correctWord.trans}`);
+            }
+            appState.quizIndex++;
+            renderQuizQuestion();
+        }
 
-// 一般列表渲染 (保持不變，但放在一起方便管理)
-function renderVocab() {
-    // 如果正在測驗模式，不要渲染列表
-    if(isQuizMode) return;
+        function renderVocab() {
+            const list = document.getElementById('vocab-list');
+            const filteredVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang);
 
-    const list = document.getElementById('vocab-list');
-    if(!appState.vocabList.length) {
-        list.innerHTML = '<div class="text-center text-gray-400 mt-10">尚無單字<br>請在對話中長按文字進行收藏</div>';
-        return;
-    }
-    list.innerHTML = '';
-    appState.vocabList.forEach(v => {
-        list.innerHTML += `
+            if (!filteredVocab.length) {
+                list.innerHTML = '<div class="text-center text-gray-400 mt-10">該語言尚無單字<br>請在對話中選取文字進行收藏</div>';
+                return;
+            }
+            list.innerHTML = '';
+            filteredVocab.forEach(v => {
+                list.innerHTML += `
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center relative">
             <div>
                 <div class="font-bold text-lg text-gray-800">${v.word}</div>
@@ -1266,105 +1584,106 @@ function renderVocab() {
             </div>
             <button onclick="delVocab(${v.id})" class="text-gray-300 hover:text-red-500 px-4 py-2"><i class="fas fa-trash"></i></button>
         </div>`;
-    });
-}
+            });
+        }
 
-function delVocab(id) {
-    if(!confirm("確定要刪除這個單字嗎？")) return;
-    appState.vocabList = appState.vocabList.filter(v => v.id !== id);
-    localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
-    renderVocab();
-}
-
-// Selection Translate
-// === 修正選取翻譯邏輯 ===
-document.addEventListener('selectionchange', () => {
-    const sel = window.getSelection();
-    const btn = document.getElementById('float-translate-btn');
-    const chatPage = document.getElementById('page-chat');
-    
-    // 只有在聊天頁面且有選取文字時才顯示
-    if (sel.toString().trim().length > 0 && chatPage.classList.contains('active-page')) {
-        // 改為固定位置顯示在頂部，避免被手機原生選單遮擋
-        btn.style.display = 'block';
-        btn.style.top = '100px'; // 固定在 Header 下方
-        btn.style.left = '50%';
-        btn.style.transform = 'translateX(-50%)';
-        btn.style.zIndex = '9999'; // 確保最上層
-        
-        // 使用 onmousedown 防止點擊時失去焦點導致選取消失
-        btn.onmousedown = async (e) => {
-            e.preventDefault(); // 關鍵：防止按鈕點擊取消了文字選取
-            e.stopPropagation();
-            
-            const text = sel.toString();
-            btn.style.display = 'none';
-            sel.removeAllRanges(); // 翻譯後取消選取
-            
-            await doTranslate(text);
-        };
-    } else {
-        btn.style.display = 'none';
-    }
-});
-
-async function doTranslate(text) {
-    const id = Date.now();
-    // 先顯示載入中狀態
-    appState.vocabList.unshift({ id, word: text, trans: "翻譯中...", lang: appState.lang });
-    renderVocab();
-    
-    try {
-        // 呼叫 API (這裡會使用你剛改好的 Vercel 連線版 callGemini)
-        const res = await callGemini([{ role: "user", parts: [{ text: `Translate "${text}" to Traditional Chinese. Just output translation.` }] }]);
-        
-        // 更新結果
-        const item = appState.vocabList.find(i => i.id === id);
-        if(item) {
-            item.trans = res.trim();
+        function delVocab(id) {
+            if (!confirm("確定要刪除這個單字嗎？")) return;
+            appState.vocabList = appState.vocabList.filter(v => v.id !== id);
             localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
             renderVocab();
-            // 簡單提示
-            alert(`已收藏：\n${text}\n⬇\n${res.trim()}`);
         }
-    } catch(e) {
-        console.error(e);
-        alert("翻譯失敗，請檢查網路或 API Key");
-        // 失敗則移除該項目
-        appState.vocabList = appState.vocabList.filter(v => v.id !== id);
-        renderVocab();
-    }
-}
 
-function saveApiKey() {
-    const key = document.getElementById('api-key-input').value.trim();
-    if(key) { localStorage.setItem('v21_key', key); alert("API Key 已儲存"); location.reload(); }
-}
-function backupData() {
-    const data = { key: localStorage.getItem('v21_key'), vocab: appState.vocabList };
-    const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = "mylearning_backup.json";
-    a.click();
-}
-function restoreData(input) {
-    const file = input.files[0];
-    if(!file) return;
-    const r = new FileReader();
-    r.onload = (e) => {
-        try {
-            const d = JSON.parse(e.target.result);
-            if(d.key) localStorage.setItem('v21_key', d.key);
-            if(d.vocab) localStorage.setItem('my_vocab', JSON.stringify(d.vocab));
-            alert("還原成功！");
-            location.reload();
-        } catch(err) {}
-    };
-    r.readAsText(file);
-}
+        // Selection Translate
+        // === 修正選取翻譯邏輯 ===
+        document.addEventListener('selectionchange', () => {
+            const sel = window.getSelection();
+            const btn = document.getElementById('float-translate-btn');
+            const chatPage = document.getElementById('page-chat');
 
-init();
-</script>
+            // 只有在聊天頁面且有選取文字時才顯示
+            if (sel.toString().trim().length > 0 && chatPage.classList.contains('active-page')) {
+                // 改為固定位置顯示在頂部，避免被手機原生選單遮擋
+                btn.style.display = 'block';
+                btn.style.top = '100px'; // 固定在 Header 下方
+                btn.style.left = '50%';
+                btn.style.transform = 'translateX(-50%)';
+                btn.style.zIndex = '9999'; // 確保最上層
+
+                // 使用 onmousedown 防止點擊時失去焦點導致選取消失
+                btn.onmousedown = async (e) => {
+                    e.preventDefault(); // 關鍵：防止按鈕點擊取消了文字選取
+                    e.stopPropagation();
+
+                    const text = sel.toString();
+                    btn.style.display = 'none';
+                    sel.removeAllRanges(); // 翻譯後取消選取
+
+                    await doTranslate(text);
+                };
+            } else {
+                btn.style.display = 'none';
+            }
+        });
+
+        async function doTranslate(text) {
+            const id = Date.now();
+            // 先顯示載入中狀態
+            appState.vocabList.unshift({ id, word: text, trans: "翻譯中...", lang: appState.lang });
+            renderVocab();
+
+            try {
+                // 呼叫 API (這裡會使用你剛改好的 Vercel 連線版 callGemini)
+                const res = await callGemini([{ role: "user", parts: [{ text: `Translate "${text}" to Traditional Chinese. Just output translation.` }] }]);
+
+                // 更新結果
+                const item = appState.vocabList.find(i => i.id === id);
+                if (item) {
+                    item.trans = res.trim();
+                    localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
+                    renderVocab();
+                    // 簡單提示
+                    alert(`已收藏：\n${text}\n⬇\n${res.trim()}`);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("翻譯失敗，請檢查網路或 API Key");
+                // 失敗則移除該項目
+                appState.vocabList = appState.vocabList.filter(v => v.id !== id);
+                renderVocab();
+            }
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('api-key-input').value.trim();
+            if (key) { localStorage.setItem('v21_key', key); alert("API Key 已儲存"); location.reload(); }
+        }
+        function backupData() {
+            const data = { key: localStorage.getItem('v21_key'), vocab: appState.vocabList };
+            const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "mylearning_backup.json";
+            a.click();
+        }
+        function restoreData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.onload = (e) => {
+                try {
+                    const d = JSON.parse(e.target.result);
+                    if (d.key) localStorage.setItem('v21_key', d.key);
+                    if (d.vocab) localStorage.setItem('my_vocab', JSON.stringify(d.vocab));
+                    alert("還原成功！");
+                    location.reload();
+                } catch (err) { }
+            };
+            r.readAsText(file);
+        }
+
+        init();
+    </script>
 </body>
+
 </html>
