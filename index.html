@@ -89,7 +89,7 @@
             background: var(--ios-nav-blur);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            z-index: 60;
+            z-index: 250;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -143,9 +143,18 @@
 
         .tab-item {
             color: #8e8e93;
-            font-size: 10px;
+            font-size: 12px;
             text-align: center;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .tab-item i {
+            font-size: 20px;
         }
 
         .tab-item.active {
@@ -722,18 +731,18 @@
                         createCourse(105, "Taking a Taxi", "Getting to your destination.", [{ text: "Please take me to...", trans: "請載我到..." }, { text: "Stop here, please", trans: "請停在這裡" }, { text: "Keep the change", trans: "不用找零了" }], "Taxi Driver", "Passenger", "In a taxi going to the airport.")
                     ],
                     intermediate: [
-                        createCourse(201, "Job Interview", "Answer common interview questions.", [{ text: "My strength is...", trans: "我的強項是..." }, { text: "I have experience in...", trans: "我有...的經驗" }, { text: "I am a team player", trans: "我很有團隊精神" }], "Hiring Manager", "Applicant", "Job interview for a marketing role."),
-                        createCourse(202, "Doctor Visit", "Explain your symptoms.", [{ text: "I have a headache", trans: "我頭痛" }, { text: "It hurts when I...", trans: "當我...時會痛" }, { text: "Since yesterday", trans: "從昨天開始" }], "Doctor", "Patient", "Consulting a doctor at a clinic."),
-                        createCourse(203, "Restaurant Complaint", "Politely solving food issues.", [{ text: "This is not what I ordered", trans: "這不是我點的" }, { text: "It is too cold", trans: "這太冷了" }, { text: "Could you check the bill?", trans: "能幫我確認一下帳單嗎？" }], "Manager", "Customer", "Complain politely about wrong food."),
-                        createCourse(204, "Making Friends", "Small talk at a party.", [{ text: "How do you know the host?", trans: "你怎麼認識主人的？" }, { text: "What do you do?", trans: "你是做什麼工作的？" }, { text: "Have you been here before?", trans: "你以前來過這嗎？" }], "Party Guest", "Guest", "Casual chat at a house party."),
-                        createCourse(205, "Shopping for Clothes", "Finding the right size.", [{ text: "Do you have this in medium?", trans: "這有M號嗎？" }, { text: "Where is the fitting room?", trans: "試衣間在哪？" }, { text: "It fits perfectly", trans: "大小剛剛好" }], "Shop Assistant", "Shopper", "Buying a jacket in a clothing store.")
+                        createCourse(201, "Job Interview", "Answer common interview questions.", [{ text: "What sets me apart is my comprehensive experience in...", trans: "我與眾不同之處在於我擁有...的全面經驗" }, { text: "I consider myself highly adaptable and resilient.", trans: "我認為自己具備高度適應力與韌性" }, { text: "Could you elaborate on the team's dynamics?", trans: "您可以詳細說明一下團隊的運作模式嗎？" }], "Hiring Manager", "Applicant", "Job interview for a mid-level marketing role."),
+                        createCourse(202, "Doctor Visit", "Explain your symptoms in detail.", [{ text: "I've been experiencing persistent migraines lately.", trans: "我最近一直有持續性的偏頭痛" }, { text: "The pain radiates down to my lower back.", trans: "疼痛會蔓延到我的下背部" }, { text: "Are there any side effects to this prescription?", trans: "這份處方藥有任何副作用嗎？" }], "Doctor", "Patient", "Consulting a doctor about chronic pain."),
+                        createCourse(203, "Restaurant Complaint", "Politely solving food issues.", [{ text: "I'm afraid this dish is slightly undercooked.", trans: "恐怕這道菜還沒完全煮熟" }, { text: "Could you possibly have the chef look into this?", trans: "能不能請主廚確認一下這個狀況？" }, { text: "We'd appreciate it if you could deduct this from the bill.", trans: "如果不介意，希望您能將此從帳單中扣除" }], "Manager", "Customer", "Complain politely about undercooked food."),
+                        createCourse(204, "Debating a Plan", "Discussing travel itineraries.", [{ text: "Wouldn't it be more practical to take the train?", trans: "搭火車難道不會比較實際嗎？" }, { text: "I see your point, but we run the risk of delays.", trans: "我懂你的意思，但我們有誤點的風險" }, { text: "Let's compromise and stick to the original schedule.", trans: "我們折衷一下，維持原訂計畫吧" }], "Friend", "You", "Debating transportation options for a trip."),
+                        createCourse(205, "Shopping for Clothes", "Asking for specific fits and materials.", [{ text: "Do you have this garment in a more breathable fabric?", trans: "這件衣服有更透氣的材質嗎？" }, { text: "It's a bit snug around the shoulders.", trans: "肩膀的地方稍微有點緊" }, { text: "I'm looking for something versatile for both work and casual wear.", trans: "我在找適合上班與休閒兩穿的百搭款式" }], "Shop Assistant", "Shopper", "Buying a versatile outfit in a boutique.")
                     ],
                     advanced: [
-                        createCourse(301, "Business Negotiation", "Negotiating a deal.", [{ text: "We can offer...", trans: "我們可以提供..." }, { text: "That is our bottom line", trans: "這是我們的底線" }, { text: "Let's meet halfway", trans: "我們各退一步吧" }], "Client", "Sales Manager", "Negotiating a contract price."),
-                        createCourse(302, "Presentation Q&A", "Handling tough questions.", [{ text: "That is a great question", trans: "這是個好問題" }, { text: "To elaborate on that...", trans: "為了進一步說明..." }, { text: "Data shows that...", trans: "數據顯示..." }], "Audience Member", "Presenter", "Q&A session after a product launch."),
-                        createCourse(303, "Academic Discussion", "Debating current events.", [{ text: "I beg to differ", trans: "恕我不能同意" }, { text: "From my perspective", trans: "從我的觀點來看" }, { text: "Evidence suggests", trans: "證據顯示" }], "Professor", "Student", "Discussing climate change policies."),
-                        createCourse(304, "Tech Support", "Solving technical issues.", [{ text: "Have you tried restarting?", trans: "你試過重開機嗎？" }, { text: "The system is down", trans: "系統當機了" }, { text: "Troubleshoot the error", trans: "排除錯誤" }], "IT Support", "Employee", "Reporting a server crash."),
-                        createCourse(305, "Networking", "Professional connection building.", [{ text: "I admire your work", trans: "我很欣賞你的作品" }, { text: "Here is my card", trans: "這是我的名片" }, { text: "Let's keep in touch", trans: "保持聯絡" }], "Industry Expert", "Attendee", "Networking at a tech conference.")
+                        createCourse(301, "Business Negotiation", "Negotiating a complex deal.", [{ text: "We are willing to make concessions provided that...", trans: "若滿足...條件，我們願意做出讓步" }, { text: "It is imperative that we reach a consensus today.", trans: "我們今天務必要達成共識" }, { text: "Let's review the stipulations in clause four.", trans: "讓我們回顧一下第四條款的規定" }], "Client", "Sales Manager", "Negotiating a high-stakes contract."),
+                        createCourse(302, "Presentation Q&A", "Handling tough questions.", [{ text: "That's an insightful observation to bring forward.", trans: "您提出了非常有洞察力的觀察" }, { text: "To elaborate on the nuances of this paradigm...", trans: "為了進一步闡述這個典範的微妙之處..." }, { text: "Empirical data substantiates our preliminary hypothesis.", trans: "實證數據證實了我們的初步假設" }], "Audience Member", "Presenter", "Q&A session at a global convention."),
+                        createCourse(303, "Academic Discussion", "Debating sociology.", [{ text: "I must respectfully disagree with your premise.", trans: "恕我對您的大前提難以苟同" }, { text: "The aforementioned phenomenon merely scratches the surface.", trans: "上述現象僅僅是冰山一角" }, { text: "It fundamentally contradicts established sociological frameworks.", trans: "這在本質上與既有的社會學框架相矛盾" }], "Professor", "Student", "Debating the impact of globalization."),
+                        createCourse(304, "Tech Support Escalation", "Solving systemic issues.", [{ text: "We're experiencing intermittent latency across the network.", trans: "我們的網路正經歷間歇性的延遲" }, { text: "Could you verify the integrity of the recent deployment?", trans: "您能核實一下近期部署的完整性嗎？" }, { text: "We need to mitigate the vulnerabilities immediately.", trans: "我們必須立即減輕這些安全漏洞帶來的風險" }], "Senior IT Engineer", "Employee", "Reporting a critical systemic vulnerability."),
+                        createCourse(305, "Networking", "Professional connection building.", [{ text: "Your recent publication profoundly altered my perspective on...", trans: "您最近發表的著作深刻改變了我對...的看法" }, { text: "I foresee a tremendous synergy between our respective divisions.", trans: "我預見我們各自部門間存在極大的協同效益" }, { text: "It would be an honor to ostensibly collaborate on future endeavors.", trans: "若未來有機會合作，將是我的榮幸" }], "Industry Expert", "Attendee", "Networking at a high-level corporate event.")
                     ]
                 },
                 jp: {
@@ -745,18 +754,18 @@
                         createCourse(405, "電車 (Train)", "電車の乗り方。", [{ text: "この電車は～に行きますか", trans: "這班電車會到～嗎？" }, { text: "切符を失くしました", trans: "我把車票弄丟了" }, { text: "乗り換えはどこですか", trans: "要在哪裡轉車？" }], "駅員", "乗客", "駅の改札口での会話。")
                     ],
                     intermediate: [
-                        createCourse(501, "電話予約", "レストランの予約。", [{ text: "予約をしたいのですが", trans: "我想要預約" }, { text: "三名です", trans: "總共三位" }, { text: "アレルギーがあります", trans: "我有過敏" }], "店員", "客", "電話で席を予約する。"),
-                        createCourse(502, "体調不良", "病院で症状を説明。", [{ text: "熱があります", trans: "我發燒了" }, { text: "昨日から喉が痛いです", trans: "從昨天開始喉嚨痛" }, { text: "薬はありますか", trans: "有開藥嗎？" }], "医者", "患者", "内科での診察。"),
-                        createCourse(503, "買い物 (服)", "試着とサイズ確認。", [{ text: "試着してもいいですか", trans: "可以試穿嗎？" }, { text: "少し大きいです", trans: "稍微有點大" }, { text: "違う色はありますか", trans: "有別的顏色嗎？" }], "店員", "客", "服屋でジーンズを探す。"),
-                        createCourse(504, "友達とランチ", "近況報告。", [{ text: "久しぶり！元気？", trans: "好久不見！你好嗎？" }, { text: "最近どう？", trans: "最近怎麼樣？" }, { text: "また遊ぼう", trans: "下次再一起玩吧" }], "旧友", "あなた", "カフェで友達と再会。"),
-                        createCourse(505, "ホテルのトラブル", "部屋の問題を伝える。", [{ text: "お湯が出ません", trans: "沒有熱水" }, { text: "隣がうるさいです", trans: "隔壁很吵" }, { text: "部屋を変えてください", trans: "請幫我換房間" }], "フロント", "宿泊客", "ホテルの部屋からフロントに電話。")
+                        createCourse(501, "電話予約", "詳細な条件でのレストラン予約。", [{ text: "明日の午後7時に3名で予約可能でしょうか", trans: "請問明天晚上7點3位可以預約嗎？" }, { text: "アレルギー対応のメニューに変更できますか", trans: "能更改為適應過敏的菜單嗎？" }, { text: "窓際の静かな席を希望しております", trans: "我希望能安排靠窗安靜的位子" }], "店員", "客", "電話で特別な要望を含めた予約をする。"),
+                        createCourse(502, "体調不良", "病院で詳細な症状を説明。", [{ text: "数日前から胃のあたりに鈍い痛みを感じます", trans: "幾天前開始胃部附近有隱隱作痛的感覺" }, { text: "食後に症状が悪化する傾向があります", trans: "飯後症狀有惡化的傾向" }, { text: "副作用の少ない薬を処方していただけますか", trans: "能否開一些副作用較少的藥呢？" }], "医者", "患者", "内科での詳細な診察。"),
+                        createCourse(503, "買い物 (服)", "素材や用途の相談。", [{ text: "もう少し通気性の良い素材を探しています", trans: "我在找更透氣一點的材質" }, { text: "肩のあたりが少し窮屈に感じます", trans: "肩膀附近覺得有點緊繃" }, { text: "カジュアルでもフォーマルでも着回せるものはありますか", trans: "有休閒或正式都能穿搭的款式嗎？" }], "店員", "客", "服屋で用途に合わせた服を探す。"),
+                        createCourse(504, "トラブル対応", "クレームと説明。", [{ text: "注文した商品と違うものが届いたのですが", trans: "我收到的商品跟訂購的不一樣" }, { text: "早急に交換の手続きをお願いできますか", trans: "可以麻煩您盡速辦理退換貨手續嗎？" }, { text: "今後の再発防止を徹底していただきたいです", trans: "希望貴公司能徹底防止今後再次發生" }], "カスタマーサポート", "顧客", "誤配に関するクレームの電話。"),
+                        createCourse(505, "ホテルの要望", "部屋の問題と変更要求。", [{ text: "空調の効きが悪く、部屋が乾燥しています", trans: "空調效果不好，而且房間很乾燥" }, { text: "加湿器の貸し出しは行っておりますでしょうか", trans: "請問有提供租借加濕器的服務嗎？" }, { text: "可能であれば、高層階の部屋に変更をお願いします", trans: "如果可以的話，請幫我換到高樓層的房間" }], "フロント", "宿泊客", "ホテルの部屋からフロントへ詳細な要望。")
                     ],
                     advanced: [
-                        createCourse(601, "ビジネス敬語", "取引先への挨拶。", [{ text: "いつもお世話になっております", trans: "一直以來承蒙您的關照" }, { text: "ご足労いただき恐縮です", trans: "勞煩您跑一趟實在不好意思" }, { text: "今後ともよろしくお願いいたします", trans: "今後也請多多指教" }], "取引先", "営業担当", "名刺交換と挨拶。"),
-                        createCourse(602, "会議での提案", "意見を述べる。", [{ text: "私は～と考えます", trans: "我認為～" }, { text: "具体的には...", trans: "具體來說..." }, { text: "ご検討いただけますか", trans: "能否請您評估看看？" }], "上司", "部下", "新プロジェクトの提案会議。"),
-                        createCourse(603, "謝罪 (Apology)", "ミスの報告と謝罪。", [{ text: "申し訳ございません", trans: "非常抱歉" }, { text: "私の不手際です", trans: "是我的疏失" }, { text: "すぐに修正いたします", trans: "我馬上修正" }], "クライアント", "担当者", "納期の遅れを謝罪する。"),
-                        createCourse(604, "ニュース議論", "社会問題について。", [{ text: "少子化についてどう思う？", trans: "你覺得少子化怎麼樣？" }, { text: "対策が必要だと思う", trans: "我覺得需要有對策" }, { text: "経済への影響が心配だ", trans: "我很擔心對經濟的影響" }], "同僚", "あなた", "昼休みにニュースについて話す。"),
-                        createCourse(605, "面接 (Interview)", "志望動機を話す。", [{ text: "御社の理念に共感しました", trans: "我非常認同貴公司的理念" }, { text: "私の強みは～です", trans: "我的優勢是～" }, { text: "貢献できると思います", trans: "我相信能為公司帶來貢獻" }], "面接官", "応募者", "最終面接。")
+                        createCourse(601, "ビジネス敬語", "取引先への挨拶と提案。", [{ text: "平素は格別のお引き立てを賜り、厚く御礼申し上げます", trans: "平素承蒙格外關照，在此致上最深的謝意" }, { text: "御社の課題解決に寄与するプランを持参いたしました", trans: "我們帶來了能有助於解決貴公司課題的方案" }, { text: "引き続き、ご愛顧のほどよろしくお願い申し上げます", trans: "今後也請您繼續多多眷顧與指教" }], "取引先", "営業担当", "重要な取引先との商談。"),
+                        createCourse(602, "会議での提案", "データを用いた論理的な意見。", [{ text: "市場調査のデータに鑑みますと、この戦略は妥当かと存じます", trans: "鑒於市場調查的數據，我認為這項策略是妥當的" }, { text: "リスクヘッジの観点から、代替案も検討すべきです", trans: "從風險規避的觀點來看，也應該檢討替代方案" }, { text: "本件につきましては、持ち帰って再度精査いたします", trans: "關於此事，我們將帶回去再次仔細審查" }], "役員", "プロジェクトリーダー", "新プロジェクトの最終提案会議。"),
+                        createCourse(603, "謝罪 (Apology)", "重大なミスの報告と謝罪。", [{ text: "この度の不祥事につきまして、幾重にもお詫び申し上げます", trans: "關於這次的醜聞/疏失，我們致上萬分的歉意" }, { text: "原因究明を急ぎ、抜本的な改善策を講じる所存です", trans: "我們將急於查明原因，並採取根本性的改善對策" }, { text: "多大なるご迷惑をおかけしたこと、弁解の余地もございません", trans: "造成您極大的困擾，我們沒有任何辯解的餘地" }], "重要顧客", "責任者", "トラブルによる深刻な謝罪。"),
+                        createCourse(604, "議論", "複雑な社会問題について。", [{ text: "この問題の背景には、根深い制度的欠陥が潜んでいると考えます", trans: "我認為這個問題的背景隱藏著根深蒂固的制度缺陷" }, { text: "一過性の対策ではなく、包括的なアプローチが不可欠です", trans: "這並非一次性的對策，而是不可或缺的全面性方法" }, { text: "その見解は、マクロ経済の動向と矛盾していませんか", trans: "這個見解，難道沒有與總體經濟的動向矛盾嗎？" }], "専門家", "あなた", "パネルディスカッションでの意見交換。"),
+                        createCourse(605, "面接 (Interview)", "高度なスキルとビジョンの説明。", [{ text: "前職で培ったマネジメント経験を御社で最大限に還元したいです", trans: "希望能將在前職培養的管理經驗，在貴公司發揮最大的回饋" }, { text: "既存の枠組みに囚われない、革新的な価値を創造できると自負しております", trans: "我自信能不侷限於既有框架，創造出革命性的價值" }, { text: "御社のグローバル展開において、シナジーを生み出せる確信があります", trans: "在貴公司的全球發展中，我有確信能產生協同效應" }], "社長", "転職志望者", "役員最終面接。")
                     ]
                 },
                 kr: {
@@ -765,21 +774,21 @@
                         createCourse(702, "식당 주문", "음식 주문하기.", [{ text: "이거 주세요", trans: "請給我這個" }, { text: "덜 맵게 해주세요", trans: "請不要太辣" }, { text: "물 좀 주세요", trans: "請給我一點水" }], "종업원", "손님", "김밥천국에서 주문하기."),
                         createCourse(703, "길 묻기", "길 찾기.", [{ text: "실례합니다", trans: "不好意思" }, { text: "지하철역이 어디예요?", trans: "地鐵站在哪裡？" }, { text: "멀어요?", trans: "很遠嗎？" }], "행인", "여행객", "서울 길거리에서 길 묻기."),
                         createCourse(704, "쇼핑", "가격 묻고 깎기.", [{ text: "얼마예요?", trans: "多少錢？" }, { text: "너무 비싸요", trans: "太貴了" }, { text: "좀 깎아주세요", trans: "請算便宜一點" }], "시장 상인", "손님", "동대문 시장에서 옷 사기."),
-                        createCourse(705, "택시", "목적지 말하기.", [{ text: "홍대입구로 가주세요", trans: "請到弘大入口" }, { text: "여기서 세워주세요", trans: "請停在這裡" }, { text: "카드 돼요?", trans: "可以刷卡嗎？" }], "기사님", "승객", "택시 타고 이동하기.")
+                        createCourse(705, "택시", "목적지 말하기.", [{ text: "홍대입구로 가주세요", trans: "請到弘大入口" }, { text: "여기서 세워주세요", trans: "請停在這裡" }, { text: "카드 돼요?", 전s: "可以刷卡嗎？" }], "기사님", "승객", "택시 타고 이동하기.")
                     ],
                     intermediate: [
-                        createCourse(801, "약국", "증상 설명하고 약 사기.", [{ text: "머리가 아파요", trans: "我頭痛" }, { text: "소화제 주세요", trans: "請給我助消化的藥" }, { text: "하루에 몇 번 먹어요?", trans: "一天要吃幾次？" }], "약사", "손님", "약국에서 약 사기."),
-                        createCourse(802, "호텔 체크인", "예약 확인.", [{ text: "예약했는데요", trans: "我有預約" }, { text: "조식 포함인가요?", trans: "有包含早餐嗎？" }, { text: "체크아웃은 몇 시예요?", trans: "退房是幾點？" }], "호텔 직원", "투숙객", "호텔 프론트 데스크."),
-                        createCourse(803, "친구 약속", "시간 정하기.", [{ text: "우리 언제 만날까?", trans: "我們什麼時候見面？" }, { text: "어디서 볼까?", trans: "要在哪裡見？" }, { text: "내가 거기로 갈게", trans: "我過去那邊找你" }], "친구", "나", "카톡으로 약속 잡기."),
-                        createCourse(804, "미용실", "스타일 요청.", [{ text: "다듬어 주세요", trans: "請幫我修剪就好" }, { text: "염색하고 싶어요", trans: "我想要染髮" }, { text: "앞머리는 자르지 마세요", trans: "請不要剪瀏海" }], "미용사", "손님", "강남 미용실에서 머리하기."),
-                        createCourse(805, "카페", "커피 주문 옵션.", [{ text: "아이스 아메리카노 주세요", trans: "請給我一杯冰美式" }, { text: "사이즈 업 해주세요", trans: "請幫我升級大杯" }, { text: "가지고 갈게요", trans: "我要外帶" }], "알바생", "손님", "카페에서 주문하기.")
+                        createCourse(801, "약국", "증상 자세히 설명하기.", [{ text: "어제부터 으슬으슬 춥고 기침이 심해요", trans: "從昨天開始覺得發冷而且咳嗽很嚴重" }, { text: "빈속에 먹어도 부작용은 없을까요?", trans: "空腹吃的話會有什麼副作用嗎？" }, { text: "처방전 없이 살 수 있는 약으로 주세요", trans: "請給我不需要處方籤就能買的藥" }], "약사", "손님", "약국에서 구체적인 증상 설명."),
+                        createCourse(802, "부동산", "조건에 맞는 방 구하기.", [{ text: "보증금 조율이 가능한 매물이 있을까요?", trans: "請問有保證金可以調整的物件嗎？" }, { text: "채광이 좋고 방음이 잘 되는 곳을 선호합니다", trans: "我偏好採光好且隔音佳的地方" }, { text: "월세에 관리비가 전부 포함된 금액인가요?", trans: "月租是包含所有管理費的金額嗎？" }], "공인중개사", "세입자", "부동산에서 방 계약 조건 확인."),
+                        createCourse(803, "친구와 다툼", "오해 풀기.", [{ text: "내 말을 오해한 것 같은데 내 진심은 그게 아니었어", trans: "你好像誤會我的話了，我的真心並不是那樣的" }, { text: "미리 연락을 주지 않아서 서운했어", trans: "你沒有事先聯絡我，讓我覺得很難過" }, { text: "우리 서로 조금씩 양보해서 풀자", trans: "我們互相退讓一點，和好吧" }], "친구", "나", "친구와의 갈등 해결하기."),
+                        createCourse(804, "미용실", "구체적인 스타일 요청.", [{ text: "사진처럼 층을 많이 내서 가볍게 잘라주세요", trans: "請像照片一樣剪出很多層次，弄輕盈一點" }, { text: "붉은 기가 없는 애쉬 브라운으로 염색하고 싶어요", trans: "我想要染沒有紅光的亞麻棕色" }, { text: "손상이 심한 끝부분만 살짝 다듬어 주세요", trans: "請只要稍微修剪受損嚴重的髮尾就好" }], "미용사", "손님", "미용실에서 디테일한 요청."),
+                        createCourse(805, "쇼핑 컴플레인", "제품 교환 요청.", [{ text: "제품 안쪽에 박음질 불량이 있어서 교환하려고요", trans: "因為產品內側的縫線有瑕疵，我想要換貨" }, { text: "영수증을 지참했는데 바로 환불 처리 되나요?", trans: "我有帶收據，請問可以直接辦理退款嗎？" }, { text: "재고가 없다면 다른 색상으로 변경 가능할까요?", trans: "如果沒有庫存的話，可以換成別的顏色嗎？" }], "직원", "손님", "불량품에 대한 환불/교환 요청.")
                     ],
                     advanced: [
-                        createCourse(901, "회사 회의", "의견 제시.", [{ text: "제 생각은 좀 다릅니다", trans: "我的想法有點不同" }, { text: "그 부분에 동의합니다", trans: "我同意這個部分" }, { text: "결론적으로 말씀드리면...", trans: "結論來說的話..." }], "팀장", "팀원", "주간 회의 시간."),
-                        createCourse(902, "면접", "경력 소개.", [{ text: "저는 ~경험이 있습니다", trans: "我有～的經驗" }, { text: "문제를 해결한 적이 있습니다", trans: "我有解決過問題的經驗" }, { text: "입사하게 된다면...", trans: "如果能入職的話..." }], "면접관", "지원자", "대기업 면접."),
-                        createCourse(903, "부동산", "집 구하기.", [{ text: "전세 대출 가능한가요?", trans: "能申請全租貸款嗎？" }, { text: "관리비는 얼마예요?", trans: "管理費是多少？" }, { text: "남향인가요?", trans: "是坐北朝南的嗎？" }], "중개사", "세입자", "부동산에서 방 구하기."),
-                        createCourse(904, "환불 요청", "논리적으로 따지기.", [{ text: "제품에 하자가 있습니다", trans: "商品有瑕疵" }, { text: "환불 규정을 확인했습니다", trans: "我確認過退款規定了" }, { text: "매니저 불러주세요", trans: "請把經理叫來" }], "고객센터", "고객", "전화로 환불 요청."),
-                        createCourse(905, "토론", "문화 차이 이야기.", [{ text: "한국 문화의 특징은...", trans: "韓國文化的特點是..." }, { text: "대만과는 이런 점이 다릅니다", trans: "和台灣有這一點不同" }, { text: "이해하기 어렵네요", trans: "很難理解呢" }], "한국 동료", "나", "회식 자리에서 문화 토론.")
+                        createCourse(901, "회사 회의", "논리적인 의견 제시 및 반박.", [{ text: "데이터 추이를 고려할 때 이 기획안은 수정이 불가피해 보입니다", trans: "考量到數據的趨勢，這份企劃案看來勢必得修改" }, { text: "리스크를 최소화하기 위한 대안을 먼저 검토하는 것이 바람직합니다", trans: "先去評估能將風險降到最低的替代方案，會是比較明智的做法" }, { text: "효율성 측면에서 기존 프로세스를 재정립할 필요가 있습니다", trans: "從效率層面來看，我們有必要重新確立既有的流程" }], "본부장", "팀장", "사업 전략 회의에서 의견 제시."),
+                        createCourse(902, "면접", "이직 사유와 비전 설명.", [{ text: "과거 프로젝트를 성공적으로 이끈 경험을 바탕으로 역량을 발휘하겠습니다", trans: "我將以成功帶領過去專案的經驗為基礎，發揮我的能力" }, { text: "귀사가 추구하는 혁신적인 가치가 제 커리어 비전과 부합합니다", trans: "貴公司所追求的創新價值與我的職涯願景相符" }, { text: "주도적으로 문제를 파악하고 솔루션을 도출하는 것에 강점이 있습니다", trans: "我的優勢在於能主動掌握問題並導出解決方案" }], "임원진", "경력직 지원자", "경력직 임원 면접."),
+                        createCourse(903, "비즈니스 협상", "계약 조건 조율.", [{ text: "단가 인하 요구는 시장 상황을 고려했을 때 수용하기 어렵습니다", trans: "考慮到市場狀況，要求降價實在難以接受" }, { text: "조건부로 납기일을 연장해주신다면 계약을 긍정적으로 검토하겠습니다", trans: "若是能有條件地延長交貨期，我們將會積極評估合約" }, { text: "상호 우호적인 관계를 유지할 수 있는 합의점을 도출해 봅시다", trans: "讓我們找出一個能維持雙方友好關係的共識點吧" }], "클라이언트", "영업 실장", "대형 계약 협상 테이블."),
+                        createCourse(904, "고객 불만 대응", "치명적인 실수에 대한 사과.", [{ text: "이번 시스템 오류로 막대한 피해를 입혀드린 점 깊이 사죄드립니다", trans: "對於這次系統錯誤造成您巨大的損失，我們深深致歉" }, { text: "전사적 차원에서 원인을 규명하고 재발 방지 대책을 수립 중입니다", trans: "我們正在全公司層級查明原因，並制定防止再次發生的對策" }, { text: "손해 배상과 관련하여 법무팀과 협의 후 신속하게 안내해 드리겠습니다", trans: "關於損害賠償，我們會在與法務團隊協議後迅速通知您" }], "VIP 고객", "지사장", "치명적 서비스 오류에 대한 공식 사과."),
+                        createCourse(905, "학술 토론", "사회 현상 분석 및 비판.", [{ text: "해당 정책이 초래할 거시경제적 파급 효과를 간과해서는 안 됩니다", trans: "我們不該忽視該項政策將帶來的總體經濟波及效應" }, { text: "이러한 현상은 기성세대의 뿌리 깊은 고정관념에서 기인한 것입니다", trans: "這樣的現象是起因於老一輩根深蒂固的刻板印象" }, { text: "표면적인 해결책보다는 구조적인 모순을 타파하는 것이 급선무입니다", trans: "比起表面上的解決方案，打破結構性的矛盾才是當務之急" }], "교수님", "대학원생", "학회에서의 심층 토론.")
                     ]
                 }
             }
@@ -791,59 +800,59 @@
                 en_hotel_b: { beginner: ['reservation', 'name', 'key'] },
                 en_supermarket_b: { beginner: ['bag', 'receipt', 'card'] },
                 en_taxi_b: { beginner: ['address', 'stop', 'change'] },
-                en_job_i: { intermediate: ['experience', 'skills', 'team'] },
-                en_meeting_i: { intermediate: ['project', 'deadline', 'update'] },
-                en_return_i: { intermediate: ['receipt', 'refund', 'wrong'] },
-                en_directions_i: { intermediate: ['straight', 'left', 'block'] },
-                en_nego_a: { advanced: ['offer', 'discount', 'contract'] },
-                en_academic_a: { advanced: ['agree', 'point', 'evidence'] },
-                en_presentation_a: { advanced: ['data', 'explain', 'question'] },
-                en_conflict_a: { advanced: ['understand', 'resolve', 'compromise'] },
-                free: { beginner: ['hello', 'fine', 'goodbye'], intermediate: ['interest', 'weekend', 'hobby'], advanced: ['opinion', 'society', 'challenge'] }
+                en_job_i: { intermediate: ['qualifications', 'adaptability', 'contribution'] },
+                en_meeting_i: { intermediate: ['objective', 'milestone', 'strategy'] },
+                en_return_i: { intermediate: ['defective', 'reimbursement', 'policy'] },
+                en_directions_i: { intermediate: ['intersection', 'landmark', 'pedestrian'] },
+                en_nego_a: { advanced: ['stipulation', 'concession', 'leverage'] },
+                en_academic_a: { advanced: ['paradigm', 'empirical', 'ramification'] },
+                en_presentation_a: { advanced: ['substantiate', 'correlation', 'nuance'] },
+                en_conflict_a: { advanced: ['mitigate', 'discrepancy', 'consensus'] },
+                free: { beginner: ['hello', 'fine', 'goodbye'], intermediate: ['fascination', 'excursion', 'lifestyle'], advanced: ['ideology', 'transformation', 'dilemma'] }
             },
             jp: {
                 jp_izakaya_b: { beginner: ['ビール', 'メニュー', 'お会計'] },
                 jp_konbini_b: { beginner: ['お弁当', '袋', 'いくら'] },
                 jp_station_b: { beginner: ['どこ', '切符', '歩いて'] },
                 jp_restaurant_b: { beginner: ['注文', '水', 'おすすめ'] },
-                jp_hotel_i: { intermediate: ['チェックイン', '鍵', '朝食'] },
-                jp_shop_i: { intermediate: ['試着', 'サイズ', '違う色'] },
-                jp_hospital_i: { intermediate: ['熱', '喉', '薬'] },
-                jp_friend_i: { intermediate: ['久しぶり', '最近', '遊ぼう'] },
-                jp_corptalk_a: { advanced: ['資料', '会議', '報告'] },
-                jp_client_a: { advanced: ['契約', '提案', '見積もり'] },
-                jp_apology_a: { advanced: ['申し訳', '不手際', '対応'] },
-                jp_interview_a: { advanced: ['志望動機', '経験', '貢献'] },
-                free: { beginner: ['こんにちは', 'ありがとう', 'すみません'], intermediate: ['趣味', '週末', '旅行'], advanced: ['社会', '経験', '意見'] }
+                jp_hotel_i: { intermediate: ['手配', '眺望', '空室'] },
+                jp_shop_i: { intermediate: ['試着室', '在庫', '素材'] },
+                jp_hospital_i: { intermediate: ['症状', '処方箋', '診察券'] },
+                jp_friend_i: { intermediate: ['近況', '充実', '予定'] },
+                jp_corptalk_a: { advanced: ['抜本的', '収益', '推進'] },
+                jp_client_a: { advanced: ['折衝', '妥協点', 'シナジー'] },
+                jp_apology_a: { advanced: ['不手際', '再発防止', '遺憾'] },
+                jp_interview_a: { advanced: ['即戦力', 'イノベーション', '先見性'] },
+                free: { beginner: ['こんにちは', 'ありがとう', 'すみません'], intermediate: ['充実', '休暇', '趣味'], advanced: ['パラダイムシフト', '持続可能性', '社会的課題'] }
             },
             kr: {
                 kr_market_b: { beginner: ['얼마', '이거', '주세요'] },
                 kr_cafe_b: { beginner: ['아메리카노', '사이즈', '포장'] },
                 kr_subway_b: { beginner: ['역', '멀어요', '어디'] },
                 kr_restaurant_b: { beginner: ['맥주', '맵다', '맛있다'] },
-                kr_taxi_i: { intermediate: ['얼마나 걸려요', '우회전', '카드'] },
-                kr_salon_i: { intermediate: ['염색', '다듬어', '앞머리'] },
-                kr_hospital_i: { intermediate: ['아프다', '소화제', '하루'] },
-                kr_friend_i: { intermediate: ['언제', '어디', '약속'] },
-                kr_corptalk_a: { advanced: ['회의', '보고서', '결재'] },
-                kr_interview_a: { advanced: ['경험', '지원', '장점'] },
-                kr_realestate_a: { advanced: ['대출', '관리비', '남향'] },
-                kr_debate_a: { advanced: ['생각', '동의', '특징'] },
-                free: { beginner: ['안녕하세요', '감사합니다', '네'], intermediate: ['취미', '주말', '영화'], advanced: ['의견', '사회', '문화'] }
+                kr_taxi_i: { intermediate: ['목적지', '우회로', '요금'] },
+                kr_salon_i: { intermediate: ['손상', '트리트먼트', '클리닉'] },
+                kr_hospital_i: { intermediate: ['처방전', '진통제', '복용'] },
+                kr_friend_i: { intermediate: ['안부', '근황', '약속'] },
+                kr_corptalk_a: { advanced: ['차질', '시너지', '방안'] },
+                kr_interview_a: { advanced: ['역량', '적합성', '기여'] },
+                kr_realestate_a: { advanced: ['매물', '융자', '권리금'] },
+                kr_debate_a: { advanced: ['모순', '근본적', '타파'] },
+                free: { beginner: ['안녕하세요', '감사합니다', '네'], intermediate: ['여가', '취향', '여정'], advanced: ['패러다임', '본질적', '불가피'] }
             }
         };
 
         function getCourseVocab(courseId) {
             const courseVocabs = {
                 101: ['introduce', 'neighborhood', 'glad'], 102: ['burger', 'drink', 'spicy'], 103: ['straight', 'corner', 'block'], 104: ['reservation', 'included', 'passport'], 105: ['airport', 'change', 'hurry'],
-                201: ['strength', 'experience', 'team'], 202: ['symptom', 'pain', 'medicine'], 203: ['order', 'mistake', 'waiter'], 204: ['host', 'delicious', 'work'], 205: ['fitting room', 'medium', 'color'],
-                301: ['negotiate', 'offer', 'budget'], 302: ['data', 'explain', 'question'], 303: ['perspective', 'evidence', 'differ'], 304: ['restart', 'server', 'error'], 305: ['admire', 'card', 'touch'],
+                201: ['comprehensive', 'resilient', 'adaptable', 'elaborate'], 202: ['migraine', 'radiate', 'prescription', 'persistent'], 203: ['undercooked', 'deduct', 'appreciate'], 204: ['practical', 'compromise', 'itinerary'], 205: ['garment', 'breathable', 'versatile', 'snug'],
+                301: ['concession', 'consensus', 'stipulation', 'imperative'], 302: ['insightful', 'paradigm', 'empirical', 'substantiate'], 303: ['premise', 'phenomenon', 'contradict', 'framework'], 304: ['latency', 'integrity', 'vulnerability', 'mitigate'], 305: ['profoundly', 'synergy', 'ostensibly', 'endeavor'],
                 401: ['同僚', '出身', '配属'], 402: ['温める', '袋', 'レシート'], 403: ['迷子', '駅', '徒歩'], 404: ['注文', 'おすすめ', '追加'], 405: ['切符', '乗り換え', '特急'],
-                501: ['予約', 'アレルギー', '禁煙席'], 502: ['熱', '喉', '処方箋'], 503: ['試着', 'サイズ', '色違い'], 504: ['久しぶり', '最近', '仕事'], 505: ['お湯', 'うるさい', '部屋'],
-                601: ['世話', '恐縮', '挨拶'], 602: ['提案', '検討', '具体'], 603: ['申し訳', '不手際', '修正'], 604: ['少子化', '対策', '影響'], 605: ['理念', '貢献', '強み'],
+                501: ['可能', '対応', '窓際', '希望'], 502: ['鈍い', '悪化', '処方', '傾向'], 503: ['通気性', '窮屈', '着回せる', '用途'], 504: ['早急', '交換', '再発防止', '徹底'], 505: ['加湿器', '貸し出し', '高層階', '乾燥'],
+                601: ['平素', '格別', '御礼', '寄与'], 602: ['鑑みる', '妥当', 'リスクヘッジ', '代替案'], 603: ['幾重にも', '抜本的', '弁解', '不手際'], 604: ['根深い', '欠陥', '包括的', '矛盾'], 605: ['培う', '還元', '革新的', 'シナジー'],
                 701: ['대만', '친구', '만나다'], 702: ['주세요', '맵다', '물'], 703: ['어디', '멀다', '역'], 704: ['얼마', '비싸다', '깎다'], 705: ['홍대', '세우다', '카드'],
-                801: ['아프다', '소화제', '하루'], 802: ['호텔', '조식', '체크아웃'], 803: ['언제', '어디', '약속'], 804: ['염색', '앞머리', '다듬다'], 805: ['아이스', '사이즈', '포장'],
-                901: ['의견', '동의', '결론'], 902: ['경험', '해결', '입사'], 903: ['전세', '관리비', '남향'], 904: ['환불', '하자', '매니저'], 905: ['차이', '특징', '이해']
+                801: ['으슬으슬', '기침', '부작용', '처방전'], 802: ['보증금', '조율', '채광', '방음'], 803: ['진심', '오해', '서운하다', '양보하다'], 804: ['층을 내다', '염색', '가볍게', '손상'], 805: ['박음질', '불량', '지참하다', '재고'],
+                901: ['추이', '불가피하다', '대안', '재정립'], 902: ['역량', '혁신적', '부합하다', '도출'], 903: ['인하', '수용하다', '단가', '우호적'], 904: ['막대하다', '규명하다', '방지', '배상'], 905: ['초래하다', '거시경제적', '고정관념', '모순']
             };
             return courseVocabs[courseId] || ['hello', 'word'];
         }
@@ -1015,11 +1024,11 @@
                     </div>
                 </div>
                 <div class="flex gap-2 mt-2 ml-4">
-                    <button onclick="speakText('${escapedText}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 active:scale-95 transition">
-                        <i class="fas fa-volume-up"></i> 朗讀
+                    <button onclick="speakText('${escapedText}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-3 rounded-xl text-sm font-bold flex flex-1 justify-center items-center gap-2 active:scale-95 transition">
+                        <i class="fas fa-volume-up text-lg"></i> 朗讀
                     </button>
-                    <button onmousedown="startPronunciationPractice('${escapedText}', 'result-${idx}')" onmouseup="stopPronunciationPractice()" onmouseleave="stopPronunciationPractice()" ontouchstart="startPronunciationPractice('${escapedText}', 'result-${idx}')" ontouchend="stopPronunciationPractice()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 active:scale-95 transition">
-                        <i class="fas fa-microphone"></i> 按住跟讀
+                    <button onmousedown="startPronunciationPractice('${escapedText}', 'result-${idx}')" onmouseup="stopPronunciationPractice()" onmouseleave="stopPronunciationPractice()" ontouchstart="startPronunciationPractice('${escapedText}', 'result-${idx}')" ontouchend="stopPronunciationPractice()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-3 rounded-xl text-sm font-bold flex flex-1 justify-center items-center gap-2 active:scale-95 transition shadow-sm border border-indigo-100">
+                        <i class="fas fa-microphone text-lg"></i> 按住跟讀
                     </button>
                 </div>
                 <div id="result-${idx}" class="text-sm mt-1 ml-4 empty:hidden transition-all duration-300"></div>
