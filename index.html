@@ -1541,27 +1541,80 @@
             }
 
             const currentWord = appState.quizVocab[appState.quizIndex];
-            const otherVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang && v.id !== currentWord.id);
-            const shuffledOthers = [...otherVocab].sort(() => 0.5 - Math.random()).slice(0, 3);
-            const options = [...shuffledOthers, currentWord].sort(() => 0.5 - Math.random());
+            const qType = Math.random() > 0.5 ? 'spell' : 'mcq';
 
-            let optionsHtml = '';
-            options.forEach(opt => {
-                optionsHtml += `<button onclick="checkQuizAnswer('${opt.id}', '${currentWord.id}')" class="w-full text-left p-3 mb-3 border border-gray-200 rounded-lg hover:bg-blue-50 active:bg-blue-100 transition-all outline-none font-medium text-gray-800">${opt.trans}</button>`;
-            });
+            let contentHtml = '';
+
+            if (qType === 'mcq') {
+                const otherVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang && v.id !== currentWord.id);
+                const shuffledOthers = [...otherVocab].sort(() => 0.5 - Math.random()).slice(0, 3);
+                const options = [...shuffledOthers, currentWord].sort(() => 0.5 - Math.random());
+
+                let optionsHtml = '';
+                options.forEach(opt => {
+                    const transStr = opt.trans || opt.translation || '';
+                    optionsHtml += `<button onclick="checkQuizAnswer('${opt.id}', '${currentWord.id}')" class="w-full text-left p-3 mb-3 border border-gray-200 rounded-lg hover:bg-blue-50 active:bg-blue-100 transition-all outline-none font-medium text-gray-800">${transStr}</button>`;
+                });
+
+                contentHtml = `
+                <div class="text-center py-8 mb-6 bg-gray-50 rounded-xl border border-gray-100 shadow-sm flex items-center justify-center min-h-[120px]">
+                    <h4 class="text-3xl font-bold text-blue-600 break-words w-full px-4">${currentWord.lemma || currentWord.word}</h4>
+                </div>
+                <div class="space-y-1">
+                    ${optionsHtml}
+                </div>`;
+            } else {
+                const transStr = currentWord.trans || currentWord.translation || '';
+                const phoneticStr = currentWord.phonetic ? `<div class="text-sm text-gray-400 mt-2">/${currentWord.phonetic}/</div>` : '';
+
+                contentHtml = `
+                <div class="text-center py-6 mb-4 bg-indigo-50 rounded-xl border border-indigo-100 shadow-sm flex flex-col items-center justify-center min-h-[100px]">
+                    <h4 class="text-xl font-bold text-indigo-700 px-4">${transStr}</h4>
+                    ${phoneticStr}
+                </div>
+                <div class="space-y-3">
+                    <input type="text" id="spell-input" class="w-full border border-gray-300 rounded-lg p-3 text-center text-lg font-bold focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition" placeholder="輸入單字拼寫..." autocomplete="off">
+                    <button id="spell-submit-btn" class="w-full bg-indigo-500 text-white py-3 rounded-lg font-bold hover:bg-indigo-600 active:scale-95 transition">確認送出</button>
+                    <button onclick="alert('提示： ${currentWord.lemma || currentWord.word}')" class="w-full text-sm text-gray-400 py-2">需要提示？</button>
+                </div>`;
+            }
 
             container.innerHTML = `
         <div class="mb-4 flex justify-between text-sm text-gray-500 font-medium">
             <span>第 ${appState.quizIndex + 1} 題 / 共 ${appState.quizVocab.length} 題</span>
             <span>分數: ${appState.quizScore}</span>
         </div>
-        <div class="text-center py-8 mb-6 bg-gray-50 rounded-xl border border-gray-100 shadow-sm flex items-center justify-center min-h-[120px]">
-            <h4 class="text-3xl font-bold text-blue-600 break-words w-full px-4">${currentWord.word}</h4>
-        </div>
-        <div class="space-y-1">
-            ${optionsHtml}
-        </div>
+        ${contentHtml}
     `;
+
+            if (qType === 'spell') {
+                const spellInput = document.getElementById('spell-input');
+                const submitBtn = document.getElementById('spell-submit-btn');
+                setTimeout(() => spellInput.focus(), 100);
+
+                const handleSpellSubmit = () => {
+                    checkSpellAnswer(currentWord.id);
+                };
+
+                submitBtn.onclick = handleSpellSubmit;
+                spellInput.onkeypress = (e) => {
+                    if (e.key === 'Enter') handleSpellSubmit();
+                };
+            }
+        }
+
+        function checkSpellAnswer(correctId) {
+            const inputVal = document.getElementById('spell-input').value.trim().toLowerCase();
+            const correctWordObj = appState.quizVocab.find(v => String(v.id) === String(correctId));
+            const targetWord = (correctWordObj.lemma || correctWordObj.word).toLowerCase();
+
+            if (inputVal === targetWord) {
+                appState.quizScore++;
+            } else {
+                alert(`❌ 答錯了！\n正確拼法是: ${targetWord}`);
+            }
+            appState.quizIndex++;
+            renderQuizQuestion();
         }
 
         function checkQuizAnswer(selectedId, correctId) {
@@ -1569,7 +1622,7 @@
                 appState.quizScore++;
             } else {
                 const correctWord = appState.quizVocab.find(v => String(v.id) === String(correctId));
-                alert(`❌ 答錯了！\n正確答案是: ${correctWord.trans}`);
+                alert(`❌ 答錯了！\n正確答案是: ${correctWord.trans || correctWord.translation}`);
             }
             appState.quizIndex++;
             renderQuizQuestion();
@@ -1585,15 +1638,50 @@
             }
             list.innerHTML = '';
             filteredVocab.forEach(v => {
+                const lemma = v.lemma || v.word;
+                const phonetic = v.phonetic ? `<span class="text-xs text-gray-400 ml-2">/${v.phonetic}/</span>` : '';
+
+                let detailHtml = '';
+                if (v.core_concept) {
+                    let collocationsHtml = v.collocations && v.collocations.length > 0 ? v.collocations.map(c => `<span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-sm mr-1 inline-block mb-1">${c}</span>`).join('') : '';
+                    let examplesHtml = v.example_sentences && v.example_sentences.length > 0 ? v.example_sentences.map(ex => `<div class="mb-2"><div class="font-medium text-gray-800">${ex.en}</div><div class="text-gray-500 text-xs">${ex.zh}</div></div>`).join('') : '';
+
+                    detailHtml = `
+                    <div id="vocab-detail-${v.id}" class="hidden mt-4 pt-4 border-t border-gray-100 text-sm space-y-4">
+                        ${v.core_concept ? `<div><span class="font-bold text-blue-500 flex items-center gap-1 mb-1"><i class="fas fa-lightbulb"></i> 核心概念</span><p class="text-gray-700 leading-relaxed">${v.core_concept}</p></div>` : ''}
+                        ${v.memory_hook ? `<div><span class="font-bold text-green-500 flex items-center gap-1 mb-1"><i class="fas fa-link"></i> 記憶掛勾</span><p class="text-gray-700 leading-relaxed">${v.memory_hook}</p></div>` : ''}
+                        ${collocationsHtml ? `<div><span class="font-bold text-purple-500 flex items-center gap-1 mb-1"><i class="fas fa-layer-group"></i> 黃金搭配</span><div class="mt-1">${collocationsHtml}</div></div>` : ''}
+                        ${examplesHtml ? `<div><span class="font-bold text-orange-500 flex items-center gap-1 mb-1"><i class="fas fa-quote-left"></i> 例句</span><div class="mt-1">${examplesHtml}</div></div>` : ''}
+                    </div>
+                    `;
+                }
+
                 list.innerHTML += `
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center relative">
-            <div>
-                <div class="font-bold text-lg text-gray-800">${v.word}</div>
-                <div class="text-gray-500 text-sm mt-1">${v.trans}</div>
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative cursor-pointer active:scale-[0.99] transition mb-3" onclick="toggleVocabDetail('${v.id}')">
+            <div class="flex justify-between items-start">
+                <div class="flex-1 pr-2">
+                    <div class="font-bold text-lg text-gray-800 flex items-baseline flex-wrap">
+                        <span>${lemma}</span>
+                        ${phonetic}
+                    </div>
+                    <div class="text-gray-500 text-sm mt-1">${v.trans || v.translation || ''}</div>
+                </div>
+                <div class="flex gap-2 flex-none">
+                    <button onclick="event.stopPropagation(); speakText('${lemma.replace(/'/g, "\\'")}')" class="text-blue-500 bg-blue-50 hover:bg-blue-100 w-9 h-9 rounded-full flex items-center justify-center transition"><i class="fas fa-volume-up"></i></button>
+                    <button onclick="event.stopPropagation(); delVocab(${v.id})" class="text-red-400 bg-red-50 hover:bg-red-100 w-9 h-9 rounded-full flex items-center justify-center transition"><i class="fas fa-trash"></i></button>
+                </div>
             </div>
-            <button onclick="delVocab(${v.id})" class="text-gray-300 hover:text-red-500 px-4 py-2"><i class="fas fa-trash"></i></button>
+            ${detailHtml}
+            ${v.core_concept ? `<div class="absolute bottom-1 right-1/2 translate-x-1/2 text-gray-300 text-[10px]"><i class="fas fa-chevron-down"></i></div>` : ''}
         </div>`;
             });
+        }
+
+        function toggleVocabDetail(id) {
+            const el = document.getElementById(`vocab-detail-${id}`);
+            if (el) {
+                el.classList.toggle('hidden');
+            }
         }
 
         function delVocab(id) {
@@ -1637,27 +1725,54 @@
 
         async function doTranslate(text) {
             const id = Date.now();
-            // 先顯示載入中狀態
             appState.vocabList.unshift({ id, word: text, trans: "翻譯中...", lang: appState.lang });
             renderVocab();
 
             try {
-                // 呼叫 API (這裡會使用你剛改好的 Vercel 連線版 callGemini)
-                const res = await callGemini([{ role: "user", parts: [{ text: `Translate "${text}" to Traditional Chinese. Just output translation.` }] }]);
+                const prompt = `
+Please analyze the following word/phrase in the context of learning ${APP_DATA.langs[appState.lang].name} for a traditional Chinese speaker.
+Word/Phrase: "${text}"
 
-                // 更新結果
+Output a strict JSON object with the following fields:
+- "lemma": the base/dictionary form of the word (e.g., if input is "going", output "go").
+- "phonetic": pronunciation guide (Pinyin for Chinese, Romaji for Japanese, or IPA/phonetics).
+- "translation": Traditional Chinese translation in current context.
+- "core_concept": a short explanation of its core meaning.
+- "memory_hook": a mnemonic or memory hook to remember the word.
+- "collocations": an array of 2-3 common collocations (e.g., ["collocation 1", "collocation 2"]).
+- "example_sentences": an array of 2 example sentences, each an object with "en" (the sentence in the target language) and "zh" (Traditional Chinese translation).
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+                const rawRes = await callGemini([{ role: "user", parts: [{ text: prompt }] }]);
+
+                let parsed;
+                try {
+                    const cleanRes = rawRes.replace(/```json/g, "").replace(/```/g, "").trim();
+                    parsed = JSON.parse(cleanRes);
+                } catch (err) {
+                    parsed = {
+                        lemma: text,
+                        translation: rawRes.trim() || text,
+                        phonetic: "",
+                        core_concept: "",
+                        memory_hook: "",
+                        collocations: [],
+                        example_sentences: []
+                    };
+                }
+
                 const item = appState.vocabList.find(i => i.id === id);
                 if (item) {
-                    item.trans = res.trim();
+                    Object.assign(item, parsed);
+                    item.trans = parsed.translation; // ensure backwards compatibility
                     localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
                     renderVocab();
-                    // 簡單提示
-                    alert(`已收藏：\n${text}\n⬇\n${res.trim()}`);
+                    alert(`已收藏：\n${text}\n⬇\n${parsed.translation}`);
                 }
             } catch (e) {
                 console.error(e);
                 alert("翻譯失敗，請檢查網路或 API Key");
-                // 失敗則移除該項目
                 appState.vocabList = appState.vocabList.filter(v => v.id !== id);
                 renderVocab();
             }
