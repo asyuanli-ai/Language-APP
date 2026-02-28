@@ -1456,13 +1456,19 @@
         }
 
         // --- UTILS ---
-        function speakText(text) {
+        function speakText(text, explicitLang = null) {
             if (!text) return;
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(text);
             const map = { 'en': 'en-US', 'jp': 'ja-JP', 'kr': 'ko-KR' };
-            u.lang = map[appState.lang];
+            u.lang = explicitLang ? map[explicitLang] : map[appState.lang];
             u.rate = 0.9;
+            // Safari workaround: sometimes voices aren't loaded immediately or need a specific voice assigned
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                const voice = voices.find(v => v.lang.startsWith(u.lang) || v.lang.replace('-', '_').startsWith(u.lang.replace('-', '_')));
+                if (voice) u.voice = voice;
+            }
             window.speechSynthesis.speak(u);
         }
 
@@ -1667,12 +1673,12 @@
                     <div class="text-gray-500 text-sm mt-1">${v.trans || v.translation || ''}</div>
                 </div>
                 <div class="flex gap-2 flex-none">
-                    <button onclick="event.stopPropagation(); speakText('${lemma.replace(/'/g, "\\'")}')" class="text-blue-500 bg-blue-50 hover:bg-blue-100 w-9 h-9 rounded-full flex items-center justify-center transition"><i class="fas fa-volume-up"></i></button>
-                    <button onclick="event.stopPropagation(); delVocab(${v.id})" class="text-red-400 bg-red-50 hover:bg-red-100 w-9 h-9 rounded-full flex items-center justify-center transition"><i class="fas fa-trash"></i></button>
+                    <button type="button" onclick="event.stopPropagation(); speakText('${lemma.replace(/'/g, "\\'")}', '${v.lang}')" class="text-blue-500 bg-blue-50 hover:bg-blue-100 w-9 h-9 rounded-full flex items-center justify-center transition"><i class="fas fa-volume-up pointer-events-none"></i></button>
+                    <button type="button" onclick="event.stopPropagation(); delVocab(${v.id})" class="text-red-400 bg-red-50 hover:bg-red-100 w-9 h-9 rounded-full flex items-center justify-center transition"><i class="fas fa-trash pointer-events-none"></i></button>
                 </div>
             </div>
             ${detailHtml}
-            ${v.core_concept ? `<div class="absolute bottom-1 right-1/2 translate-x-1/2 text-gray-300 text-[10px]"><i class="fas fa-chevron-down"></i></div>` : ''}
+            ${v.core_concept ? `<div class="absolute bottom-1 right-1/2 translate-x-1/2 text-gray-300 text-[10px] pointer-events-none"><i class="fas fa-chevron-down"></i></div>` : ''}
         </div>`;
             });
         }
@@ -1680,7 +1686,11 @@
         function toggleVocabDetail(id) {
             const el = document.getElementById(`vocab-detail-${id}`);
             if (el) {
-                el.classList.toggle('hidden');
+                if (el.classList.contains('hidden')) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
             }
         }
 
