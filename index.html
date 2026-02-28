@@ -1660,6 +1660,12 @@
                         ${examplesHtml ? `<div><span class="font-bold text-orange-500 flex items-center gap-1 mb-1"><i class="fas fa-quote-left"></i> 例句</span><div class="mt-1">${examplesHtml}</div></div>` : ''}
                     </div>
                     `;
+                } else {
+                    detailHtml = `
+                    <div id="vocab-detail-${v.id}" class="hidden mt-4 pt-4 border-t border-gray-100 text-sm text-center text-gray-400">
+                        【無詳細資料】<br>此單字可能為系統升級前收藏，或解析失敗。<br>請重新在對話中選取收藏以獲取完整 AI 解析！
+                    </div>
+                    `;
                 }
 
                 list.innerHTML += `
@@ -1678,7 +1684,7 @@
                 </div>
             </div>
             ${detailHtml}
-            ${v.core_concept ? `<div class="absolute bottom-1 right-1/2 translate-x-1/2 text-gray-300 text-[10px] pointer-events-none"><i class="fas fa-chevron-down"></i></div>` : ''}
+            <div class="absolute bottom-1 right-1/2 translate-x-1/2 text-gray-300 text-[10px] pointer-events-none"><i class="fas fa-chevron-down"></i></div>
         </div>`;
             });
         }
@@ -1739,28 +1745,35 @@
             renderVocab();
 
             try {
+                const langName = APP_DATA.langs[appState.lang].name;
                 const prompt = `
-Please analyze the following word/phrase in the context of learning ${APP_DATA.langs[appState.lang].name} for a traditional Chinese speaker.
+Please analyze the following word/phrase in the target language: ${langName}.
 Word/Phrase: "${text}"
 
 Output a strict JSON object with the following fields:
-- "lemma": the base/dictionary form of the word (e.g., if input is "going", output "go").
-- "phonetic": pronunciation guide (Pinyin for Chinese, Romaji for Japanese, or IPA/phonetics).
+- "lemma": the base/dictionary form of the word in ${langName} format. Do NOT translate this field. Keep it in ${langName}.
+- "phonetic": pronunciation guide (Pinyin if Chinese, Romaji if Japanese, Hangul/Romaja if Korean, IPA if English).
 - "translation": Traditional Chinese translation in current context.
-- "core_concept": a short explanation of its core meaning.
-- "memory_hook": a mnemonic or memory hook to remember the word.
-- "collocations": an array of 2-3 common collocations (e.g., ["collocation 1", "collocation 2"]).
-- "example_sentences": an array of 2 example sentences, each an object with "en" (the sentence in the target language) and "zh" (Traditional Chinese translation).
+- "core_concept": a short explanation of its core meaning in Traditional Chinese.
+- "memory_hook": a mnemonic or memory hook in Traditional Chinese.
+- "collocations": an array of 2-3 common collocations in ${langName} format.
+- "example_sentences": an array of 2 example sentences, each an object with "en" (the sentence in ${langName}) and "zh" (Traditional Chinese translation).
 
 Return ONLY valid JSON, no markdown formatting.`;
 
                 const rawRes = await callGemini([{ role: "user", parts: [{ text: prompt }] }]);
 
                 let parsed;
-                try {
-                    const cleanRes = rawRes.replace(/```json/g, "").replace(/```/g, "").trim();
-                    parsed = JSON.parse(cleanRes);
-                } catch (err) {
+                const jsonMatch = rawRes.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    try {
+                        parsed = JSON.parse(jsonMatch[0]);
+                    } catch (err) {
+                        console.error("JSON parse error:", err);
+                    }
+                }
+
+                if (!parsed) {
                     parsed = {
                         lemma: text,
                         translation: rawRes.trim() || text,
@@ -1775,10 +1788,10 @@ Return ONLY valid JSON, no markdown formatting.`;
                 const item = appState.vocabList.find(i => i.id === id);
                 if (item) {
                     Object.assign(item, parsed);
-                    item.trans = parsed.translation; // ensure backwards compatibility
+                    item.trans = parsed.translation || parsed.trans; // ensure backwards compatibility
                     localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
                     renderVocab();
-                    alert(`已收藏：\n${text}\n⬇\n${parsed.translation}`);
+                    alert(`已收藏：\n${text}\n⬇\n${parsed.translation || parsed.trans}`);
                 }
             } catch (e) {
                 console.error(e);
