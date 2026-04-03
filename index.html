@@ -530,12 +530,10 @@
         //  改良版 callGemini (放在 index.html <script> 內)
         // ==========================================
         async function callGemini(contents) {
-            // == [新增自動除錯] 本地直連機制 ==
-            // 當偵測到你是用本地檔案開啟 (file://) 或 localhost 時，自動改由前端直連 Gemini，不用管後端壞掉的問題！
-            const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            // == [修改] 只要有 API Key，就一律使用前端直連，避免後端伺服器無法連線造成「系統錯誤，伺服器錯誤」 ==
             const apiKey = localStorage.getItem('v21_key');
-            if (isLocal && apiKey) {
-                console.log("【模式提示】偵測為本地測試，自動使用前端直連 Gemini 模式");
+            if (apiKey) {
+                console.log("【模式提示】偵測到 API Key，使用前端直連 Gemini 模式");
                 const model = (await autoDetectModel(apiKey)) || 'gemini-1.5-flash';
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
@@ -556,10 +554,11 @@
                         body: JSON.stringify({ contents: geminiContents })
                     });
                     const data = await res.json();
-                    if (!res.ok) throw new Error(data.error?.message || "本地直連請求失敗");
+                    if (!res.ok) throw new Error(data.error?.message || "無法連線至 Gemini");
                     return data.candidates[0].content.parts[0].text;
                 } catch (e) {
-                    console.error("Gemini 本地呼叫發生錯誤:", e);
+                    console.error("Gemini 呼叫發生錯誤:", e);
+                    alert("Gemini 連線錯誤: " + e.message);
                     throw e;
                 }
             }
@@ -1433,13 +1432,15 @@
                 const loader = document.getElementById(loaderId);
                 if (loader) loader.remove();
 
-                let replyText = rawText;
+                // 清理可能回傳的 Markdown 標籤 (例如 ```json)
+                let cleanRawText = rawText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+                let replyText = cleanRawText;
                 let correctionData = null;
-                const jsonMatch = rawText.match(/\{[\s\S]*"correction"[\s\S]*\}/);
+                const jsonMatch = cleanRawText.match(/\{[\s\S]*"correction"[\s\S]*\}/);
                 if (jsonMatch) {
                     try {
                         correctionData = JSON.parse(jsonMatch[0]);
-                        replyText = rawText.replace(jsonMatch[0], '').trim();
+                        replyText = cleanRawText.replace(jsonMatch[0], '').trim();
                     } catch (e) { }
                 }
 
