@@ -468,6 +468,31 @@
         </div>
     </div>
 
+    <!-- Grammar Page -->
+    <div id="page-grammar" class="ios-page">
+        <div class="px-4 pt-2">
+            <h2 class="text-2xl font-bold mb-4">文法總覽 & 比較</h2>
+            <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
+                <button onclick="setGrammarLang('en')"
+                    class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black"
+                    data-lang="en">English</button>
+                <button onclick="setGrammarLang('jp')"
+                    class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
+                    data-lang="jp">日本語</button>
+                <button onclick="setGrammarLang('kr')"
+                    class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
+                    data-lang="kr">한국어</button>
+            </div>
+            
+            <div class="flex gap-2 mb-6">
+                <input type="text" id="grammar-search-input" class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-blue-500 shadow-sm" placeholder="輸入想學的文法或單字比較 (如: speak vs talk)">
+                <button onclick="searchGrammar()" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md active:scale-95 transition flex-none"><i class="fas fa-search"></i></button>
+            </div>
+
+            <div id="grammar-list" class="space-y-4 pb-8"></div>
+        </div>
+    </div>
+
     <div id="page-settings" class="ios-page">
         <div class="px-4 pt-2">
             <h2 class="text-2xl font-bold mb-4">設定</h2>
@@ -501,7 +526,10 @@
             <i class="fas fa-book-open"></i> 課程
         </div>
         <div class="tab-item" onclick="switchPage('vocab', this)">
-            <i class="fas fa-star"></i> 單字
+            <i class="fas fa-bookmark"></i> 單字
+        </div>
+        <div class="tab-item" onclick="switchPage('grammar', this)">
+            <i class="fas fa-layer-group"></i> 文法
         </div>
         <div class="tab-item" onclick="switchPage('settings', this)">
             <i class="fas fa-cog"></i> 設定
@@ -802,8 +830,43 @@
             completedMissions: [],
             vocabList: JSON.parse(localStorage.getItem('my_vocab') || '[]'),
             vocabLang: 'en',
-            autoAudio: true
+            autoAudio: true,
+            grammarList: JSON.parse(localStorage.getItem('my_grammar') || '[]'),
+            grammarLang: 'en',
+            quizConfig: { type: 'mixed', difficulty: 'all' }
         };
+
+        // Mock初始文法設定
+        if (!localStorage.getItem('my_grammar')) {
+            const defaultGrammar = [
+                {
+                    id: 1, lang: 'en', title: "speak vs talk vs say vs tell", type: "comparison",
+                    explanation: "這四個單字都和「說」有關，但用法和側重點有所不同。",
+                    table: [
+                        { term: "Speak", usage: "單向的表達、較正式、或是指語言能力", example: "He can speak three languages." },
+                        { term: "Talk", usage: "雙向的交流、對話、較口語", example: "We need to talk." },
+                        { term: "Say", usage: "強調說出的「內容」，通常接子句或引號", example: "She said that she was tired." },
+                        { term: "Tell", usage: "告訴某人某事，通常後面會加上對象", example: "Tell me the truth." }
+                    ],
+                    sentences: [
+                        { en: "Please speak louder.", zh: "請大聲一點。" },
+                        { en: "Let's talk about the project.", zh: "我們來談談這個專案。" }
+                    ]
+                },
+                {
+                    id: 2, lang: 'jp', title: "～ている 的用法", type: "grammar",
+                    explanation: "「～ている」不僅代表正在進行，還可以表示狀態的持續或結果。",
+                    table: [
+                        { term: "正在進行", usage: "動作正在發生", example: "今、本を読んでいる。(現在正在看書)" },
+                        { term: "狀態持續", usage: "動作發生後留下的狀態", example: "ドアが開いている。(門開著)" },
+                        { term: "經驗/紀錄", usage: "過去發生的事影響到現在", example: "彼は３回日本へ行っている。(他去過三次日本)" }
+                    ],
+                    sentences: []
+                }
+            ];
+            localStorage.setItem('my_grammar', JSON.stringify(defaultGrammar));
+            appState.grammarList = defaultGrammar;
+        }
 
         /* =========================================
            3. UI CONTROLLER
@@ -819,6 +882,7 @@
             renderHome();
             updateLevelDesc();
             renderVocab();
+            renderGrammar();
         }
 
         function switchPage(pageId, tabEl) {
@@ -833,6 +897,7 @@
 
             if (pageId === 'home') renderHome();
             if (pageId === 'learn') renderLearn();
+            if (pageId === 'grammar') renderGrammar();
 
             // Close detail if open
             document.getElementById('page-course-detail').classList.remove('show');
@@ -1457,10 +1522,65 @@
                 alert("該語言的單字少於 4 個，選項不足，請多收藏一些單字再來測驗！");
                 return;
             }
+            document.getElementById('quiz-modal').classList.remove('hidden');
+            renderQuizSetup();
+        }
+
+        function renderQuizSetup() {
+            const container = document.getElementById('quiz-content');
+            container.innerHTML = `
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">測驗範圍 (難度)</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="setQuizRange('all', this)" class="quiz-range-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">全部單字</button>
+                            <button onclick="setQuizRange('recent', this)" class="quiz-range-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">最近 20 個</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">題型設定</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setQuizType('mixed', this)" class="quiz-type-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">混合出題</button>
+                            <button onclick="setQuizType('mcq', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">選擇題</button>
+                            <button onclick="setQuizType('spell', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">拼寫題</button>
+                        </div>
+                    </div>
+                    <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mt-4 shadow-lg active:scale-95 transition">開始測驗</button>
+                </div>
+            `;
+            appState.quizConfig.type = 'mixed';
+            appState.quizConfig.difficulty = 'all';
+        }
+
+        function setQuizRange(range, btn) {
+            appState.quizConfig.difficulty = range;
+            document.querySelectorAll('.quiz-range-btn').forEach(b => {
+                b.className = 'quiz-range-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold';
+            });
+            btn.className = 'quiz-range-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active';
+        }
+
+        function setQuizType(type, btn) {
+            appState.quizConfig.type = type;
+            document.querySelectorAll('.quiz-type-btn').forEach(b => {
+                b.className = 'quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold';
+            });
+            btn.className = 'quiz-type-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active';
+        }
+
+        function startQuiz() {
+            let filteredVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang);
+            if(appState.quizConfig.difficulty === 'recent') {
+                filteredVocab = filteredVocab.slice(0, 20);
+            }
+            if (filteredVocab.length < 4) {
+                alert("所選範圍的單字少於 4 個，無法組成測驗！");
+                return;
+            }
+
             appState.quizVocab = [...filteredVocab].sort(() => 0.5 - Math.random());
             appState.quizIndex = 0;
             appState.quizScore = 0;
-            document.getElementById('quiz-modal').classList.remove('hidden');
             renderQuizQuestion();
         }
 
@@ -1483,7 +1603,10 @@
             }
 
             const currentWord = appState.quizVocab[appState.quizIndex];
-            const qType = Math.random() > 0.5 ? 'spell' : 'mcq';
+            let qType = appState.quizConfig.type;
+            if(qType === 'mixed') {
+                qType = Math.random() > 0.5 ? 'spell' : 'mcq';
+            }
 
             let contentHtml = '';
 
@@ -1734,6 +1857,141 @@ Return ONLY valid JSON, no markdown formatting.`;
                 alert("翻譯失敗，請檢查網路或 API Key");
                 appState.vocabList = appState.vocabList.filter(v => v.id !== id);
                 renderVocab();
+            }
+        }
+
+        /* =========================================
+           Grammar Logic
+           ========================================= */
+
+        function setGrammarLang(lang) {
+            appState.grammarLang = lang;
+            document.querySelectorAll('.grammar-lang-btn').forEach(b => {
+                const isActive = b.dataset.lang === lang;
+                b.className = isActive
+                    ? 'grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black'
+                    : 'grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
+            });
+            renderGrammar();
+        }
+
+        function renderGrammar() {
+            const list = document.getElementById('grammar-list');
+            const filtered = appState.grammarList.filter(g => g.lang === appState.grammarLang);
+            
+            if(!filtered.length) {
+                list.innerHTML = '<div class="text-center text-gray-400 mt-10">尚無文法與比較紀錄<br>請在上方搜尋欄輸入你想問的單字差異或文法</div>';
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(g => {
+                let tableHtml = '';
+                if(g.table && g.table.length > 0) {
+                    tableHtml = `<div class="mt-4 text-sm bg-gray-50 border border-gray-100 rounded-lg overflow-hidden flex flex-col">`;
+                    g.table.forEach((row) => {
+                        tableHtml += `
+                            <div class="border-b last:border-b-0 border-gray-200 p-3 flex flex-col bg-white">
+                                <div class="font-bold text-blue-600 mb-1"><i class="fas fa-angle-right text-xs mr-1 opacity-50"></i>${row.term}</div>
+                                <div class="text-gray-700 mb-1 ml-4">${row.usage}</div>
+                                <div class="text-gray-500 text-xs ml-4 bg-gray-50 p-2 rounded">${row.example}</div>
+                            </div>
+                        `;
+                    });
+                    tableHtml += `</div>`;
+                }
+
+                let sentsHtml = '';
+                if(g.sentences && g.sentences.length > 0) {
+                    sentsHtml = `<div class="mt-4"><span class="font-bold text-orange-500 text-sm flex items-center gap-1 mb-2"><i class="fas fa-quote-left"></i> 實例應用</span>`;
+                    g.sentences.forEach(s => {
+                        sentsHtml += `<div class="mb-2 text-sm"><div class="font-medium text-gray-800">${s.en}</div><div class="text-gray-500 text-xs">${s.zh}</div></div>`;
+                    });
+                    sentsHtml += `</div>`;
+                }
+
+                const badgeColor = g.type === 'comparison' ? 'purple' : 'green';
+                const badgeText = g.type === 'comparison' ? '單字比較' : '文法解析';
+
+                html += `
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 relative mb-4">
+                    <div class="absolute top-4 right-4 flex gap-2">
+                         <button type="button" onclick="delGrammar(${g.id})" class="text-gray-300 hover:text-red-400 transition"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="font-bold text-lg text-gray-900 mb-1 pr-8">${g.title}</div>
+                    <span class="inline-block bg-${badgeColor}-100 text-${badgeColor}-700 text-[10px] px-2 py-0.5 rounded mb-3 font-bold uppercase">${badgeText}</span>
+                    
+                    <p class="text-gray-700 text-sm leading-relaxed mb-2">${g.explanation}</p>
+                    
+                    ${tableHtml}
+                    ${sentsHtml}
+                </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        async function searchGrammar() {
+            const input = document.getElementById('grammar-search-input');
+            const query = input.value.trim();
+            if (!query) return;
+
+            if(!localStorage.getItem('v21_key')) {
+                alert("請先至設定頁面設定 API Key 才能向 AI 查詢文法/比較！");
+                return;
+            }
+
+            const loaderId = Date.now();
+            appState.grammarList.unshift({
+                id: loaderId,
+                lang: appState.grammarLang,
+                title: "🔍 " + query,
+                explanation: "正在透過 AI 解析，請稍候...",
+                table: [],
+                sentences: []
+            });
+            input.value = '';
+            renderGrammar();
+
+            try {
+                const langName = APP_DATA.langs[appState.grammarLang].name;
+                const prompt = `
+Please act as a professional ${langName} teacher. The user is asking about: "${query}"
+Provide a clear analysis in Traditional Chinese. Output as strict JSON format:
+{
+  "title": "A summary title (e.g. speak vs talk, or ～て形)",
+  "type": "grammar" or "comparison",
+  "explanation": "High-level explanation in Traditional Chinese",
+  "table": [
+    { "term": "sub-topic/word", "usage": "when/how to use", "example": "example sentence in ${langName} with translation" }
+  ],
+  "sentences": [
+    { "en": "Example sentence in ${langName}", "zh": "Traditional Chinese translation" }
+  ]
+}
+No markdown wrappers outside the JSON.`;
+
+                const rawRes = await callGemini([{ role: "user", parts: [{ text: prompt }] }]);
+                
+                let parsed;
+                const jsonMatch = rawRes.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    try { parsed = JSON.parse(jsonMatch[0]); } catch(e){}
+                }
+
+                if(!parsed) throw new Error("Format error");
+
+                const item = appState.grammarList.find(i => i.id === loaderId);
+                if(item) {
+                    Object.assign(item, parsed);
+                    localStorage.setItem('my_grammar', JSON.stringify(appState.grammarList));
+                    renderGrammar();
+                }
+            } catch (err) {
+                console.error(err);
+                alert("查詢失敗，有可能是網路錯誤或無效請求。");
+                appState.grammarList = appState.grammarList.filter(i => i.id !== loaderId);
+                renderGrammar();
             }
         }
 
