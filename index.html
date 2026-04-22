@@ -471,21 +471,31 @@
     <!-- Grammar Page -->
     <div id="page-grammar" class="ios-page">
         <div class="px-4 pt-2">
-            <h2 class="text-2xl font-bold mb-4">文法總覽 & 比較</h2>
+            <h2 class="text-2xl font-bold mb-4">文法庫與單字比較</h2>
+            
+            <!-- Language Selection -->
+            <div class="flex bg-gray-100 rounded-lg p-1 mb-3">
+                <button onclick="setGrammarLang('en')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lang="en">English</button>
+                <button onclick="setGrammarLang('jp')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
+                <button onclick="setGrammarLang('kr')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
+            </div>
+
+            <!-- Level Selection -->
             <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
-                <button onclick="setGrammarLang('en')"
-                    class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black"
-                    data-lang="en">English</button>
-                <button onclick="setGrammarLang('jp')"
-                    class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
-                    data-lang="jp">日本語</button>
-                <button onclick="setGrammarLang('kr')"
-                    class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
-                    data-lang="kr">한국어</button>
+                <button onclick="setGrammarLevel('beginner')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lvl="beginner">初級</button>
+                <button onclick="setGrammarLevel('intermediate')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lvl="intermediate">中級</button>
+                <button onclick="setGrammarLevel('advanced')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lvl="advanced">高級</button>
+            </div>
+
+            <!-- Sub-tab (Grammar vs Comparison) -->
+            <div class="flex border-b border-gray-200 mb-4">
+                <button onclick="setGrammarType('grammar')" class="grammar-type-btn flex-1 py-3 text-sm font-bold text-blue-600 border-b-2 border-blue-600" data-type="grammar">精選文法</button>
+                <button onclick="setGrammarType('comparison')" class="grammar-type-btn flex-1 py-3 text-sm font-bold text-gray-400 border-b-2 border-transparent" data-type="comparison">單字比較</button>
             </div>
             
+            <!-- Search -->
             <div class="flex gap-2 mb-6">
-                <input type="text" id="grammar-search-input" class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-blue-500 shadow-sm" placeholder="輸入想學的文法或單字比較 (如: speak vs talk)">
+                <input type="text" id="grammar-search-input" class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-blue-500 shadow-sm" placeholder="AI 詢問(按當前難度與分類寫入)">
                 <button onclick="searchGrammar()" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md active:scale-95 transition flex-none"><i class="fas fa-search"></i></button>
             </div>
 
@@ -833,36 +843,46 @@
             autoAudio: true,
             grammarList: JSON.parse(localStorage.getItem('my_grammar') || '[]'),
             grammarLang: 'en',
+            grammarLevel: 'beginner',
+            grammarType: 'grammar',
             quizConfig: { type: 'mixed', difficulty: 'all' }
         };
 
         // Mock初始文法設定
-        if (!localStorage.getItem('my_grammar')) {
+        if (!localStorage.getItem('my_grammar') || JSON.parse(localStorage.getItem('my_grammar')).length <= 2) {
             const defaultGrammar = [
-                {
-                    id: 1, lang: 'en', title: "speak vs talk vs say vs tell", type: "comparison",
-                    explanation: "這四個單字都和「說」有關，但用法和側重點有所不同。",
-                    table: [
-                        { term: "Speak", usage: "單向的表達、較正式、或是指語言能力", example: "He can speak three languages." },
-                        { term: "Talk", usage: "雙向的交流、對話、較口語", example: "We need to talk." },
-                        { term: "Say", usage: "強調說出的「內容」，通常接子句或引號", example: "She said that she was tired." },
-                        { term: "Tell", usage: "告訴某人某事，通常後面會加上對象", example: "Tell me the truth." }
-                    ],
-                    sentences: [
-                        { en: "Please speak louder.", zh: "請大聲一點。" },
-                        { en: "Let's talk about the project.", zh: "我們來談談這個專案。" }
-                    ]
-                },
-                {
-                    id: 2, lang: 'jp', title: "～ている 的用法", type: "grammar",
-                    explanation: "「～ている」不僅代表正在進行，還可以表示狀態的持續或結果。",
-                    table: [
-                        { term: "正在進行", usage: "動作正在發生", example: "今、本を読んでいる。(現在正在看書)" },
-                        { term: "狀態持續", usage: "動作發生後留下的狀態", example: "ドアが開いている。(門開著)" },
-                        { term: "經驗/紀錄", usage: "過去發生的事影響到現在", example: "彼は３回日本へ行っている。(他去過三次日本)" }
-                    ],
-                    sentences: []
-                }
+                // --- English ---
+                // Beginner
+                { id: 1001, lang: 'en', level: 'beginner', type: 'comparison', title: 'look vs see vs watch', explanation: '這些單字都和「看」有關，但注意力和意圖不同。', table: [ {term: 'see', usage: '自然看見(無意識)', example: 'I saw a bird.'}, {term: 'look', usage: '有意識地注視(強調動作)', example: 'Look at the picture.'}, {term: 'watch', usage: '長時間觀看會動的事物', example: 'I am watching a movie.'} ], sentences: [] },
+                { id: 1002, lang: 'en', level: 'beginner', type: 'grammar', title: 'Simple Present vs Present Continuous', explanation: '現在簡單式表示習慣或事實；現在進行式表示正在發生的動作。', table: [], sentences: [{en: 'I drink coffee every day.', zh: '我每天喝咖啡。'}, {en: 'I am drinking coffee now.', zh: '我現在正在喝咖啡。'}] },
+                // Intermediate
+                { id: 1003, lang: 'en', level: 'intermediate', type: 'comparison', title: 'affect vs effect', explanation: '這兩個詞發音相似，但詞性與用法大不相同。(CEFR B1/B2)', table: [{term: 'affect', usage: '動詞 (Verb): 影響', example: 'The weather affects my mood.'}, {term: 'effect', usage: '名詞 (Noun): 效果、結果', example: 'The medicine had a quick effect.'}], sentences: [] },
+                { id: 1004, lang: 'en', level: 'intermediate', type: 'grammar', title: 'Mixed Conditionals (混合條件句)', explanation: '當過去的假設影響現在的結果時使用。(CEFR B2)', table: [{term: 'Pattern', usage: 'If + Past Perfect, would + bare infinitive', example: 'If I had studied harder, I would be a doctor now.'}], sentences: [] },
+                // Advanced
+                { id: 1005, lang: 'en', level: 'advanced', type: 'comparison', title: 'mitigate vs alleviate vs ameliorate', explanation: '這些詞都有「減輕、改善」之意，用於正式高階寫作。(CEFR C1/C2)', table: [{term: 'mitigate', usage: '減輕(嚴重性、痛楚、後果)', example: 'They tried to mitigate the environmental impact.'}, {term: 'alleviate', usage: '緩解(痛苦、困難)', example: 'This drug will alleviate the pain.'}, {term: 'ameliorate', usage: '改善(不好的狀況)', example: 'Steps have been taken to ameliorate the situation.'}], sentences: [] },
+                { id: 1006, lang: 'en', level: 'advanced', type: 'grammar', title: 'Inversion (倒裝句)', explanation: '將否定或限制副詞放句首，以強調語氣，需使用助動詞倒裝。(CEFR C1)', table: [{term: 'Not only... but also', usage: 'Not only + 助動詞 + S + V', example: 'Not only did he arrive late, but he also forgot his report.'}], sentences: [] },
+                
+                // --- Japanese ---
+                // Beginner
+                { id: 2001, lang: 'jp', level: 'beginner', type: 'comparison', title: '知る vs 分かる', explanation: '兩者皆翻譯為「知道/了解」，但在日文語境中核心概念不同。', table: [{term: '知る', usage: '獲得情報、認識某事(原本不知道變成知道)', example: '彼の名前を知っていますか。'}, {term: '分かる', usage: '理解內容、明白道理(需要思考過程)', example: 'この問題はどう解くか分かりますか。'}], sentences: [] },
+                { id: 2002, lang: 'jp', level: 'beginner', type: 'grammar', title: '～てあげる / もらう / くれる', explanation: '日文特有的授受動詞，根據「誰給誰」及「恩惠方向」而變化。(JLPT N5/N4)', table: [{term: '～てあげる', usage: '我為別人做某事', example: '私が荷物を持ってあげます。'}, {term: '～てもらう', usage: '請別人為我做某事', example: '先生に教えてもらいました。'}, {term: '～てくれる', usage: '別人主動為我做某事', example: '彼が手伝ってくれました。'}], sentences: [] },
+                // Intermediate
+                { id: 2003, lang: 'jp', level: 'intermediate', type: 'comparison', title: '～に対して vs ～について vs ～にとって', explanation: '這些格助詞雖然相似，但在指示對象、內容或立場時有明確區別。(JLPT N3/N2)', table: [{term: 'に対して', usage: '針對某對象表現出某種態度或動作，或表示對比', example: 'お客様に対しては丁寧な言葉を使いなさい。'}, {term: 'について', usage: '關於某事物的內容(類似 about)', example: '日本の歴史について調べています。'}, {term: 'にとって', usage: '對某人而言(強調立場與價值判斷)', example: '私にとって家族は一番大切です。'}], sentences: [] },
+                { id: 2004, lang: 'jp', level: 'intermediate', type: 'grammar', title: '～ざるを得ない', explanation: '表示在沒有其他選擇的情況下，不得不這麼做。(JLPT N3)', table: [{term: '接續', usage: '動詞未然形 (ない形去ない) + ざるを得ない', example: '台風が来ているので、試合を中止せざるを得ない。'}], sentences: [{en: 'する → せざるを得ない', zh: '注意する的不規則變化'}] },
+                // Advanced
+                { id: 2005, lang: 'jp', level: 'advanced', type: 'comparison', title: 'おざなり vs なおざり', explanation: '讀音相似且都有「隨便、不認真」之意，考法上需嚴格區分動作狀態。(JLPT N1)', table: [{term: 'おざなり (お座なり)', usage: '有做動作，但敷衍了事、表面應付', example: 'おざなりな返事をしてしまった。'}, {term: 'なおざり (等閑)', usage: '完全放任不管、沒有做動作', example: '勉強をなおざりにして遊んでばかりいる。'}], sentences: [] },
+                { id: 2006, lang: 'jp', level: 'advanced', type: 'grammar', title: '～たるもの', explanation: '身為～(某種具備特殊身分或責任的人)，理應當有某種作為。(JLPT N1)', table: [{term: '接續', usage: '名詞 + たるもの', example: '教師たるものは、常に学生の模範とならなければならない。'}], sentences: [{en: '身為教師，必須時常成為學生的楷模。', zh: '這是一種帶有強烈期待、義務的表現手法'}] },
+
+                // --- Korean ---
+                // Beginner
+                { id: 3001, lang: 'kr', level: 'beginner', type: 'comparison', title: '안 vs 못', explanation: '兩者皆為否定副詞，但原因大不相同。(TOPIK I)', table: [{term: '안', usage: '主觀否定：有能力但「不」想做', example: '저는 고기를 안 먹어요. (我不吃肉/素食者)'}, {term: '못', usage: '客觀否定：想做但因為外在因素或能力「無法」做', example: '시간이 없어서 못 가요. (沒時間所以無法去)'}], sentences: [] },
+                { id: 3002, lang: 'kr', level: 'beginner', type: 'grammar', title: '-(으)ㄹ게요', explanation: '表示說話者的意志或承諾，主詞只能是「我」。(TOPIK I)', table: [{term: '接續', usage: '動詞詞幹 + -(으)ㄹ게요', example: '내일 제가 전화할게요. (我明天會打電話)'}], sentences: [] },
+                // Intermediate
+                { id: 3003, lang: 'kr', level: 'intermediate', type: 'comparison', title: '-(으)니까 vs -아/어서', explanation: '兩者都翻譯為「因為...所以」，但限制條件不同。(TOPIK II 中級)', table: [{term: '-(으)니까', usage: '可接祈使、共動句；可結合過去時態', example: '비가 오니까 우산을 가져가세요. (因為下雨，請帶傘)'}, {term: '-아/어서', usage: '不可接祈使/共動句；前方不可接過去時態', example: '비가 와서 길이 막혀요. (因為下雨所以塞車)'}], sentences: [] },
+                { id: 3004, lang: 'kr', level: 'intermediate', type: 'grammar', title: '-느라고', explanation: '因為做前句的動作，而導致後句產生「負面」或「無法兼顧其他事情」的結果。(TOPIK II 中級)', table: [{term: '接續', usage: '動詞詞幹 + 느라고', example: '시험 공부를 하느라고 잠을 못 잤어요. (因為準備考試所以沒能睡覺)'}], sentences: [] },
+                // Advanced
+                { id: 3005, lang: 'kr', level: 'advanced', type: 'comparison', title: '드러나다 vs 밝혀지다', explanation: '雖然都有「揭露/查明」之意，但在新聞與正式文章中有區分。(TOPIK II 高級)', table: [{term: '드러나다', usage: '原本隱藏的事實或本質自然「顯露」出來', example: '그의 거짓말이 마침내 드러났다. (他的謊言終於顯露了)'}, {term: '밝혀지다', usage: '透過調查、研究將原本未知的真相「查明/揭發」', example: '조사 결과, 새로운 사실이 밝혀졌다. (調查結果查明了新事實)'}], sentences: [] },
+                { id: 3006, lang: 'kr', level: 'advanced', type: 'grammar', title: '-(으)ㄹ라치면', explanation: '每當想要做某事時，就會發生不好的事。(TOPIK II 高級)', table: [{term: '接續', usage: '動詞詞幹 + -(으)ㄹ라치면', example: '외출할라치면 비가 오기 시작한다. (每當我要出門就會開始下雨)'}], sentences: [] }
             ];
             localStorage.setItem('my_grammar', JSON.stringify(defaultGrammar));
             appState.grammarList = defaultGrammar;
@@ -1875,12 +1895,38 @@ Return ONLY valid JSON, no markdown formatting.`;
             renderGrammar();
         }
 
+        function setGrammarLevel(lvl) {
+            appState.grammarLevel = lvl;
+            document.querySelectorAll('.grammar-lvl-btn').forEach(b => {
+                const isActive = b.dataset.lvl === lvl;
+                b.className = isActive 
+                    ? 'grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black' 
+                    : 'grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
+            });
+            renderGrammar();
+        }
+
+        function setGrammarType(type) {
+            appState.grammarType = type;
+            document.querySelectorAll('.grammar-type-btn').forEach(b => {
+                const isActive = b.dataset.type === type;
+                b.className = isActive 
+                    ? 'grammar-type-btn flex-1 py-3 text-sm font-bold text-blue-600 border-b-2 border-blue-600' 
+                    : 'grammar-type-btn flex-1 py-3 text-sm font-bold text-gray-400 border-b-2 border-transparent';
+            });
+            renderGrammar();
+        }
+
         function renderGrammar() {
             const list = document.getElementById('grammar-list');
-            const filtered = appState.grammarList.filter(g => g.lang === appState.grammarLang);
+            const filtered = appState.grammarList.filter(g => 
+                g.lang === appState.grammarLang && 
+                g.level === appState.grammarLevel && 
+                g.type === appState.grammarType
+            );
             
             if(!filtered.length) {
-                list.innerHTML = '<div class="text-center text-gray-400 mt-10">尚無文法與比較紀錄<br>請在上方搜尋欄輸入你想問的單字差異或文法</div>';
+                list.innerHTML = `<div class="text-center text-gray-400 mt-10">尚無當前等級的${appState.grammarType === 'grammar' ? '文法' : '單字比較'}紀錄<br>請在上方搜尋欄發問，AI將自動建置。</div>`;
                 return;
             }
 
@@ -1945,6 +1991,8 @@ Return ONLY valid JSON, no markdown formatting.`;
             appState.grammarList.unshift({
                 id: loaderId,
                 lang: appState.grammarLang,
+                level: appState.grammarLevel,
+                type: appState.grammarType,
                 title: "🔍 " + query,
                 explanation: "正在透過 AI 解析，請稍候...",
                 table: [],
@@ -1956,11 +2004,12 @@ Return ONLY valid JSON, no markdown formatting.`;
             try {
                 const langName = APP_DATA.langs[appState.grammarLang].name;
                 const prompt = `
-Please act as a professional ${langName} teacher. The user is asking about: "${query}"
+Please act as a professional ${langName} teacher. The user is asking about: "${query}".
+The requested content is a ${appState.grammarType} (Grammar vs Comparison). The difficulty target is ${appState.grammarLevel}.
 Provide a clear analysis in Traditional Chinese. Output as strict JSON format:
 {
   "title": "A summary title (e.g. speak vs talk, or ～て形)",
-  "type": "grammar" or "comparison",
+  "type": "${appState.grammarType}",
   "explanation": "High-level explanation in Traditional Chinese",
   "table": [
     { "term": "sub-topic/word", "usage": "when/how to use", "example": "example sentence in ${langName} with translation" }
