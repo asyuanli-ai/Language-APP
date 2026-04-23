@@ -630,12 +630,19 @@
 
             // If Course Detail is open, close it
             const detailPage = document.getElementById('page-course-detail');
-            if (detailPage.classList.contains('show')) {
+            if (detailPage && detailPage.classList.contains('show')) {
                 closeCourseDetail();
-                return;
             }
-            // Otherwise, assume we are in chat mode
-            endChat();
+            
+            // Always exit chat mode safely without recursive routing
+            document.body.classList.remove('chat-mode');
+            const headerBack = document.getElementById('header-back-btn');
+            if(headerBack) headerBack.style.display = 'none';
+            const audioToggle = document.getElementById('audio-toggle');
+            if(audioToggle) audioToggle.style.display = 'none';
+            const headerTitle = document.getElementById('header-title');
+            if(headerTitle) headerTitle.innerText = "SpeakAI";
+            window.speechSynthesis.cancel();
         }
 
         function setLang(lang) {
@@ -1617,16 +1624,37 @@ Return ONLY valid JSON, no markdown formatting.`;
             renderGrammar();
         }
 
-        function renderGrammar() {
+        function renderGrammar(searchQuery = '') {
             const list = document.getElementById('grammar-list');
-            const filtered = appState.grammarList.filter(g => 
+            
+            // 由於使用者要求純靜態資料庫，這裡直接顯示硬編碼的 DEFAULT_GRAMMAR_DATA
+            // 為了向下相容，還是把之前可能存的資料也混進來顯示
+            const userIds = new Set(appState.grammarList.map(g => g.id));
+            const allGrammar = [
+                ...DEFAULT_GRAMMAR_DATA.filter(g => !userIds.has(g.id)),
+                ...appState.grammarList
+            ];
+
+            let filtered = allGrammar.filter(g => 
                 g.lang === appState.grammarLang && 
                 g.level === appState.grammarLevel && 
                 g.type === appState.grammarType
             );
+
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                filtered = filtered.filter(g => 
+                    g.title.toLowerCase().includes(q) || 
+                    g.explanation.toLowerCase().includes(q)
+                );
+            }
             
             if(!filtered.length) {
-                list.innerHTML = `<div class="text-center text-gray-400 mt-10">目前尚無此類型的課程。<br>請在對話中主動詢問，AI 將自動為您生成內容。</div>`;
+                if (searchQuery) {
+                    list.innerHTML = `<div class="text-center text-gray-400 mt-10">找不到符合關鍵字的結果。<br>請嘗試其他關鍵字。</div>`;
+                } else {
+                    list.innerHTML = `<div class="text-center text-gray-400 mt-10">目前該類別尚無預設內容。</div>`;
+                }
                 return;
             }
 
@@ -1680,68 +1708,7 @@ Return ONLY valid JSON, no markdown formatting.`;
         async function searchGrammar() {
             const input = document.getElementById('grammar-search-input');
             const query = input.value.trim();
-            if (!query) return;
-
-            if(!localStorage.getItem('v21_key')) {
-                alert("請先到設置頁面設置 API Key 以啟動 AI 語法生成。");
-                return;
-            }
-
-            const loaderId = Date.now();
-            appState.grammarList.unshift({
-                id: loaderId,
-                lang: appState.grammarLang,
-                level: appState.grammarLevel,
-                type: appState.grammarType,
-                title: "解析 " + query,
-                explanation: "正在請求 AI 老師解析，請稍候...",
-                table: [],
-                sentences: []
-            });
-            input.value = '';
-            renderGrammar();
-
-            try {
-                const langName = APP_DATA.langs[appState.grammarLang].name;
-                const prompt = `
-Please act as a professional ${langName} teacher. The user is asking about: "${query}".
-The requested content is a ${appState.grammarType} (Grammar vs Comparison). The difficulty target is ${appState.grammarLevel}.
-Provide a clear analysis in Traditional Chinese. Output as strict JSON format:
-{
-  "title": "A summary title (e.g. speak vs talk, or 語法解析)",
-  "type": "${appState.grammarType}",
-  "explanation": "High-level explanation in Traditional Chinese",
-  "table": [
-    { "term": "sub-topic/word", "usage": "when/how to use", "example": "example sentence in ${langName} with translation" }
-  ],
-  "sentences": [
-    { "en": "Example sentence in ${langName}", "zh": "Traditional Chinese translation" }
-  ]
-}
-No markdown wrappers outside the JSON.`;
-
-                const rawRes = await callGemini([{ role: "user", parts: [{ text: prompt }] }]);
-                
-                let parsed;
-                const jsonMatch = rawRes.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    try { parsed = JSON.parse(jsonMatch[0]); } catch(e){}
-                }
-
-                if(!parsed) throw new Error("Format error");
-
-                const item = appState.grammarList.find(i => i.id === loaderId);
-                if(item) {
-                    Object.assign(item, parsed);
-                    localStorage.setItem('my_grammar', JSON.stringify(appState.grammarList));
-                    renderGrammar();
-                }
-            } catch (err) {
-                console.error(err);
-                alert("解析失敗，可能是網路不穩定，請稍後再試。");
-                appState.grammarList = appState.grammarList.filter(i => i.id !== loaderId);
-                renderGrammar();
-            }
+            renderGrammar(query);
         }
 
         function saveApiKey() {
@@ -1766,5 +1733,6 @@ No markdown wrappers outside the JSON.`;
 
         window.onload = init;
     </script>
+    <script src="grammar_data.js"></script>
 </body>
 </html>
