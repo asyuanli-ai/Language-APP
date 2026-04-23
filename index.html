@@ -1,619 +1,399 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>My Learning</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#f2f2f7">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SpeakAI - 語言學習</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* iOS Base Styles */
         :root {
-            --ios-bg: #f2f2f7;
-            --ios-card: #ffffff;
-            --ios-blue: #007aff;
-            --ios-nav-blur: rgba(255, 255, 255, 0.95);
-            --safe-top: env(safe-area-inset-top);
-            --safe-bottom: env(safe-area-inset-bottom);
+            --ios-bg: #F2F2F7;
+            --ios-blue: #007AFF;
+            --ios-gray: #8E8E93;
         }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--ios-bg);
+            overscroll-behavior-y: contain;
             -webkit-tap-highlight-color: transparent;
-            overscroll-behavior-y: none;
-            height: 100vh;
-            overflow: hidden;
         }
-
-        /* Page Logic */
+        .ios-card {
+            background: white;
+            border-radius: 20px;
+            margin: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
         .ios-page {
             display: none;
-            padding-top: calc(var(--safe-top) + 60px);
-            padding-bottom: calc(var(--safe-bottom) + 80px);
-            height: 100vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            padding-bottom: 90px;
+            min-height: 100vh;
         }
-
         .ios-page.active-page {
-            display: block !important;
-            animation: fadeIn 0.2s ease-out;
+            display: block;
+            animation: fadeIn 0.3s ease-out;
         }
-
-        /* Detail Page (Slide in from right) */
-        .detail-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--ios-bg);
-            z-index: 200;
-            /* Higher than everything */
-            transform: translateX(100%);
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-            padding-top: calc(var(--safe-top) + 50px);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .detail-page.show {
-            transform: translateX(0);
-        }
-
-        /* Chat Specifics */
-        #page-chat.active-page {
-            padding-bottom: 0;
-            overflow: hidden;
-            display: flex !important;
-            flex-direction: column;
-        }
-
-        /* Header */
-        .ios-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: calc(var(--safe-top) + 50px);
-            padding-top: var(--safe-top);
-            background: var(--ios-nav-blur);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            z-index: 250;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 17px;
-            transition: all 0.3s;
-        }
-
-        .header-btn-left {
-            position: absolute;
-            left: 16px;
-            bottom: 12px;
-            color: var(--ios-blue);
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .header-btn-right {
-            position: absolute;
-            right: 16px;
-            bottom: 12px;
-            color: var(--ios-blue);
-            font-size: 14px;
-            cursor: pointer;
-        }
-
         /* Tab Bar */
-        .ios-tab-bar {
+        .tab-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: calc(var(--safe-bottom) + 55px);
-            padding-bottom: var(--safe-bottom);
-            background: var(--ios-nav-blur);
+            height: 85px;
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-top: 1px solid rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-around;
-            align-items: center;
-            z-index: 50;
-            transition: transform 0.3s ease;
+            padding-top: 10px;
+            z-index: 1000;
         }
-
-        body.chat-mode .ios-tab-bar {
-            transform: translateY(100%);
-        }
-
         .tab-item {
-            color: #8e8e93;
-            font-size: 12px;
-            text-align: center;
-            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 4px;
+            color: var(--ios-gray);
+            font-size: 11px;
+            transition: 0.2s;
+            width: 25%;
         }
-
-        .tab-item i {
-            font-size: 20px;
-        }
-
         .tab-item.active {
             color: var(--ios-blue);
         }
-
+        .tab-item i {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
         /* Chat UI */
-        #chat-container {
-            flex: 1;
+        .chat-container {
+            height: calc(100vh - 180px);
             overflow-y: auto;
             padding: 16px;
-            /* 修正：加大底部留白至 180px，防止被輸入框擋住 */
-            padding-bottom: 180px;
-            background-color: var(--ios-bg);
             scroll-behavior: smooth;
         }
-
-        #chat-input-area {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(249, 249, 249, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 10px 16px;
-            padding-bottom: calc(var(--safe-bottom) + 10px);
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 70;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
+        .bubble-ai {
+            background: white;
+            padding: 14px 18px;
+            border-radius: 20px 20px 20px 5px;
+            max-width: 85%;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            position: relative;
+            line-height: 1.5;
+        }
+        .bubble-user {
+            background: var(--ios-blue);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 20px 20px 5px 20px;
+            max-width: 85%;
+            margin-left: auto;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,122,255,0.2);
+            line-height: 1.5;
+        }
+        /* Header */
+        .ios-header {
+            position: sticky;
+            top: 0;
+            background: rgba(242, 242, 247, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 900;
+            padding: 12px 16px;
+        }
+        .chat-mode .tab-bar { display: none; }
+        .chat-mode .ios-header { background: white; border-bottom: 1px solid #eee; }
+        
+        /* Correction Box */
+        .correction-box {
+            background: #FFF9E6;
+            border-left: 4px solid #FFCC00;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
         }
 
-        body.chat-mode #chat-input-area {
+        /* Float Action */
+        #float-translate-btn {
+            display: none;
+            position: fixed;
+            background: #333;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 2000;
+        }
+
+        /* Course Detail View */
+        .course-detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 1500;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+        .course-detail-overlay.show {
             transform: translateY(0);
         }
 
-        .ios-card {
-            background: var(--ios-card);
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        .bubble-user {
-            background-color: var(--ios-blue);
-            color: white;
-            border-radius: 18px 18px 0 18px;
-            padding: 10px 14px;
-            max-width: 85%;
-            margin-left: auto;
-            margin-bottom: 12px;
-            font-size: 16px;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-
-        .bubble-ai {
-            background-color: #e5e5ea;
-            color: black;
-            border-radius: 18px 18px 18px 0;
-            padding: 10px 14px;
-            max-width: 85%;
-            margin-right: auto;
-            margin-bottom: 12px;
-            font-size: 16px;
-            line-height: 1.4;
-            word-wrap: break-word;
-            position: relative;
-        }
-
-        .correction-box {
-            background-color: #fff8c4;
-            border-left: 4px solid #f59e0b;
-            padding: 8px;
-            margin-bottom: 4px;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #4b3600;
-        }
-
-        /* Float Translate */
-        #float-translate-btn {
+        /* Quiz Modal */
+        .modal-overlay {
             position: fixed;
-            background: #222;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            display: none;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-        }
-
-        /* Key Sentences Card */
-        .key-sentence-item {
-            background: #f0f7ff;
-            border-left: 3px solid #007aff;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* === 新增：單字卡測驗專用樣式 === */
-        .flashcard {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            height: 300px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            cursor: pointer;
-            margin-top: 40px;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
         }
 
-        .flashcard:active {
-            transform: scale(0.98);
-        }
-
-        .flashcard.revealed {
-            border-color: var(--ios-blue);
-            background-color: #f0f9ff;
+        /* Level Badge */
+        .level-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
         }
     </style>
 </head>
-
 <body>
 
-    <header class="ios-header">
-        <div id="header-back-btn" class="header-btn-left" style="display:none;" onclick="handleHeaderBack()">
-            <i class="fas fa-chevron-left"></i> <span id="back-text">返回</span>
+    <!-- Fixed Header -->
+    <header class="ios-header flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <button id="header-back-btn" class="hidden text-blue-500 font-medium flex items-center gap-1">
+                <i class="fas fa-chevron-left"></i> <span id="back-text">返回</span>
+            </button>
+            <h1 id="header-title" class="text-xl font-bold">SpeakAI</h1>
         </div>
-
-        <span id="header-title">My Learning</span>
-
-        <div id="audio-toggle" class="header-btn-right" style="display:none;" onclick="toggleAutoAudio()">
-            <span id="audio-icon"><i class="fas fa-volume-up"></i> 朗讀</span>
-        </div>
-        <div id="close-detail-btn" class="header-btn-right" style="display:none;" onclick="closeCourseDetail()">
-            <i class="fas fa-times text-lg"></i>
+        <div class="flex items-center gap-4">
+            <button id="audio-toggle" onclick="toggleAutoAudio()" class="hidden text-blue-500 text-lg">
+                <span id="audio-icon"><i class="fas fa-volume-up"></i></span>
+            </button>
+            <div id="mission-status" class="hidden flex gap-1"></div>
         </div>
     </header>
 
-    <div id="float-translate-btn"><i class="fas fa-language"></i> 翻譯並收藏</div>
-
-    <div id="page-home" class="ios-page active-page">
-        <div id="api-warning" class="ios-card bg-red-50 border border-red-100 hidden">
-            <h3 class="text-red-600 font-bold mb-1"><i class="fas fa-exclamation-triangle"></i> 尚未設定 API Key</h3>
-            <p class="text-xs text-red-500">請前往「設定」頁面輸入 Google Gemini API Key。</p>
+    <!-- Page: Home (Scenario Select) -->
+    <div id="page-home" class="ios-page active-page px-4">
+        <div class="flex gap-2 mb-6 mt-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="setLang('en')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lang="en">English</button>
+            <button onclick="setLang('jp')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
+            <button onclick="setLang('kr')" class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
         </div>
 
-        <div class="ios-card">
-            <h2 class="text-lg font-bold mb-3">學習設定</h2>
+        <h2 class="text-2xl font-bold mb-1">開始對話</h2>
+        <p class="text-gray-500 text-sm mb-6">選擇一個情境開始與 AI 練習</p>
 
-            <label class="block text-sm text-gray-500 mb-1">目標語言</label>
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
-                <button onclick="setLang('en')"
-                    class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm"
-                    data-lang="en">English</button>
-                <button onclick="setLang('jp')"
-                    class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
-                    data-lang="jp">日本語</button>
-                <button onclick="setLang('kr')"
-                    class="lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
-                    data-lang="kr">한국어</button>
+        <div class="grid grid-cols-2 gap-2" id="scenario-grid">
+            <!-- Scenarios will be rendered here -->
+        </div>
+
+        <div class="ios-card bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-6 mt-4 relative overflow-hidden" onclick="startChat('free')">
+            <div class="relative z-10">
+                <h3 class="text-xl font-bold mb-1">自由對話</h3>
+                <p class="text-blue-100 text-sm">隨心所欲地聊天，AI 會隨時修正你的錯誤</p>
             </div>
-
-            <label class="block text-sm text-gray-500 mb-1">難易度</label>
-            <div class="grid grid-cols-3 gap-2">
-                <button onclick="setLevel('beginner')"
-                    class="level-btn py-2 border rounded-lg text-sm text-center active-level border-blue-500 bg-blue-50 text-blue-600"
-                    data-lvl="beginner">
-                    <div class="font-bold">初級</div>
-                    <div class="text-xs scale-75" id="lvl-desc-1">Survival</div>
-                </button>
-                <button onclick="setLevel('intermediate')"
-                    class="level-btn py-2 border rounded-lg text-sm text-center border-gray-200"
-                    data-lvl="intermediate">
-                    <div class="font-bold">中級</div>
-                    <div class="text-xs scale-75" id="lvl-desc-2">Life</div>
-                </button>
-                <button onclick="setLevel('advanced')"
-                    class="level-btn py-2 border rounded-lg text-sm text-center border-gray-200" data-lvl="advanced">
-                    <div class="font-bold">高級</div>
-                    <div class="text-xs scale-75" id="lvl-desc-3">Business</div>
-                </button>
-            </div>
+            <i class="fas fa-comments absolute right-[-10px] bottom-[-10px] text-7xl opacity-20 rotate-12"></i>
         </div>
 
-        <div class="px-4 mb-2 mt-6">
-            <h3 class="text-gray-500 text-sm font-bold uppercase">情境模擬 (AI Roleplay)</h3>
-        </div>
-        <div class="grid grid-cols-2 gap-4 px-4 pb-4" id="scenario-grid">
-        </div>
-
-        <div class="px-4">
-            <div onclick="startChat('free')"
-                class="ios-card m-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white flex items-center justify-between cursor-pointer shadow-lg active:scale-95 transition">
-                <div>
-                    <h3 class="font-bold">自由對話 (Free Talk)</h3>
-                    <p class="text-xs opacity-90">不限主題 • 隨機任務</p>
-                </div>
-                <i class="fas fa-comments text-2xl opacity-80"></i>
+        <div class="mt-8 mb-4">
+            <h2 class="text-2xl font-bold mb-1">難度選擇</h2>
+            <div class="grid grid-cols-3 gap-2 mt-4">
+                <button onclick="setLevel('beginner')" data-lvl="beginner" class="level-btn py-4 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-2xl flex flex-col items-center">
+                    <span class="font-bold">初級</span>
+                    <span class="text-[10px] opacity-70" id="lvl-desc-1">CEFR A1/A2</span>
+                </button>
+                <button onclick="setLevel('intermediate')" data-lvl="intermediate" class="level-btn py-4 border-2 border-gray-200 text-gray-500 rounded-2xl flex flex-col items-center">
+                    <span class="font-bold">中級</span>
+                    <span class="text-[10px] opacity-70" id="lvl-desc-2">CEFR B1/B2</span>
+                </button>
+                <button onclick="setLevel('advanced')" data-lvl="advanced" class="level-btn py-4 border-2 border-gray-200 text-gray-500 rounded-2xl flex flex-col items-center">
+                    <span class="font-bold">高級</span>
+                    <span class="text-[10px] opacity-70" id="lvl-desc-3">CEFR C1</span>
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Page: Learn (Courses) -->
+    <div id="page-learn" class="ios-page px-4">
+        <div class="flex justify-between items-center mb-6 mt-4">
+            <h2 class="text-2xl font-bold">精選課程</h2>
+            <span id="course-level-badge" class="bg-blue-100 text-blue-600 text-xs font-bold px-2 py-1 rounded">BEGINNER</span>
+        </div>
+        
+        <div id="learn-content">
+            <!-- Courses list -->
+        </div>
+    </div>
+
+    <!-- Page: Vocabulary -->
+    <div id="page-vocab" class="ios-page px-4">
+        <div class="flex justify-between items-center mb-6 mt-4">
+            <h2 class="text-2xl font-bold">我的單字本</h2>
+            <button onclick="openQuizModal()" class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-sm active:scale-95 transition">
+                <i class="fas fa-play mr-1"></i> 開始測驗
+            </button>
+        </div>
+
+        <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+            <button onclick="setVocabLang('en')" class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lang="en">English</button>
+            <button onclick="setVocabLang('jp')" class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
+            <button onclick="setVocabLang('kr')" class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
+        </div>
+
+        <div id="vocab-list" class="space-y-3">
+            <!-- Vocab items -->
+        </div>
+    </div>
+
+    <!-- Page: Grammar -->
+    <div id="page-grammar" class="ios-page px-4">
+        <div class="mb-6 mt-4">
+            <h2 class="text-2xl font-bold">語法與比較</h2>
+            <p class="text-gray-500 text-sm">收藏你在對話中遇到的語法重點</p>
+        </div>
+
+        <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+            <button onclick="setGrammarLang('en')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lang="en">English</button>
+            <button onclick="setGrammarLang('jp')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
+            <button onclick="setGrammarLang('kr')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+            <button onclick="setGrammarLevel('beginner')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lvl="beginner">初級</button>
+            <button onclick="setGrammarLevel('intermediate')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lvl="intermediate">中級</button>
+            <button onclick="setGrammarLevel('advanced')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lvl="advanced">高級</button>
+        </div>
+
+        <div class="flex border-b border-gray-200 mb-6">
+            <button onclick="setGrammarType('grammar')" class="grammar-type-btn flex-1 py-3 text-sm font-bold text-blue-600 border-b-2 border-blue-600" data-type="grammar">語法解析</button>
+            <button onclick="setGrammarType('comparison')" class="grammar-type-btn flex-1 py-3 text-sm font-bold text-gray-400 border-b-2 border-transparent" data-type="comparison">單字比較</button>
+        </div>
+
+        <div class="mb-6">
+            <div class="relative">
+                <input type="text" id="grammar-search-input" placeholder="輸入想了解的文法或單字比較 (例: will vs be going to)..." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button onclick="searchGrammar()" class="absolute right-2 top-1.5 bg-blue-600 text-white w-9 h-9 rounded-lg flex items-center justify-center active:scale-90 transition">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="grammar-list">
+            <!-- Grammar items -->
+        </div>
+    </div>
+
+    <!-- Page: Settings -->
+    <div id="page-settings" class="ios-page px-4">
+        <h2 class="text-2xl font-bold mb-6 mt-4">設置</h2>
+        
+        <div class="ios-card m-0">
+            <label class="block text-sm font-bold text-gray-700 mb-2">Google Gemini API Key</label>
+            <input type="password" id="api-key-input" class="w-full border border-gray-200 rounded-xl p-3 text-sm mb-4" placeholder="輸入您的 API Key">
+            <button onclick="saveApiKey()" class="w-full bg-black text-white py-3 rounded-xl font-bold active:scale-95 transition">保存設置</button>
+        </div>
+
+        <div class="mt-8 text-center text-gray-400 text-xs">
+            <p>SpeakAI Version 2.2</p>
+            <p class="mt-1">Powered by Google Gemini API</p>
+        </div>
+    </div>
+
+    <!-- Page: Chat Overlay -->
     <div id="page-chat" class="ios-page">
-        <div class="bg-yellow-50 px-4 py-2 border-b border-yellow-100 flex justify-between items-center text-xs shadow-sm flex-none z-10"
-            id="mission-bar">
-            <span class="font-bold text-yellow-800 mr-2 flex-none">Mission:</span>
-            <div id="mission-words" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
+        <div id="mission-bar" class="bg-gray-50 border-b border-gray-200 p-2 overflow-x-auto no-scrollbar flex gap-2 sticky top-0 z-50">
+            <div id="mission-words" class="flex gap-2"></div>
         </div>
-
-        <div id="chat-container">
-            <div class="text-center text-gray-400 text-xs mt-8">正在連線至 Gemini...</div>
-        </div>
-
-        <div id="chat-input-area">
-            <button id="mic-btn"
-                class="w-9 h-9 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center transition-all active:scale-95 flex-none">
+        <div id="chat-container" class="chat-container"></div>
+        
+        <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-top border-gray-200 flex gap-2 items-end z-[1100]">
+            <button id="mic-btn" class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 transition active:scale-90">
                 <i class="fas fa-microphone"></i>
             </button>
-            <input type="text" id="chat-input"
-                class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-base focus:outline-none focus:border-blue-500"
-                placeholder="輸入訊息..." autocomplete="off">
-            <button id="send-btn"
-                class="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md active:scale-95 flex-none">
-                <i class="fas fa-arrow-up"></i>
+            <textarea id="chat-input" rows="1" class="flex-1 bg-gray-100 rounded-2xl px-4 py-3 text-sm focus:outline-none resize-none max-h-32" placeholder="輸入訊息..."></textarea>
+            <button id="send-btn" class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center transition active:scale-90">
+                <i class="fas fa-paper-plane"></i>
             </button>
         </div>
     </div>
 
-    <div id="page-learn" class="ios-page">
-        <div class="px-4 pt-2">
-            <div class="flex items-center gap-2 mb-4">
-                <h2 class="text-2xl font-bold">主題課程</h2>
-                <span id="course-level-badge"
-                    class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">LEVEL</span>
-            </div>
-
-            <div id="learn-content">
-            </div>
-
-            <div class="text-center text-xs text-gray-400 mt-6 pb-6">
-                完成對話練習可解鎖成就 (模擬)
-            </div>
-        </div>
-    </div>
-
-    <div id="page-course-detail" class="detail-page">
-        <div class="px-5 pb-20">
-            <div id="course-detail-body"></div>
-        </div>
-    </div>
-
-    <div id="page-vocab" class="ios-page">
-        <div class="px-4 pt-2">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">單字本</h2>
-                <button onclick="openQuizModal()"
-                    class="text-blue-500 text-sm font-bold bg-blue-50 px-3 py-1 rounded-full">
-                    <span id="quiz-btn-text">進入測驗模式</span>
-                </button>
-            </div>
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
-                <button onclick="setVocabLang('en')"
-                    class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black"
-                    data-lang="en">English</button>
-                <button onclick="setVocabLang('jp')"
-                    class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
-                    data-lang="jp">日本語</button>
-                <button onclick="setVocabLang('kr')"
-                    class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500"
-                    data-lang="kr">한국어</button>
-            </div>
-            <div id="vocab-list" class="space-y-3 pb-8"></div>
-        </div>
+    <!-- Course Detail Overlay -->
+    <div id="page-course-detail" class="course-detail-overlay p-6">
+        <div id="course-detail-body"></div>
     </div>
 
     <!-- Quiz Modal -->
-    <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-50 z-[999] hidden flex justify-center items-center">
-        <div class="bg-white rounded-2xl p-6 w-11/12 max-w-sm max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold border-b-2 border-transparent">單字測驗</h3>
-                <button onclick="closeQuizModal()" class="text-gray-400 hover:text-gray-600"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
+    <div id="quiz-modal" class="modal-overlay hidden">
+        <div class="modal-content relative">
+            <button onclick="closeQuizModal()" class="absolute right-4 top-4 text-gray-400"><i class="fas fa-times"></i></button>
+            <h3 class="text-xl font-bold mb-6">單字挑戰</h3>
             <div id="quiz-content"></div>
         </div>
     </div>
 
-    <!-- Grammar Page -->
-    <div id="page-grammar" class="ios-page">
-        <div class="px-4 pt-2">
-            <h2 class="text-2xl font-bold mb-4">文法庫與單字比較</h2>
-            
-            <!-- Language Selection -->
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-3">
-                <button onclick="setGrammarLang('en')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lang="en">English</button>
-                <button onclick="setGrammarLang('jp')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
-                <button onclick="setGrammarLang('kr')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
-            </div>
-
-            <!-- Level Selection -->
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-4">
-                <button onclick="setGrammarLevel('beginner')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lvl="beginner">初級</button>
-                <button onclick="setGrammarLevel('intermediate')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lvl="intermediate">中級</button>
-                <button onclick="setGrammarLevel('advanced')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lvl="advanced">高級</button>
-            </div>
-
-            <!-- Sub-tab (Grammar vs Comparison) -->
-            <div class="flex border-b border-gray-200 mb-4">
-                <button onclick="setGrammarType('grammar')" class="grammar-type-btn flex-1 py-3 text-sm font-bold text-blue-600 border-b-2 border-blue-600" data-type="grammar">精選文法</button>
-                <button onclick="setGrammarType('comparison')" class="grammar-type-btn flex-1 py-3 text-sm font-bold text-gray-400 border-b-2 border-transparent" data-type="comparison">單字比較</button>
-            </div>
-            
-            <!-- Search -->
-            <div class="flex gap-2 mb-6">
-                <input type="text" id="grammar-search-input" class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-blue-500 shadow-sm" placeholder="AI 詢問(按當前難度與分類寫入)">
-                <button onclick="searchGrammar()" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md active:scale-95 transition flex-none"><i class="fas fa-search"></i></button>
-            </div>
-
-            <div id="grammar-list" class="space-y-4 pb-8"></div>
-        </div>
-    </div>
-
-    <div id="page-settings" class="ios-page">
-        <div class="px-4 pt-2">
-            <h2 class="text-2xl font-bold mb-4">設定</h2>
-
-            <div class="ios-card m-0 mb-4">
-                <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase">API 連線</h3>
-                <input type="password" id="api-key-input" class="w-full bg-gray-100 rounded-lg p-3 text-sm mb-2"
-                    placeholder="貼上您的 API Key">
-                <button onclick="saveApiKey()"
-                    class="w-full bg-blue-500 text-white py-3 rounded-lg text-sm font-bold shadow">儲存金鑰</button>
-            </div>
-
-            <div class="ios-card m-0">
-                <h3 class="font-bold mb-2 text-sm text-gray-500 uppercase">資料備份</h3>
-                <div class="flex gap-3">
-                    <button onclick="backupData()"
-                        class="flex-1 bg-gray-100 py-3 rounded-lg text-sm font-bold text-gray-800">匯出</button>
-                    <button onclick="document.getElementById('restore-file').click()"
-                        class="flex-1 bg-gray-100 py-3 rounded-lg text-sm font-bold text-gray-800">還原</button>
-                    <input type="file" id="restore-file" style="display:none" onchange="restoreData(this)">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <nav class="ios-tab-bar">
+    <!-- Tab Bar -->
+    <nav class="tab-bar">
         <div class="tab-item active" onclick="switchPage('home', this)">
-            <i class="fas fa-home"></i> 首頁
+            <i class="fas fa-home"></i>
+            <span>首頁</span>
         </div>
         <div class="tab-item" onclick="switchPage('learn', this)">
-            <i class="fas fa-book-open"></i> 課程
+            <i class="fas fa-graduation-cap"></i>
+            <span>課程</span>
         </div>
         <div class="tab-item" onclick="switchPage('vocab', this)">
-            <i class="fas fa-bookmark"></i> 單字
+            <i class="fas fa-book"></i>
+            <span>單字本</span>
         </div>
         <div class="tab-item" onclick="switchPage('grammar', this)">
-            <i class="fas fa-layer-group"></i> 文法
+            <i class="fas fa-spell-check"></i>
+            <span>語法</span>
         </div>
         <div class="tab-item" onclick="switchPage('settings', this)">
-            <i class="fas fa-cog"></i> 設定
+            <i class="fas fa-cog"></i>
+            <span>設置</span>
         </div>
     </nav>
 
+    <div id="float-translate-btn">翻譯</div>
+
     <script>
         /* =========================================
-           1. API LOGIC (Core)
+           1. INITIALIZATION & DATA STRUCTURE
            ========================================= */
-        async function autoDetectModel(apiKey) {
-            try {
-                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-                const res = await fetch(listUrl);
-                const data = await res.json();
-                if (res.ok && data.models) {
-                    const model = data.models.find(m => m.supportedGenerationMethods?.includes("generateContent"));
-                    if (model) return model.name.replace('models/', '');
-                }
-                return 'gemini-1.5-flash';
-            }
-            catch (e) { return 'gemini-1.5-flash'; }
-        }
-
-        // ==========================================
-        //  改良版 callGemini (放在 index.html <script> 內)
-        // ==========================================
-        async function callGemini(contents, systemInstructionText = null) {
-            const apiKey = localStorage.getItem('v21_key');
-
-            if (!apiKey) {
-                alert("未設定 API Key，請先至設定頁面輸入。");
-                throw new Error("Missing API Key");
-            }
-
-            console.log("【模式提示】偵測到 API Key，使用前端直連 Gemini 模式");
-            const model = (await autoDetectModel(apiKey)) || 'gemini-1.5-flash';
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-            let geminiContents = [];
-            if (Array.isArray(contents)) {
-                geminiContents = contents.map(item => {
-                    if (item.parts) return item;
-                    return { role: item.role || "user", parts: [{ text: item.text || JSON.stringify(item) }] };
-                });
-            } else {
-                geminiContents = [{ role: "user", parts: [{ text: typeof contents === 'string' ? contents : JSON.stringify(contents) }] }];
-            }
-
-            const requestBody = { contents: geminiContents };
-            if (systemInstructionText) {
-                requestBody.systemInstruction = {
-                    role: "system",
-                    parts: [{ text: systemInstructionText }]
-                };
-            }
-
-            try {
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error?.message || "無法連線至 Gemini");
-                return data.candidates[0].content.parts[0].text;
-            } catch (e) {
-                console.error("Gemini 呼叫發生錯誤:", e);
-                throw e; // 交給外層的 triggerAIResponse 顯示錯誤，避免重複 alert
-            }
-        }
-        /* =========================================
-           2. APP DATA (Expanded Courses)
-           ========================================= */
+        
         // Helper to create course objects
         function createCourse(id, title, desc, sentences, aiRole, userRole, context) {
             return { id, title, desc, sentences, aiRole, userRole, context };
@@ -650,22 +430,17 @@
                     levels: { beginner: "JLPT N4/N5", intermediate: "JLPT N2/N3", advanced: "JLPT N1" },
                     scenarios: {
                         beginner: [
-                            { id: 'jp_izakaya_b', title: '居酒屋打工', role: '客', user: '店員', icon: 'fa-beer' },
-                            { id: 'jp_konbini_b', title: '便利商店打工', role: '客', user: '店員', icon: 'fa-store' },
-                            { id: 'jp_station_b', title: '車站問路', role: '駅員', user: '乗客', icon: 'fa-train' },
-                            { id: 'jp_restaurant_b', title: '餐廳點餐', role: '店員', user: '客', icon: 'fa-utensils' }
+                            { id: 'jp_izakaya_b', title: '居酒屋', role: '店員', user: '客人', icon: 'fa-beer' },
+                            { id: 'jp_konbini_b', title: '便利商店', role: '店員', user: '客人', icon: 'fa-store' },
+                            { id: 'jp_station_b', title: '車站問路', role: '站務員', user: '乘客', icon: 'fa-train' }
                         ],
                         intermediate: [
-                            { id: 'jp_hotel_i', title: '旅館櫃檯', role: '宿泊客', user: 'フロント', icon: 'fa-concierge-bell' },
-                            { id: 'jp_shop_i', title: '服飾店店員', role: '客', user: '店員', icon: 'fa-tshirt' },
-                            { id: 'jp_hospital_i', title: '醫院看診', role: '医者', user: '患者', icon: 'fa-hospital' },
-                            { id: 'jp_friend_i', title: '朋友聚會', role: '友達', user: 'あなた', icon: 'fa-user-friends' }
+                            { id: 'jp_hotel_i', title: '飯店預約', role: '櫃檯人員', user: '房客', icon: 'fa-concierge-bell' },
+                            { id: 'jp_shop_i', title: '服飾店購物', role: '店員', user: '顧客', icon: 'fa-tshirt' }
                         ],
                         advanced: [
-                            { id: 'jp_corptalk_a', title: '公司內部匯報', role: '上司', user: '部下', icon: 'fa-building' },
-                            { id: 'jp_client_a', title: '客戶商談', role: '取引先', user: '営業', icon: 'fa-briefcase' },
-                            { id: 'jp_apology_a', title: '客訴處理與道歉', role: '怒る客', user: '店長', icon: 'fa-exclamation-triangle' },
-                            { id: 'jp_interview_a', title: '外商面試', role: '面接官', user: '応募者', icon: 'fa-id-badge' }
+                            { id: 'jp_corptalk_a', title: '商務會議', role: '主管', user: '職員', icon: 'fa-building' },
+                            { id: 'jp_interview_a', title: '工作面試', role: '面試官', user: '求職者', icon: 'fa-id-badge' }
                         ]
                     }
                 },
@@ -674,22 +449,16 @@
                     levels: { beginner: "TOPIK I", intermediate: "TOPIK II (Mid)", advanced: "TOPIK II (High)" },
                     scenarios: {
                         beginner: [
-                            { id: 'kr_market_b', title: '傳統市場', role: '시장 상인', user: '손님', icon: 'fa-shopping-basket' },
-                            { id: 'kr_cafe_b', title: '咖啡廳點餐', role: '알바생', user: '손님', icon: 'fa-coffee' },
-                            { id: 'kr_subway_b', title: '地鐵站問路', role: '행인', user: '관광객', icon: 'fa-subway' },
-                            { id: 'kr_restaurant_b', title: '烤肉店點餐', role: '종업원', user: '손님', icon: 'fa-fire' }
+                            { id: 'kr_market_b', title: '傳統市場', role: '攤販', user: '顧客', icon: 'fa-shopping-basket' },
+                            { id: 'kr_cafe_b', title: '咖啡廳', role: '店員', user: '顧客', icon: 'fa-coffee' }
                         ],
                         intermediate: [
-                            { id: 'kr_taxi_i', title: '計程車', role: '기사님', user: '승객', icon: 'fa-taxi' },
-                            { id: 'kr_salon_i', title: '美容室', role: '미용사', user: '손님', icon: 'fa-cut' },
-                            { id: 'kr_hospital_i', title: '藥局買藥', role: '약사', user: '환자', icon: 'fa-pills' },
-                            { id: 'kr_friend_i', title: '約會計畫', role: '친구', user: '나', icon: 'fa-calendar-alt' }
+                            { id: 'kr_taxi_i', title: '搭計程車', role: '司機', user: '乘客', icon: 'fa-taxi' },
+                            { id: 'kr_hospital_i', title: '醫院掛號', role: '護理師', user: '病人', icon: 'fa-pills' }
                         ],
                         advanced: [
-                            { id: 'kr_corptalk_a', title: '公司內部開會', role: '팀장', user: '팀원', icon: 'fa-users' },
-                            { id: 'kr_interview_a', title: '外商面試', role: '면접관', user: '지원자', icon: 'fa-id-badge' },
-                            { id: 'kr_realestate_a', title: '看房子', role: '부동산 중개인', user: '세입자', icon: 'fa-home' },
-                            { id: 'kr_debate_a', title: '社會議題討論', role: '동료', user: '나', icon: 'fa-comments' }
+                            { id: 'kr_corptalk_a', title: '公司討論', role: '組長', user: '組員', icon: 'fa-users' },
+                            { id: 'kr_interview_a', title: '工作面試', role: '面試官', user: '求職者', icon: 'fa-id-badge' }
                         ]
                     }
                 }
@@ -697,71 +466,71 @@
             courses: {
                 en: {
                     beginner: [
-                        createCourse(101, "Self Introduction", "Learn to introduce yourself naturally.", [{ text: "My name is...", trans: "我的名字是..." }, { text: "I am from...", trans: "我來自..." }, { text: "Nice to meet you", trans: "很高興認識你" }], "New Neighbor", "New Resident", "Meeting a new neighbor at the apartment lobby."),
-                        createCourse(102, "Ordering Food", "Order your favorite meal.", [{ text: "I would like...", trans: "我想要點..." }, { text: "How much is this?", trans: "這個多少錢？" }, { text: "No spicy, please", trans: "請不要加辣" }], "Waiter", "Customer", "Ordering at a fast food restaurant."),
-                        createCourse(103, "Asking Directions", "Never get lost again.", [{ text: "Where is the...", trans: "請問...在哪裡？" }, { text: "Go straight", trans: "直走" }, { text: "Turn left", trans: "左轉" }], "Police Officer", "Lost Tourist", "Asking for directions on the street."),
-                        createCourse(104, "Checking into Hotel", "Hotel check-in essentials.", [{ text: "I have a reservation", trans: "我有預訂" }, { text: "Breakfast included?", trans: "有含早餐嗎？" }, { text: "What is the WiFi password?", trans: "WiFi密碼是多少？" }], "Receptionist", "Guest", "Checking in at the front desk."),
-                        createCourse(105, "Taking a Taxi", "Getting to your destination.", [{ text: "Please take me to...", trans: "請載我到..." }, { text: "Stop here, please", trans: "請停在這裡" }, { text: "Keep the change", trans: "不用找零了" }], "Taxi Driver", "Passenger", "In a taxi going to the airport.")
+                        createCourse(101, "Self Introduction", "Learn to introduce yourself naturally.", [{ text: "My name is...", trans: "我的名字是..." }, { text: "I am from...", trans: "我來自..." }, { text: "Nice to meet you", trans: "很高興見到你" }], "New Neighbor", "New Resident", "Meeting a new neighbor at the apartment lobby."),
+                        createCourse(102, "Ordering Food", "Order your favorite meal.", [{ text: "I would like...", trans: "我想點..." }, { text: "How much is this?", trans: "這個多少錢？" }, { text: "No spicy, please", trans: "請不要加辣" }], "Waiter", "Customer", "Ordering at a fast food restaurant."),
+                        createCourse(103, "Asking Directions", "Never get lost again.", [{ text: "Where is the...", trans: "請問...在哪裡？" }, { text: "Go straight", trans: "直走" }, { text: "Turn left", trans: "向左轉" }], "Police Officer", "Lost Tourist", "Asking for directions on the street."),
+                        createCourse(104, "Checking into Hotel", "Hotel check-in essentials.", [{ text: "I have a reservation", trans: "我有預訂" }, { text: "Breakfast included?", trans: "含早餐嗎？" }, { text: "What is the WiFi password?", trans: "WiFi密碼是什麼？" }], "Receptionist", "Guest", "Checking in at the front desk."),
+                        createCourse(105, "Taking a Taxi", "Getting to your destination.", [{ text: "Please take me to...", trans: "請帶我去..." }, { text: "Stop here, please", trans: "請在這裡停車" }, { text: "Keep the change", trans: "不用找錢了" }], "Taxi Driver", "Passenger", "In a taxi going to the airport.")
                     ],
                     intermediate: [
-                        createCourse(201, "Job Interview", "Answer common interview questions.", [{ text: "What sets me apart is my comprehensive experience in...", trans: "我與眾不同之處在於我擁有...的全面經驗" }, { text: "I consider myself highly adaptable and resilient.", trans: "我認為自己具備高度適應力與韌性" }, { text: "Could you elaborate on the team's dynamics?", trans: "您可以詳細說明一下團隊的運作模式嗎？" }], "Hiring Manager", "Applicant", "Job interview for a mid-level marketing role."),
-                        createCourse(202, "Doctor Visit", "Explain your symptoms in detail.", [{ text: "I've been experiencing persistent migraines lately.", trans: "我最近一直有持續性的偏頭痛" }, { text: "The pain radiates down to my lower back.", trans: "疼痛會蔓延到我的下背部" }, { text: "Are there any side effects to this prescription?", trans: "這份處方藥有任何副作用嗎？" }], "Doctor", "Patient", "Consulting a doctor about chronic pain."),
-                        createCourse(203, "Restaurant Complaint", "Politely solving food issues.", [{ text: "I'm afraid this dish is slightly undercooked.", trans: "恐怕這道菜還沒完全煮熟" }, { text: "Could you possibly have the chef look into this?", trans: "能不能請主廚確認一下這個狀況？" }, { text: "We'd appreciate it if you could deduct this from the bill.", trans: "如果不介意，希望您能將此從帳單中扣除" }], "Manager", "Customer", "Complain politely about undercooked food."),
-                        createCourse(204, "Debating a Plan", "Discussing travel itineraries.", [{ text: "Wouldn't it be more practical to take the train?", trans: "搭火車難道不會比較實際嗎？" }, { text: "I see your point, but we run the risk of delays.", trans: "我懂你的意思，但我們有誤點的風險" }, { text: "Let's compromise and stick to the original schedule.", trans: "我們折衷一下，維持原訂計畫吧" }], "Friend", "You", "Debating transportation options for a trip."),
-                        createCourse(205, "Shopping for Clothes", "Asking for specific fits and materials.", [{ text: "Do you have this garment in a more breathable fabric?", trans: "這件衣服有更透氣的材質嗎？" }, { text: "It's a bit snug around the shoulders.", trans: "肩膀的地方稍微有點緊" }, { text: "I'm looking for something versatile for both work and casual wear.", trans: "我在找適合上班與休閒兩穿的百搭款式" }], "Shop Assistant", "Shopper", "Buying a versatile outfit in a boutique.")
+                        createCourse(201, "Job Interview", "Answer common interview questions.", [{ text: "What sets me apart is my comprehensive experience in...", trans: "使我與眾不同的是我在...方面的豐富經驗" }, { text: "I consider myself highly adaptable and resilient.", trans: "我認為自己具有很強的適應能力和韌性。" }, { text: "Could you elaborate on the team's dynamics?", trans: "您能詳細說明一下團隊的運作方式嗎？" }], "Hiring Manager", "Applicant", "Job interview for a mid-level marketing role."),
+                        createCourse(202, "Doctor Visit", "Explain your symptoms in detail.", [{ text: "I've been experiencing persistent migraines lately.", trans: "我最近一直感到持續性的偏頭痛。" }, { text: "The pain radiates down to my lower back.", trans: "疼痛感向下延伸到我的下背部。" }, { text: "Are there any side effects to this prescription?", trans: "這份處方藥有什麼副作用嗎？" }], "Doctor", "Patient", "Consulting a doctor about chronic pain."),
+                        createCourse(203, "Restaurant Complaint", "Politely solving food issues.", [{ text: "I'm afraid this dish is slightly undercooked.", trans: "恐怕這道菜還沒完全煮熟。" }, { text: "Could you possibly have the chef look into this?", trans: "能請主廚幫忙確認一下嗎？" }, { text: "We'd appreciate it if you could deduct this from the bill.", trans: "如果您能從帳單中扣除這筆費用，我們將不勝感激。" }], "Manager", "Customer", "Complain politely about undercooked food."),
+                        createCourse(204, "Debating a Plan", "Discussing travel itineraries.", [{ text: "Wouldn't it be more practical to take the train?", trans: "搭火車難道不是更實際嗎？" }, { text: "I see your point, but we run the risk of delays.", trans: "我明白你的觀點，但我們面臨延誤的風險。" }, { text: "Let's compromise and stick to the original schedule.", trans: "我們折衷一下，按照原定計劃進行吧。" }], "Friend", "You", "Debating transportation options for a trip."),
+                        createCourse(205, "Shopping for Clothes", "Asking for specific fits and materials.", [{ text: "Do you have this garment in a more breathable fabric?", trans: "這件衣服有透氣一點的面料嗎？" }, { text: "It's a bit snug around the shoulders.", trans: "肩膀部位有點太緊了。" }, { text: "I'm looking for something versatile for both work and casual wear.", trans: "我在尋找適合工作和休閒穿著的多功能款式。" }], "Shop Assistant", "Shopper", "Buying a versatile outfit in a boutique.")
                     ],
                     advanced: [
-                        createCourse(301, "Business Negotiation", "Negotiating a complex deal.", [{ text: "We are willing to make concessions provided that...", trans: "若滿足...條件，我們願意做出讓步" }, { text: "It is imperative that we reach a consensus today.", trans: "我們今天務必要達成共識" }, { text: "Let's review the stipulations in clause four.", trans: "讓我們回顧一下第四條款的規定" }], "Client", "Sales Manager", "Negotiating a high-stakes contract."),
-                        createCourse(302, "Presentation Q&A", "Handling tough questions.", [{ text: "That's an insightful observation to bring forward.", trans: "您提出了非常有洞察力的觀察" }, { text: "To elaborate on the nuances of this paradigm...", trans: "為了進一步闡述這個典範的微妙之處..." }, { text: "Empirical data substantiates our preliminary hypothesis.", trans: "實證數據證實了我們的初步假設" }], "Audience Member", "Presenter", "Q&A session at a global convention."),
-                        createCourse(303, "Academic Discussion", "Debating sociology.", [{ text: "I must respectfully disagree with your premise.", trans: "恕我對您的大前提難以苟同" }, { text: "The aforementioned phenomenon merely scratches the surface.", trans: "上述現象僅僅是冰山一角" }, { text: "It fundamentally contradicts established sociological frameworks.", trans: "這在本質上與既有的社會學框架相矛盾" }], "Professor", "Student", "Debating the impact of globalization."),
-                        createCourse(304, "Tech Support Escalation", "Solving systemic issues.", [{ text: "We're experiencing intermittent latency across the network.", trans: "我們的網路正經歷間歇性的延遲" }, { text: "Could you verify the integrity of the recent deployment?", trans: "您能核實一下近期部署的完整性嗎？" }, { text: "We need to mitigate the vulnerabilities immediately.", trans: "我們必須立即減輕這些安全漏洞帶來的風險" }], "Senior IT Engineer", "Employee", "Reporting a critical systemic vulnerability."),
-                        createCourse(305, "Networking", "Professional connection building.", [{ text: "Your recent publication profoundly altered my perspective on...", trans: "您最近發表的著作深刻改變了我對...的看法" }, { text: "I foresee a tremendous synergy between our respective divisions.", trans: "我預見我們各自部門間存在極大的協同效益" }, { text: "It would be an honor to ostensibly collaborate on future endeavors.", trans: "若未來有機會合作，將是我的榮幸" }], "Industry Expert", "Attendee", "Networking at a high-level corporate event.")
+                        createCourse(301, "Business Negotiation", "Negotiating a complex deal.", [{ text: "We are willing to make concessions provided that...", trans: "我們願意做出讓步，前提是..." }, { text: "It is imperative that we reach a consensus today.", trans: "今天我們必須達成共識。" }, { text: "Let's review the stipulations in clause four.", trans: "讓我們複習一下第四條款的規定。" }], "Client", "Sales Manager", "Negotiating a high-stakes contract."),
+                        createCourse(302, "Presentation Q&A", "Handling tough questions.", [{ text: "That's an insightful observation to bring forward.", trans: "那是一個非常精闢的觀察。" }, { text: "To elaborate on the nuances of this paradigm...", trans: "為了詳述這個範式的細微差別..." }, { text: "Empirical data substantiates our preliminary hypothesis.", trans: "實證數據證實了我們的初步假設。" }], "Audience Member", "Presenter", "Q&A session at a global convention."),
+                        createCourse(303, "Academic Discussion", "Debating sociology.", [{ text: "I must respectfully disagree with your premise.", trans: "我必須禮貌地反對您的前提。" }, { text: "The aforementioned phenomenon merely scratches the surface.", trans: "上述現象僅僅是皮毛而已。" }, { text: "It fundamentally contradicts established sociological frameworks.", trans: "它從根本上與既定的社會學框架相矛盾。" }], "Professor", "Student", "Debating the impact of globalization."),
+                        createCourse(304, "Tech Support Escalation", "Solving systemic issues.", [{ text: "We're experiencing intermittent latency across the network.", trans: "我們整個網絡正經歷間歇性的延遲。" }, { text: "Could you verify the integrity of the recent deployment?", trans: "您能確認一下最近部署的完整性嗎？" }, { text: "We need to mitigate the vulnerabilities immediately.", trans: "我們需要立即緩解這些漏洞。" }], "Senior IT Engineer", "Employee", "Reporting a critical systemic vulnerability."),
+                        createCourse(305, "Networking", "Professional connection building.", [{ text: "Your recent publication profoundly altered my perspective on...", trans: "您最近的出版物深刻改變了我對...的看法" }, { text: "I foresee a tremendous synergy between our respective divisions.", trans: "我預見到我們各自部門之間巨大的協同效應。" }, { text: "It would be an honor to ostensibly collaborate on future endeavors.", trans: "能在未來的事業中進行合作將是我的榮幸。" }], "Industry Expert", "Attendee", "Networking at a high-level corporate event.")
                     ]
                 },
                 jp: {
                     beginner: [
-                        createCourse(401, "自己紹介 (Jikoshoukai)", "基本の挨拶と自己紹介。", [{ text: "はじめまして", trans: "初次見面" }, { text: "～から来ました", trans: "我來自～" }, { text: "よろしくお願いします", trans: "請多指教" }], "新しい同僚", "あなた", "会社の初日に挨拶をする。"),
-                        createCourse(402, "コンビニ (Konbini)", "コンビニでの買い物。", [{ text: "これをお願いします", trans: "請給我這個" }, { text: "温めてください", trans: "請幫我微波" }, { text: "袋はいりません", trans: "不需要袋子" }], "店員", "客", "コンビニでお弁当を買う。"),
-                        createCourse(403, "道を尋ねる", "迷子になった時。", [{ text: "すみません、駅はどこですか", trans: "不好意思，車站請問在哪？" }, { text: "歩いてどのくらいですか", trans: "走路大概要多久？" }, { text: "ありがとうございます", trans: "非常感謝" }], "親切な通行人", "観光客", "道に迷って助けを求める。"),
-                        createCourse(404, "注文 (Order)", "レストランでの注文。", [{ text: "これを二つください", trans: "請給我兩個這個" }, { text: "おすすめは何ですか", trans: "有什麼推薦的嗎？" }, { text: "お会計をお願いします", trans: "麻煩結帳" }], "店員", "客", "居酒屋で注文する。"),
-                        createCourse(405, "電車 (Train)", "電車の乗り方。", [{ text: "この電車は～に行きますか", trans: "這班電車會到～嗎？" }, { text: "切符を失くしました", trans: "我把車票弄丟了" }, { text: "乗り換えはどこですか", trans: "要在哪裡轉車？" }], "駅員", "乗客", "駅の改札口での会話。")
+                        createCourse(401, "自己紹介 (Jikoshoukai)", "學習基礎的日語自己介紹", [{ text: "はじめまして", trans: "初次見面" }, { text: "どうぞよろしく", trans: "請多指教" }, { text: "そうです", trans: "是這樣" }], "鄰居", "", "在公寓大廳初次見面"),
+                        createCourse(402, "コンビニ (Konbini)", "便利商店購物對話", [{ text: "これをください", trans: "請給我這個" }, { text: "袋をください", trans: "請給我袋子" }, { text: "大丈夫です", trans: "不用了/沒關係" }], "店員", "顧客", "在便利商店結帳"),
+                        createCourse(403, "道を聞く", "詢問路徑", [{ text: "すみません、駅はどこですか？", trans: "不好意思，請問車站搬在哪裡？" }, { text: "まっすぐ行ってください", trans: "請直走" }, { text: "左に曲がります", trans: "左轉" }], "路人", "遊客", "在街上問路"),
+                        createCourse(404, "注文 (Order)", "在餐廳點餐", [{ text: "これをお願いします", trans: "請給我這個" }, { text: "お会計をお願いします", trans: "請幫我結帳" }, { text: "ごちそうさまでした", trans: "謝謝招待" }], "店員", "顧客", "在餐廳點餐與結帳"),
+                        createCourse(405, "電車 (Train)", "搭乘電車相關對話", [{ text: "この電車は新宿に行きますか？", trans: "這班電車去新宿嗎？" }, { text: "乗り換えが必要です", trans: "需要換乘" }, { text: "ここで降ります", trans: "在這裡下車" }], "乘務員", "乘客", "在車站詢問搭車資訊")
                     ],
                     intermediate: [
-                        createCourse(501, "電話予約", "詳細な条件でのレストラン予約。", [{ text: "明日の午後7時に3名で予約可能でしょうか", trans: "請問明天晚上7點3位可以預約嗎？" }, { text: "アレルギー対応のメニューに変更できますか", trans: "能更改為適應過敏的菜單嗎？" }, { text: "窓際の静かな席を希望しております", trans: "我希望能安排靠窗安靜的位子" }], "店員", "客", "電話で特別な要望を含めた予約をする。"),
-                        createCourse(502, "体調不良", "病院で詳細な症状を説明。", [{ text: "数日前から胃のあたりに鈍い痛みを感じます", trans: "幾天前開始胃部附近有隱隱作痛的感覺" }, { text: "食後に症状が悪化する傾向があります", trans: "飯後症狀有惡化的傾向" }, { text: "副作用の少ない薬を処方していただけますか", trans: "能否開一些副作用較少的藥呢？" }], "医者", "患者", "内科での詳細な診察。"),
-                        createCourse(503, "買い物 (服)", "素材や用途の相談。", [{ text: "もう少し通気性の良い素材を探しています", trans: "我在找更透氣一點的材質" }, { text: "肩のあたりが少し窮屈に感じます", trans: "肩膀附近覺得有點緊繃" }, { text: "カジュアルでもフォーマルでも着回せるものはありますか", trans: "有休閒或正式都能穿搭的款式嗎？" }], "店員", "客", "服屋で用途に合わせた服を探す。"),
-                        createCourse(504, "トラブル対応", "クレームと説明。", [{ text: "注文した商品と違うものが届いたのですが", trans: "我收到的商品跟訂購的不一樣" }, { text: "早急に交換の手続きをお願いできますか", trans: "可以麻煩您盡速辦理退換貨手續嗎？" }, { text: "今後の再発防止を徹底していただきたいです", trans: "希望貴公司能徹底防止今後再次發生" }], "カスタマーサポート", "顧客", "誤配に関するクレームの電話。"),
-                        createCourse(505, "ホテルの要望", "部屋の問題と変更要求。", [{ text: "空調の効きが悪く、部屋が乾燥しています", trans: "空調效果不好，而且房間很乾燥" }, { text: "加湿器の貸し出しは行っておりますでしょうか", trans: "請問有提供租借加濕器的服務嗎？" }, { text: "可能であれば、高層階の部屋に変更をお願いします", trans: "如果可以的話，請幫我換到高樓層的房間" }], "フロント", "宿泊客", "ホテルの部屋からフロントへ詳細な要望。")
+                        createCourse(501, "電話予約", "撥打電話進行預約", [{ text: "明日の7時に予約をお願いします", trans: "請預約明天晚上7點" }, { text: "アレルギーはありますか？", trans: "有過敏原嗎？" }, { text: "確認させていただきます", trans: "讓我確認一下" }], "店員", "顧客", "撥打餐廳電話預約位子"),
+                        createCourse(502, "健康相談", "在診所說明身體狀況", [{ text: "昨日から熱があって喉が痛いです", trans: "從昨天開始發燒且喉嚨痛" }, { text: "お薬を出しておきますね", trans: "我幫您開藥" }, { text: "お大事にしてください", trans: "請保重身體" }], "醫生", "病人", "在診所諮詢醫生"),
+                        createCourse(503, "買い物 (服)", "購買衣服與詢問細節", [{ text: "もう少し明るい色のものはありますか？", trans: "有再亮一點顏色的嗎？" }, { text: "試着してもいいですか？", trans: "可以試穿嗎？" }, { text: "これをいただきます", trans: "我要買這個" }], "店員", "顧客", "在服飾店購買衣服"),
+                        createCourse(504, "旅行の計画", "討論旅遊行程", [{ text: "新幹線で行くほうが便利だと思います", trans: "我覺得搭新幹線比較方便" }, { text: "ホテルはもう予約しましたか？", trans: "飯店已經預訂了嗎？" }, { text: "おすすめの場所はどこですか？", trans: "推薦的地方在哪裡？" }], "朋友", "你", "與朋友討論旅遊計劃"),
+                        createCourse(505, "ビジネス會議", "在商務會議中發言", [{ text: "このプロジェクトについて説明します", trans: "關於這個專案進行說明" }, { text: "ご意見をお聞かせください", trans: "請讓我們聽聽您的意見" }, { text: "検討させていただきます", trans: "我們會進行考慮" }], "主管", "職員", "在辦公室進行專案會議")
                     ],
                     advanced: [
-                        createCourse(601, "ビジネス敬語", "取引先への挨拶と提案。", [{ text: "平素は格別のお引き立てを賜り、厚く御礼申し上げます", trans: "平素承蒙格外關照，在此致上最深的謝意" }, { text: "御社の課題解決に寄与するプランを持参いたしました", trans: "我們帶來了能有助於解決貴公司課題的方案" }, { text: "引き続き、ご愛顧のほどよろしくお願い申し上げます", trans: "今後也請您繼續多多眷顧與指教" }], "取引先", "営業担当", "重要な取引先との商談。"),
-                        createCourse(602, "会議での提案", "データを用いた論理的な意見。", [{ text: "市場調査のデータに鑑みますと、この戦略は妥当かと存じます", trans: "鑒於市場調查的數據，我認為這項策略是妥當的" }, { text: "リスクヘッジの観点から、代替案も検討すべきです", trans: "從風險規避的觀點來看，也應該檢討替代方案" }, { text: "本件につきましては、持ち帰って再度精査いたします", trans: "關於此事，我們將帶回去再次仔細審查" }], "役員", "プロジェクトリーダー", "新プロジェクトの最終提案会議。"),
-                        createCourse(603, "謝罪 (Apology)", "重大なミスの報告と謝罪。", [{ text: "この度の不祥事につきまして、幾重にもお詫び申し上げます", trans: "關於這次的醜聞/疏失，我們致上萬分的歉意" }, { text: "原因究明を急ぎ、抜本的な改善策を講じる所存です", trans: "我們將急於查明原因，並採取根本性的改善對策" }, { text: "多大なるご迷惑をおかけしたこと、弁解の余地もございません", trans: "造成您極大的困擾，我們沒有任何辯解的餘地" }], "重要顧客", "責任者", "トラブルによる深刻な謝罪。"),
-                        createCourse(604, "議論", "複雑な社会問題について。", [{ text: "この問題の背景には、根深い制度的欠陥が潜んでいると考えます", trans: "我認為這個問題的背景隱藏著根深蒂固的制度缺陷" }, { text: "一過性の対策ではなく、包括的なアプローチが不可欠です", trans: "這並非一次性的對策，而是不可或缺的全面性方法" }, { text: "その見解は、マクロ経済の動向と矛盾していませんか", trans: "這個見解，難道沒有與總體經濟的動向矛盾嗎？" }], "専門家", "あなた", "パネルディスカッションでの意見交換。"),
-                        createCourse(605, "面接 (Interview)", "高度なスキルとビジョンの説明。", [{ text: "前職で培ったマネジメント経験を御社で最大限に還元したいです", trans: "希望能將在前職培養的管理經驗，在貴公司發揮最大的回饋" }, { text: "既存の枠組みに囚われない、革新的な価値を創造できると自負しております", trans: "我自信能不侷限於既有框架，創造出革命性的價值" }, { text: "御社のグローバル展開において、シナジーを生み出せる確信があります", trans: "在貴公司的全球發展中，我有確信能產生協同效應" }], "社長", "転職志望者", "役員最終面接。")
+                        createCourse(601, "價格交渉", "進行商務價格談判", [{ text: "単価を少し下げていただけませんか", trans: "單價可以幫我們調降一點嗎" }, { text: "他社と比較検討しています", trans: "我們正在與其他公司比較考慮" }, { text: "合意に至りました", trans: "達成協議" }], "採購員", "供應商", "在會議室進行商務談判"),
+                        createCourse(602, "トラブル対応", "處理系統故障或投訴", [{ text: "早急に対応させていただきます", trans: "我們會儘速處理" }, { text: "ご迷惑をおかけして申し訳ございません", trans: "造成您的困擾非常抱歉" }, { text: "原因を調査中です", trans: "原因正在調查中" }], "客服", "客戶", "處理技術支援或產品投訴"),
+                        createCourse(603, "謝罪 (Apology)", "正式的道歉與賠償討論", [{ text: "不手際があったことを深くお詫び申し上げます", trans: "對於發生的失誤我們深感抱歉" }, { text: "誠心誠意対応させていただきます", trans: "我們會誠心誠意地進行處理" }, { text: "今後の対策を検討します", trans: "我們會考慮今後的對策" }], "公司代表", "受害者", "正式的商務道歉場景"),
+                        createCourse(604, "プレゼン", "進行正式的專案簡報", [{ text: "本日のプレゼンテーションを始めます", trans: "開始今天的簡報" }, { text: "こちらの圖表をご覧ください", trans: "請看這裡的圖表" }, { text: "ご清聴ありがとうございました", trans: "感謝您的聆聽" }], "主講人", "聽眾", "在會議室進行正式簡報"),
+                        createCourse(605, "面接 (Interview)", "高級職位的求職面試", [{ text: "私の強みはリーダーシップです", trans: "我的強項是領導力" }, { text: "貴社のビジョンに共感しています", trans: "我很認同貴公司的願景" }, { text: "貢献できると確信しています", trans: "我確信我可以做出貢獻" }], "面試官", "求職者", "高階職位面試場景")
                     ]
                 },
                 kr: {
                     beginner: [
-                        createCourse(701, "자기소개 (Self Intro)", "이름과 국적 말하기.", [{ text: "안녕하세요", trans: "你好" }, { text: "저는 대만 사람입니다", trans: "我是台灣人" }, { text: "반갑습니다", trans: "很高興認識你" }], "한국 친구", "나", "언어 교환 모임에서 자기소개."),
-                        createCourse(702, "식당 주문", "음식 주문하기.", [{ text: "이거 주세요", trans: "請給我這個" }, { text: "덜 맵게 해주세요", trans: "請不要太辣" }, { text: "물 좀 주세요", trans: "請給我一點水" }], "종업원", "손님", "김밥천국에서 주문하기."),
-                        createCourse(703, "길 묻기", "길 찾기.", [{ text: "실례합니다", trans: "不好意思" }, { text: "지하철역이 어디예요?", trans: "地鐵站在哪裡？" }, { text: "멀어요?", trans: "很遠嗎？" }], "행인", "여행객", "서울 길거리에서 길 묻기."),
-                        createCourse(704, "쇼핑", "가격 묻고 깎기.", [{ text: "얼마예요?", trans: "多少錢？" }, { text: "너무 비싸요", trans: "太貴了" }, { text: "좀 깎아주세요", trans: "請算便宜一點" }], "시장 상인", "손님", "동대문 시장에서 옷 사기."),
-                        createCourse(705, "택시", "목적지 말하기.", [{ text: "홍대입구로 가주세요", trans: "請到弘大入口" }, { text: "여기서 세워주세요", trans: "請停在這裡" }, { text: "카드 돼요?", 전s: "可以刷卡嗎？" }], "기사님", "승객", "택시 타고 이동하기.")
+                        createCourse(701, "자기소개 (Self Intro)", "學習基礎的韓語自己介紹", [{ text: "안녕하세요", trans: "您好" }, { text: "저는 대만 사람입니다", trans: "我是台灣人" }, { text: "만나서 반갑습니다", trans: "見到你很高興" }], "新鄰居", "", "在公寓電梯前初次見面"),
+                        createCourse(702, "음식 주문", "在餐廳點餐對話", [{ text: "이것 좀 주세요", trans: "請給我這個" }, { text: "맵지 않게 해주세요", trans: "請不要做太辣" }, { text: "메뉴판 좀 보여주세요", trans: "請給我看一下菜單" }], "店員", "顧客", "在餐廳點餐"),
+                        createCourse(703, "길 찾기", "在街上問路", [{ text: "죄송하지만, 지하철역이 어디예요?", trans: "不好意思，請問地鐵站在哪裡？" }, { text: "앞으로 쭉 가세요", trans: "請往前直走" }, { text: "고맙습니다", trans: "謝謝" }], "路人", "遊客", "在街上詢問地鐵站位置"),
+                        createCourse(704, "쇼핑", "在商店購物", [{ text: "이거 얼마예요?", trans: "這個多少錢？" }, { text: "좀 깎아 주세요", trans: "請算便宜一點" }, { text: "카드로 계산할게요", trans: "我要用信用卡付錢" }], "店員", "顧客", "在東大門購物場景"),
+                        createCourse(705, "택시", "搭乘計程車", [{ text: "강남역으로 가주세요", trans: "請帶我去江南站" }, { text: "여기서 세워주세요", trans: "請在這裡停車" }, { text: "잔돈은 괜찮아요", trans: "不用找錢了" }], "司機", "乘客", "在計程車內對話")
                     ],
                     intermediate: [
-                        createCourse(801, "약국", "증상 자세히 설명하기.", [{ text: "어제부터 으슬으슬 춥고 기침이 심해요", trans: "從昨天開始覺得發冷而且咳嗽很嚴重" }, { text: "빈속에 먹어도 부작용은 없을까요?", trans: "空腹吃的話會有什麼副作用嗎？" }, { text: "처방전 없이 살 수 있는 약으로 주세요", trans: "請給我不需要處方籤就能買的藥" }], "약사", "손님", "약국에서 구체적인 증상 설명."),
-                        createCourse(802, "부동산", "조건에 맞는 방 구하기.", [{ text: "보증금 조율이 가능한 매물이 있을까요?", trans: "請問有保證金可以調整的物件嗎？" }, { text: "채광이 좋고 방음이 잘 되는 곳을 선호합니다", trans: "我偏好採光好且隔音佳的地方" }, { text: "월세에 관리비가 전부 포함된 금액인가요?", trans: "月租是包含所有管理費的金額嗎？" }], "공인중개사", "세입자", "부동산에서 방 계약 조건 확인."),
-                        createCourse(803, "친구와 다툼", "오해 풀기.", [{ text: "내 말을 오해한 것 같은데 내 진심은 그게 아니었어", trans: "你好像誤會我的話了，我的真心並不是那樣的" }, { text: "미리 연락을 주지 않아서 서운했어", trans: "你沒有事先聯絡我，讓我覺得很難過" }, { text: "우리 서로 조금씩 양보해서 풀자", trans: "我們互相退讓一點，和好吧" }], "친구", "나", "친구와의 갈등 해결하기."),
-                        createCourse(804, "미용실", "구체적인 스타일 요청.", [{ text: "사진처럼 층을 많이 내서 가볍게 잘라주세요", trans: "請像照片一樣剪出很多層次，弄輕盈一點" }, { text: "붉은 기가 없는 애쉬 브라운으로 염색하고 싶어요", trans: "我想要染沒有紅光的亞麻棕色" }, { text: "손상이 심한 끝부분만 살짝 다듬어 주세요", trans: "請只要稍微修剪受損嚴重的髮尾就好" }], "미용사", "손님", "미용실에서 디테일한 요청."),
-                        createCourse(805, "쇼핑 컴플레인", "제품 교환 요청.", [{ text: "제품 안쪽에 박음질 불량이 있어서 교환하려고요", trans: "因為產品內側的縫線有瑕疵，我想要換貨" }, { text: "영수증을 지참했는데 바로 환불 처리 되나요?", trans: "我有帶收據，請問可以直接辦理退款嗎？" }, { text: "재고가 없다면 다른 색상으로 변경 가능할까요?", trans: "如果沒有庫存的話，可以換成別的顏色嗎？" }], "직원", "손님", "불량품에 대한 환불/교환 요청.")
+                        createCourse(801, "전화 예약", "進行餐廳或診所預約", [{ text: "오늘 저녁에 예약할 수 있을까요?", trans: "可以預約今天晚上嗎？" }, { text: "몇 시에 방문하시겠어요?", trans: "您預計幾點過來？" }, { text: "성함과 연락처를 알려주세요", trans: "請告知您的姓名和聯絡方式" }], "職員", "顧客", "撥打電話進行餐廳預約"),
+                        createCourse(802, "병원", "在醫院說明症狀", [{ text: "어디가 아파서 오셨어요?", trans: "您哪裡不舒服呢？" }, { text: "어제부터 열이 나고 머리가 아파요", trans: "從昨天開始發燒且頭痛" }, { text: "처방전 드릴게요", trans: "給您處方箋" }], "護理師/醫生", "病人", "在醫院諮詢醫生"),
+                        createCourse(803, "취미 생활", "與朋友討論興趣愛好", [{ text: "주말에 보통 뭐 하세요?", trans: "週末通常都做什麼？" }, { text: "저는 영화 보는 것을 좋아해요", trans: "我喜歡看電影" }, { text: "다음에 같이 갈까요?", trans: "下次要一起去嗎？" }], "朋友", "", "與韓國朋友閒聊愛好"),
+                        createCourse(804, "부동산", "諮詢租屋相關資訊", [{ text: "방 좀 보러 왔는데요", trans: "我是來看看房子的" }, { text: "보증금이 얼마예요?", trans: "保證金是多少？" }, { text: "월세는 관리비 포함인가요?", trans: "房租包含管理費嗎？" }], "房屋仲介", "租客", "在房地產經紀公司諮詢"),
+                        createCourse(805, "직장 생활", "在辦公室與同事溝通", [{ text: "이 서류 좀 확인해 주시겠어요?", trans: "可以幫我確認一下這份文件嗎？" }, { text: "오늘 회의가 몇 시였죠?", trans: "今天的會議是幾點來著？" }, { text: "수고하셨습니다", trans: "辛苦了" }], "同事", "你", "在韓國公司辦公室")
                     ],
                     advanced: [
-                        createCourse(901, "회사 회의", "논리적인 의견 제시 및 반박.", [{ text: "데이터 추이를 고려할 때 이 기획안은 수정이 불가피해 보입니다", trans: "考量到數據的趨勢，這份企劃案看來勢必得修改" }, { text: "리스크를 최소화하기 위한 대안을 먼저 검토하는 것이 바람직합니다", trans: "先去評估能將風險降到最低的替代方案，會是比較明智的做法" }, { text: "효율성 측면에서 기존 프로세스를 재정립할 필요가 있습니다", trans: "從效率層面來看，我們有必要重新確立既有的流程" }], "본부장", "팀장", "사업 전략 회의에서 의견 제시."),
-                        createCourse(902, "면접", "이직 사유와 비전 설명.", [{ text: "과거 프로젝트를 성공적으로 이끈 경험을 바탕으로 역량을 발휘하겠습니다", trans: "我將以成功帶領過去專案的經驗為基礎，發揮我的能力" }, { text: "귀사가 추구하는 혁신적인 가치가 제 커리어 비전과 부합합니다", trans: "貴公司所追求的創新價值與我的職涯願景相符" }, { text: "주도적으로 문제를 파악하고 솔루션을 도출하는 것에 강점이 있습니다", trans: "我的優勢在於能主動掌握問題並導出解決方案" }], "임원진", "경력직 지원자", "경력직 임원 면접."),
-                        createCourse(903, "비즈니스 협상", "계약 조건 조율.", [{ text: "단가 인하 요구는 시장 상황을 고려했을 때 수용하기 어렵습니다", trans: "考慮到市場狀況，要求降價實在難以接受" }, { text: "조건부로 납기일을 연장해주신다면 계약을 긍정적으로 검토하겠습니다", trans: "若是能有條件地延長交貨期，我們將會積極評估合約" }, { text: "상호 우호적인 관계를 유지할 수 있는 합의점을 도출해 봅시다", trans: "讓我們找出一個能維持雙方友好關係的共識點吧" }], "클라이언트", "영업 실장", "대형 계약 협상 테이블."),
-                        createCourse(904, "고객 불만 대응", "치명적인 실수에 대한 사과.", [{ text: "이번 시스템 오류로 막대한 피해를 입혀드린 점 깊이 사죄드립니다", trans: "對於這次系統錯誤造成您巨大的損失，我們深深致歉" }, { text: "전사적 차원에서 원인을 규명하고 재발 방지 대책을 수립 중입니다", trans: "我們正在全公司層級查明原因，並制定防止再次發生的對策" }, { text: "손해 배상과 관련하여 법무팀과 협의 후 신속하게 안내해 드리겠습니다", trans: "關於損害賠償，我們會在與法務團隊協議後迅速通知您" }], "VIP 고객", "지사장", "치명적 서비스 오류에 대한 공식 사과."),
-                        createCourse(905, "학술 토론", "사회 현상 분석 및 비판.", [{ text: "해당 정책이 초래할 거시경제적 파급 효과를 간과해서는 안 됩니다", trans: "我們不該忽視該項政策將帶來的總體經濟波及效應" }, { text: "이러한 현상은 기성세대의 뿌리 깊은 고정관념에서 기인한 것입니다", trans: "這樣的現象是起因於老一輩根深蒂固的刻板印象" }, { text: "표면적인 해결책보다는 구조적인 모순을 타파하는 것이 급선무입니다", trans: "比起表面上的解決方案，打破結構性的矛盾才是當務之急" }], "교수님", "대학원생", "학회에서의 심층 토론.")
+                        createCourse(901, "경제 토론", "討論宏觀經濟趨勢", [{ text: "거시경제적으로 보면...", trans: "從宏觀經濟的角度來看..." }, { text: "인플레이션이 우려되는 상황입니다", trans: "這是令人擔憂通貨膨脹的情況" }, { text: "대안을 제시해야 합니다", trans: "必須提出替代方案" }], "經濟專家", "記者", "經濟論壇討論場景"),
+                        createCourse(902, "취업 면접", "應徵高階職位面試", [{ text: "자신의 강점에 대해 말씀해 보세요", trans: "請說說看您自己的強項" }, { text: "저는 위기 관리 능력이 뛰어납니다", trans: "我的危機管理能力很出色" }, { text: "입사 후 포부를 밝혀 주세요", trans: "請說明入職後的理想抱負" }], "面試官", "應徵者", "韓國大型企業面試"),
+                        createCourse(903, "비즈니스 협상", "進行契約細節談判", [{ text: "단가 인하를 요청하고 싶습니다", trans: "我想要求調降單價" }, { text: "서로 윈윈할 수 있는 조건입니다", trans: "這是雙方都能贏的條件" }, { text: "계약서에 서명하시죠", trans: "請在合約上簽名吧" }], "採購經理", "供應商", "商務合約談判"),
+                        createCourse(904, "법률 상담", "諮詢法律糾紛與建議", [{ text: "손해 배상을 청구하고 싶습니다", trans: "我想請求損害賠償" }, { text: "증거 자료를 준비해야 합니다", trans: "必須準備證據資料" }, { text: "법적 조치를 취하겠습니다", trans: "我會採取法律行動" }], "律師", "委託人", "法律諮詢事務所"),
+                        createCourse(905, "사회 이슈", "討論社會熱點問題", [{ text: "고령화 사회의 문제점은...", trans: "高齡化社會的問題在於..." }, { text: "해결 방안을 모색해야 합니다", trans: "必須尋求解決方案" }, { text: "의견이 분분합니다", trans: "意見紛紜" }], "主持人", "嘉賓", "電視討論節目場景")
                     ]
                 }
             }
@@ -769,162 +538,96 @@
 
         const MISSION_DATA = {
             en: {
-                en_cafe_b: { beginner: ['coffee', 'how much', 'here'] },
-                en_hotel_b: { beginner: ['reservation', 'name', 'key'] },
-                en_supermarket_b: { beginner: ['bag', 'receipt', 'card'] },
-                en_taxi_b: { beginner: ['address', 'stop', 'change'] },
-                en_job_i: { intermediate: ['qualifications', 'adaptability', 'contribution'] },
-                en_meeting_i: { intermediate: ['objective', 'milestone', 'strategy'] },
-                en_return_i: { intermediate: ['defective', 'reimbursement', 'policy'] },
-                en_directions_i: { intermediate: ['intersection', 'landmark', 'pedestrian'] },
-                en_nego_a: { advanced: ['stipulation', 'concession', 'leverage'] },
-                en_academic_a: { advanced: ['paradigm', 'empirical', 'ramification'] },
-                en_presentation_a: { advanced: ['substantiate', 'correlation', 'nuance'] },
-                en_conflict_a: { advanced: ['mitigate', 'discrepancy', 'consensus'] },
-                free: { beginner: ['hello', 'fine', 'goodbye'], intermediate: ['fascination', 'excursion', 'lifestyle'], advanced: ['ideology', 'transformation', 'dilemma'] }
+                free: { beginner: ['Hello', 'Thanks'], intermediate: ['Actually', 'However'], advanced: ['Paradigm', 'Synergy'] },
+                en_cafe_b: { beginner: ['coffee', 'sugar', 'milk'], intermediate: ['latte', 'espresso'], advanced: ['aromatic', 'blend'] },
+                // ... other scenario missions
             },
             jp: {
-                jp_izakaya_b: { beginner: ['ビール', 'メニュー', 'お会計'] },
-                jp_konbini_b: { beginner: ['お弁当', '袋', 'いくら'] },
-                jp_station_b: { beginner: ['どこ', '切符', '歩いて'] },
-                jp_restaurant_b: { beginner: ['注文', '水', 'おすすめ'] },
-                jp_hotel_i: { intermediate: ['手配', '眺望', '空室'] },
-                jp_shop_i: { intermediate: ['試着室', '在庫', '素材'] },
-                jp_hospital_i: { intermediate: ['症状', '処方箋', '診察券'] },
-                jp_friend_i: { intermediate: ['近況', '充実', '予定'] },
-                jp_corptalk_a: { advanced: ['抜本的', '収益', '推進'] },
-                jp_client_a: { advanced: ['折衝', '妥協点', 'シナジー'] },
-                jp_apology_a: { advanced: ['不手際', '再発防止', '遺憾'] },
-                jp_interview_a: { advanced: ['即戦力', 'イノベーション', '先見性'] },
-                free: { beginner: ['こんにちは', 'ありがとう', 'すみません'], intermediate: ['充実', '休暇', '趣味'], advanced: ['パラダイムシフト', '持続可能性', '社会的課題'] }
+                free: { beginner: ['こんにちは', 'ありがとう'], intermediate: ['実は', 'しかし'], advanced: ['相乗効果', 'パラダイム'] }
             },
             kr: {
-                kr_market_b: { beginner: ['얼마', '이거', '주세요'] },
-                kr_cafe_b: { beginner: ['아메리카노', '사이즈', '포장'] },
-                kr_subway_b: { beginner: ['역', '멀어요', '어디'] },
-                kr_restaurant_b: { beginner: ['맥주', '맵다', '맛있다'] },
-                kr_taxi_i: { intermediate: ['목적지', '우회로', '요금'] },
-                kr_salon_i: { intermediate: ['손상', '트리트먼트', '클리닉'] },
-                kr_hospital_i: { intermediate: ['처방전', '진통제', '복용'] },
-                kr_friend_i: { intermediate: ['안부', '근황', '약속'] },
-                kr_corptalk_a: { advanced: ['차질', '시너지', '방안'] },
-                kr_interview_a: { advanced: ['역량', '적합성', '기여'] },
-                kr_realestate_a: { advanced: ['매물', '융자', '권리금'] },
-                kr_debate_a: { advanced: ['모순', '근본적', '타파'] },
-                free: { beginner: ['안녕하세요', '감사합니다', '네'], intermediate: ['여가', '취향', '여정'], advanced: ['패러다임', '본질적', '불가피'] }
+                free: { beginner: ['안녕하세요', '감사합니다'], intermediate: ['사실', '하지만'], advanced: ['시너지', '패러다임'] }
             }
         };
-
-        function getCourseVocab(courseId) {
-            const courseVocabs = {
-                101: ['introduce', 'neighborhood', 'glad'], 102: ['burger', 'drink', 'spicy'], 103: ['straight', 'corner', 'block'], 104: ['reservation', 'included', 'passport'], 105: ['airport', 'change', 'hurry'],
-                201: ['comprehensive', 'resilient', 'adaptable', 'elaborate'], 202: ['migraine', 'radiate', 'prescription', 'persistent'], 203: ['undercooked', 'deduct', 'appreciate'], 204: ['practical', 'compromise', 'itinerary'], 205: ['garment', 'breathable', 'versatile', 'snug'],
-                301: ['concession', 'consensus', 'stipulation', 'imperative'], 302: ['insightful', 'paradigm', 'empirical', 'substantiate'], 303: ['premise', 'phenomenon', 'contradict', 'framework'], 304: ['latency', 'integrity', 'vulnerability', 'mitigate'], 305: ['profoundly', 'synergy', 'ostensibly', 'endeavor'],
-                401: ['同僚', '出身', '配属'], 402: ['温める', '袋', 'レシート'], 403: ['迷子', '駅', '徒歩'], 404: ['注文', 'おすすめ', '追加'], 405: ['切符', '乗り換え', '特急'],
-                501: ['可能', '対応', '窓際', '希望'], 502: ['鈍い', '悪化', '処方', '傾向'], 503: ['通気性', '窮屈', '着回せる', '用途'], 504: ['早急', '交換', '再発防止', '徹底'], 505: ['加湿器', '貸し出し', '高層階', '乾燥'],
-                601: ['平素', '格別', '御礼', '寄与'], 602: ['鑑みる', '妥当', 'リスクヘッジ', '代替案'], 603: ['幾重にも', '抜本的', '弁解', '不手際'], 604: ['根深い', '欠陥', '包括的', '矛盾'], 605: ['培う', '還元', '革新的', 'シナジー'],
-                701: ['대만', '친구', '만나다'], 702: ['주세요', '맵다', '물'], 703: ['어디', '멀다', '역'], 704: ['얼마', '비싸다', '깎다'], 705: ['홍대', '세우다', '카드'],
-                801: ['으슬으슬', '기침', '부작용', '처방전'], 802: ['보증금', '조율', '채광', '방음'], 803: ['진심', '오해', '서운하다', '양보하다'], 804: ['층을 내다', '염색', '가볍게', '손상'], 805: ['박음질', '불량', '지참하다', '재고'],
-                901: ['추이', '불가피하다', '대안', '재정립'], 902: ['역량', '혁신적', '부합하다', '도출'], 903: ['인하', '수용하다', '단가', '우호적'], 904: ['막대하다', '규명하다', '방지', '배상'], 905: ['초래하다', '거시경제적', '고정관념', '모순']
-            };
-            return courseVocabs[courseId] || ['hello', 'word'];
-        }
 
         let appState = {
             lang: 'en',
             level: 'beginner',
-            currentScenario: null, // object
-            courseMode: false, // NEW: Track if in course
+            currentScenario: null,
             chatHistory: [],
+            autoAudio: true,
             missionWords: [],
             completedMissions: [],
+            courseMode: false,
             vocabList: JSON.parse(localStorage.getItem('my_vocab') || '[]'),
             vocabLang: 'en',
-            autoAudio: true,
             grammarList: JSON.parse(localStorage.getItem('my_grammar') || '[]'),
             grammarLang: 'en',
             grammarLevel: 'beginner',
             grammarType: 'grammar',
+            quizVocab: [],
+            quizIndex: 0,
+            quizScore: 0,
             quizConfig: { type: 'mixed', difficulty: 'all' }
         };
 
-        // Mock初始文法設定
-        if (!localStorage.getItem('my_grammar') || JSON.parse(localStorage.getItem('my_grammar')).length <= 2) {
-            const defaultGrammar = [
-                // --- English ---
-                // Beginner
-                { id: 1001, lang: 'en', level: 'beginner', type: 'comparison', title: 'look vs see vs watch', explanation: '這些單字都和「看」有關，但注意力和意圖不同。', table: [ {term: 'see', usage: '自然看見(無意識)', example: 'I saw a bird.'}, {term: 'look', usage: '有意識地注視(強調動作)', example: 'Look at the picture.'}, {term: 'watch', usage: '長時間觀看會動的事物', example: 'I am watching a movie.'} ], sentences: [] },
-                { id: 1002, lang: 'en', level: 'beginner', type: 'grammar', title: 'Simple Present vs Present Continuous', explanation: '現在簡單式表示習慣或事實；現在進行式表示正在發生的動作。', table: [], sentences: [{en: 'I drink coffee every day.', zh: '我每天喝咖啡。'}, {en: 'I am drinking coffee now.', zh: '我現在正在喝咖啡。'}] },
-                // Intermediate
-                { id: 1003, lang: 'en', level: 'intermediate', type: 'comparison', title: 'affect vs effect', explanation: '這兩個詞發音相似，但詞性與用法大不相同。(CEFR B1/B2)', table: [{term: 'affect', usage: '動詞 (Verb): 影響', example: 'The weather affects my mood.'}, {term: 'effect', usage: '名詞 (Noun): 效果、結果', example: 'The medicine had a quick effect.'}], sentences: [] },
-                { id: 1004, lang: 'en', level: 'intermediate', type: 'grammar', title: 'Mixed Conditionals (混合條件句)', explanation: '當過去的假設影響現在的結果時使用。(CEFR B2)', table: [{term: 'Pattern', usage: 'If + Past Perfect, would + bare infinitive', example: 'If I had studied harder, I would be a doctor now.'}], sentences: [] },
-                // Advanced
-                { id: 1005, lang: 'en', level: 'advanced', type: 'comparison', title: 'mitigate vs alleviate vs ameliorate', explanation: '這些詞都有「減輕、改善」之意，用於正式高階寫作。(CEFR C1/C2)', table: [{term: 'mitigate', usage: '減輕(嚴重性、痛楚、後果)', example: 'They tried to mitigate the environmental impact.'}, {term: 'alleviate', usage: '緩解(痛苦、困難)', example: 'This drug will alleviate the pain.'}, {term: 'ameliorate', usage: '改善(不好的狀況)', example: 'Steps have been taken to ameliorate the situation.'}], sentences: [] },
-                { id: 1006, lang: 'en', level: 'advanced', type: 'grammar', title: 'Inversion (倒裝句)', explanation: '將否定或限制副詞放句首，以強調語氣，需使用助動詞倒裝。(CEFR C1)', table: [{term: 'Not only... but also', usage: 'Not only + 助動詞 + S + V', example: 'Not only did he arrive late, but he also forgot his report.'}], sentences: [] },
-                
-                // --- Japanese ---
-                // Beginner
-                { id: 2001, lang: 'jp', level: 'beginner', type: 'comparison', title: '知る vs 分かる', explanation: '兩者皆翻譯為「知道/了解」，但在日文語境中核心概念不同。', table: [{term: '知る', usage: '獲得情報、認識某事(原本不知道變成知道)', example: '彼の名前を知っていますか。'}, {term: '分かる', usage: '理解內容、明白道理(需要思考過程)', example: 'この問題はどう解くか分かりますか。'}], sentences: [] },
-                { id: 2002, lang: 'jp', level: 'beginner', type: 'grammar', title: '～てあげる / もらう / くれる', explanation: '日文特有的授受動詞，根據「誰給誰」及「恩惠方向」而變化。(JLPT N5/N4)', table: [{term: '～てあげる', usage: '我為別人做某事', example: '私が荷物を持ってあげます。'}, {term: '～てもらう', usage: '請別人為我做某事', example: '先生に教えてもらいました。'}, {term: '～てくれる', usage: '別人主動為我做某事', example: '彼が手伝ってくれました。'}], sentences: [] },
-                // Intermediate
-                { id: 2003, lang: 'jp', level: 'intermediate', type: 'comparison', title: '～に対して vs ～について vs ～にとって', explanation: '這些格助詞雖然相似，但在指示對象、內容或立場時有明確區別。(JLPT N3/N2)', table: [{term: 'に対して', usage: '針對某對象表現出某種態度或動作，或表示對比', example: 'お客様に対しては丁寧な言葉を使いなさい。'}, {term: 'について', usage: '關於某事物的內容(類似 about)', example: '日本の歴史について調べています。'}, {term: 'にとって', usage: '對某人而言(強調立場與價值判斷)', example: '私にとって家族は一番大切です。'}], sentences: [] },
-                { id: 2004, lang: 'jp', level: 'intermediate', type: 'grammar', title: '～ざるを得ない', explanation: '表示在沒有其他選擇的情況下，不得不這麼做。(JLPT N3)', table: [{term: '接續', usage: '動詞未然形 (ない形去ない) + ざるを得ない', example: '台風が来ているので、試合を中止せざるを得ない。'}], sentences: [{en: 'する → せざるを得ない', zh: '注意する的不規則變化'}] },
-                // Advanced
-                { id: 2005, lang: 'jp', level: 'advanced', type: 'comparison', title: 'おざなり vs なおざり', explanation: '讀音相似且都有「隨便、不認真」之意，考法上需嚴格區分動作狀態。(JLPT N1)', table: [{term: 'おざなり (お座なり)', usage: '有做動作，但敷衍了事、表面應付', example: 'おざなりな返事をしてしまった。'}, {term: 'なおざり (等閑)', usage: '完全放任不管、沒有做動作', example: '勉強をなおざりにして遊んでばかりいる。'}], sentences: [] },
-                { id: 2006, lang: 'jp', level: 'advanced', type: 'grammar', title: '～たるもの', explanation: '身為～(某種具備特殊身分或責任的人)，理應當有某種作為。(JLPT N1)', table: [{term: '接續', usage: '名詞 + たるもの', example: '教師たるものは、常に学生の模範とならなければならない。'}], sentences: [{en: '身為教師，必須時常成為學生的楷模。', zh: '這是一種帶有強烈期待、義務的表現手法'}] },
-
-                // --- Korean ---
-                // Beginner
-                { id: 3001, lang: 'kr', level: 'beginner', type: 'comparison', title: '안 vs 못', explanation: '兩者皆為否定副詞，但原因大不相同。(TOPIK I)', table: [{term: '안', usage: '主觀否定：有能力但「不」想做', example: '저는 고기를 안 먹어요. (我不吃肉/素食者)'}, {term: '못', usage: '客觀否定：想做但因為外在因素或能力「無法」做', example: '시간이 없어서 못 가요. (沒時間所以無法去)'}], sentences: [] },
-                { id: 3002, lang: 'kr', level: 'beginner', type: 'grammar', title: '-(으)ㄹ게요', explanation: '表示說話者的意志或承諾，主詞只能是「我」。(TOPIK I)', table: [{term: '接續', usage: '動詞詞幹 + -(으)ㄹ게요', example: '내일 제가 전화할게요. (我明天會打電話)'}], sentences: [] },
-                // Intermediate
-                { id: 3003, lang: 'kr', level: 'intermediate', type: 'comparison', title: '-(으)니까 vs -아/어서', explanation: '兩者都翻譯為「因為...所以」，但限制條件不同。(TOPIK II 中級)', table: [{term: '-(으)니까', usage: '可接祈使、共動句；可結合過去時態', example: '비가 오니까 우산을 가져가세요. (因為下雨，請帶傘)'}, {term: '-아/어서', usage: '不可接祈使/共動句；前方不可接過去時態', example: '비가 와서 길이 막혀요. (因為下雨所以塞車)'}], sentences: [] },
-                { id: 3004, lang: 'kr', level: 'intermediate', type: 'grammar', title: '-느라고', explanation: '因為做前句的動作，而導致後句產生「負面」或「無法兼顧其他事情」的結果。(TOPIK II 中級)', table: [{term: '接續', usage: '動詞詞幹 + 느라고', example: '시험 공부를 하느라고 잠을 못 잤어요. (因為準備考試所以沒能睡覺)'}], sentences: [] },
-                // Advanced
-                { id: 3005, lang: 'kr', level: 'advanced', type: 'comparison', title: '드러나다 vs 밝혀지다', explanation: '雖然都有「揭露/查明」之意，但在新聞與正式文章中有區分。(TOPIK II 高級)', table: [{term: '드러나다', usage: '原本隱藏的事實或本質自然「顯露」出來', example: '그의 거짓말이 마침내 드러났다. (他的謊言終於顯露了)'}, {term: '밝혀지다', usage: '透過調查、研究將原本未知的真相「查明/揭發」', example: '조사 결과, 새로운 사실이 밝혀졌다. (調查結果查明了新事實)'}], sentences: [] },
-                { id: 3006, lang: 'kr', level: 'advanced', type: 'grammar', title: '-(으)ㄹ라치면', explanation: '每當想要做某事時，就會發生不好的事。(TOPIK II 高級)', table: [{term: '接續', usage: '動詞詞幹 + -(으)ㄹ라치면', example: '외출할라치면 비가 오기 시작한다. (每當我要出門就會開始下雨)'}], sentences: [] }
-            ];
-            localStorage.setItem('my_grammar', JSON.stringify(defaultGrammar));
-            appState.grammarList = defaultGrammar;
-        }
-
-        /* =========================================
-           3. UI CONTROLLER
-           ========================================= */
-
         function init() {
-            const savedKey = localStorage.getItem('v21_key');
-            if (savedKey) {
-                document.getElementById('api-key-input').value = savedKey;
-            } else {
-                document.getElementById('api-warning').classList.remove('hidden');
-            }
+            setLang('en');
+            setLevel('beginner');
+            setVocabLang('en');
+            setGrammarLang('en');
             renderHome();
-            updateLevelDesc();
             renderVocab();
             renderGrammar();
+            
+            if (localStorage.getItem('v21_key')) {
+                document.getElementById('api-key-input').value = localStorage.getItem('v21_key');
+            }
+
+            // --- Google Gemini Integration ---
+            const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+
+            window.callGemini = async function(contents, systemInstruction = "") {
+                const apiKey = localStorage.getItem('v21_key');
+                if (!apiKey) throw new Error("API Key Missing");
+
+                const body = {
+                    contents: contents,
+                    systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 800,
+                    }
+                };
+
+                const resp = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!resp.ok) {
+                    const errorData = await resp.json();
+                    throw new Error(errorData.error?.message || "API Error");
+                }
+
+                const data = await resp.json();
+                return data.candidates[0].content.parts[0].text;
+            };
         }
 
-        function switchPage(pageId, tabEl) {
+        function switchPage(pageId, btn) {
             document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
-            const target = document.getElementById('page-' + pageId);
-            if (target) target.classList.add('active-page');
-
-            if (tabEl) {
-                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-                tabEl.classList.add('active');
-            }
+            document.getElementById('page-' + pageId).classList.add('active-page');
+            
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
 
             if (pageId === 'home') renderHome();
             if (pageId === 'learn') renderLearn();
+            if (pageId === 'vocab') renderVocab();
             if (pageId === 'grammar') renderGrammar();
 
-            // Close detail if open
-            document.getElementById('page-course-detail').classList.remove('show');
-        }
-
-        // Header & Navigation Logic
-        function handleHeaderBack() {
             // If Course Detail is open, close it
             const detailPage = document.getElementById('page-course-detail');
             if (detailPage.classList.contains('show')) {
@@ -1004,7 +707,7 @@
             content.innerHTML = '';
 
             if (!courses || courses.length === 0) {
-                content.innerHTML = '<div class="text-center text-gray-400 mt-10">此等級目前尚無課程資料</div>';
+                content.innerHTML = '<div class="text-center text-gray-400 mt-10">目前該難度尚無課程資料</div>';
                 return;
             }
 
@@ -1016,8 +719,8 @@
                     <h3 class="font-bold text-lg text-gray-800">${c.title}</h3>
                     <p class="text-gray-500 text-sm mb-2 line-clamp-1">${c.desc}</p>
                     <div class="flex gap-2 mt-1">
-                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">3 個關鍵句</span>
-                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">AI 模擬演練</span>
+                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">3 句核心對話</span>
+                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">AI 角色扮演訓練</span>
                     </div>
                 </div>
                 <i class="fas fa-chevron-right absolute right-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
@@ -1045,17 +748,17 @@
                 </div>
                 <div class="flex gap-2 mt-2 ml-4">
                     <button onclick="speakText('${escapedText}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-3 rounded-xl text-sm font-bold flex flex-1 justify-center items-center gap-2 active:scale-95 transition">
-                        <i class="fas fa-volume-up text-lg"></i> 朗讀
+                        <i class="fas fa-volume-up text-lg"></i> 播放
                     </button>
                     <button onmousedown="startPronunciationPractice('${escapedText}', 'result-${idx}')" onmouseup="stopPronunciationPractice()" onmouseleave="stopPronunciationPractice()" ontouchstart="startPronunciationPractice('${escapedText}', 'result-${idx}')" ontouchend="stopPronunciationPractice()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-3 rounded-xl text-sm font-bold flex flex-1 justify-center items-center gap-2 active:scale-95 transition shadow-sm border border-indigo-100">
-                        <i class="fas fa-microphone text-lg"></i> 按住跟讀
+                        <i class="fas fa-microphone text-lg"></i> 發音練習
                     </button>
                 </div>
                 <div id="result-${idx}" class="text-sm mt-1 ml-4 empty:hidden transition-all duration-300"></div>
             </div>`;
             });
 
-            // 加入情境推薦單字
+            // 課程重點單字
             const vocabs = getCourseVocab(courseId);
             let vocabHtml = '<div class="flex flex-wrap gap-2 mb-4">';
             vocabs.forEach(v => {
@@ -1070,30 +773,30 @@
         </div>
         
         <div class="mb-6">
-            <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2"><i class="fas fa-book text-indigo-500"></i> 本課引導單字</h3>
+            <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2"><i class="fas fa-book text-indigo-500"></i> 課程重點單字</h3>
             ${vocabHtml}
-            <p class="text-xs text-gray-400">這些單字在目前的情境與難度非常實用，試著加入對話中吧！</p>
+            <p class="text-xs text-gray-400">點擊單字可查看詳細解析。熟練這些單字將有助於您在對話中更流暢地表達。</p>
         </div>
 
         <div class="mb-6">
-            <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-star text-yellow-400"></i> 本課關鍵句 (Key Sentences)</h3>
+            <h3 class="font-bold text-gray-900 mb-3 flex items-center gap-2"><i class="fas fa-star text-yellow-400"></i> 課程關鍵句型 (Key Sentences)</h3>
             <div class="space-y-2">
                 ${sentencesHtml}
             </div>
-            <p class="text-xs text-gray-400 mt-2">請在接下來的對話練習中嘗試使用這些句子，系統會自動包容時態或連接詞差異。</p>
+            <p class="text-xs text-gray-400 mt-2">請在之後的對話練習中嘗試使用這些句型，這將幫助您更快速地掌握語感。</p>
         </div>
 
         <div class="mb-8">
-            <h3 class="font-bold text-gray-900 mb-3"><i class="fas fa-user-friends text-blue-500"></i> 模擬情境</h3>
+            <h3 class="font-bold text-gray-900 mb-3"><i class="fas fa-user-friends text-blue-500"></i> 角色扮演訓練</h3>
             <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700">
                 <div class="mb-2"><span class="font-bold text-gray-900">您的角色:</span> ${course.userRole}</div>
                 <div class="mb-2"><span class="font-bold text-gray-900">AI 角色:</span> ${course.aiRole}</div>
-                <div><span class="font-bold text-gray-900">情境:</span> ${course.context}</div>
+                <div><span class="font-bold text-gray-900">情境描述:</span> ${course.context}</div>
             </div>
         </div>
 
         <button onclick="startCourseChat(${courseId})" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
-            <i class="fas fa-microphone"></i> 開始口說練習
+            <i class="fas fa-microphone"></i> 開始練習對話
         </button>
         <div class="h-10"></div>
     `;
@@ -1104,7 +807,7 @@
             document.getElementById('header-title').innerText = "課程詳情";
             document.getElementById('header-back-btn').style.display = 'flex';
             document.getElementById('header-back-btn').onclick = closeCourseDetail;
-            document.getElementById('back-text').innerText = "列表";
+            document.getElementById('back-text').innerText = "返回";
 
             // Show overlay
             document.getElementById('page-course-detail').classList.add('show');
@@ -1125,7 +828,7 @@
         // Start Chat from Course
         function startCourseChat(courseId) {
             if (!localStorage.getItem('v21_key')) {
-                alert("請先設定 API Key");
+                alert("請先設置 API Key");
                 return;
             }
 
@@ -1148,7 +851,7 @@
             appState.missionWords = course.sentences.map(s => s.text); // Mission = Course Sentences
 
             // Switch UI
-            document.getElementById('header-title').innerText = "課程練習";
+            document.getElementById('header-title').innerText = "課程對話";
             document.getElementById('header-back-btn').style.display = 'flex';
             document.getElementById('back-text').innerText = "結束";
             document.getElementById('audio-toggle').style.display = 'block';
@@ -1157,8 +860,8 @@
 
             const container = document.getElementById('chat-container');
             container.innerHTML = `<div class="text-center text-gray-400 text-xs mt-8 mb-4">
-        課程模式: ${course.title}<br>
-        目標: 使用關鍵句
+        課程情境: ${course.title}<br>
+        目標: 使用關鍵句型
     </div>`;
 
             document.body.classList.add('chat-mode');
@@ -1171,7 +874,7 @@
         // Start Normal Chat
         function startChat(scenario) {
             if (!localStorage.getItem('v21_key')) {
-                alert("請先設定 API Key");
+                alert("請先設置 API Key");
                 switchPage('settings', document.querySelectorAll('.tab-item')[3]);
                 return;
             }
@@ -1181,10 +884,10 @@
             appState.chatHistory = [];
             appState.completedMissions = [];
 
-            // 依據語言與難度與情境載入過關單字
+            // 根據情境與難度載入任務單字池
             const scenarioId = scenario === 'free' ? 'free' : scenario.id;
-            const pool = MISSION_DATA[appState.lang][scenarioId][appState.level];
-            appState.missionWords = pool || ['Hello', 'Thank you', 'Please'];
+            const pool = MISSION_DATA[appState.lang][scenarioId] ? MISSION_DATA[appState.lang][scenarioId][appState.level] : [];
+            appState.missionWords = pool.length > 0 ? pool : ['Hello', 'Thank you', 'Please'];
 
             // UI Update
             document.getElementById('header-title').innerText = scenario === 'free' ? "自由對話" : scenario.title;
@@ -1195,7 +898,7 @@
 
             const container = document.getElementById('chat-container');
             container.innerHTML = `<div class="text-center text-gray-400 text-xs mt-8 mb-4">
-        對話已就緒 (${APP_DATA.langs[appState.lang].name})
+        對話已開始 (${APP_DATA.langs[appState.lang].name})
     </div>`;
 
             document.body.classList.add('chat-mode');
@@ -1240,7 +943,7 @@
             appState.autoAudio = !appState.autoAudio;
             const btn = document.getElementById('audio-icon');
             if (appState.autoAudio) {
-                btn.innerHTML = '<i class="fas fa-volume-up"></i> 朗讀';
+                btn.innerHTML = '<i class="fas fa-volume-up"></i> 播放';
                 btn.classList.remove('opacity-50');
             } else {
                 btn.innerHTML = '<i class="fas fa-volume-mute"></i> 靜音';
@@ -1248,7 +951,7 @@
             }
         }
 
-        // === 修正任務判定邏輯 (寬鬆比對/時態包容) 全域化 ===
+        // === 任務完成度檢查 (模糊匹配/詞幹提取) 邏輯 ===
         function checkMissionStandalone(input, target, lang) {
             const cleanIn = input.toLowerCase().replace(/[.,\/#!$%\\^&\\*;:{}=\\-_`~()?\s+]/g, " ");
             const cleanTar = target.toLowerCase().replace(/[.,\/#!$%\\^&\\*;:{}=\\-_`~()?\s+]/g, " ");
@@ -1278,17 +981,17 @@
             return false;
         }
 
-        // --- 發音與跟讀練習模組 ---
+        // --- 語音識別與發音評分 邏輯 ---
         let pronuncRecognition = null;
 
         function startPronunciationPractice(targetText, elementId) {
             if (!('webkitSpeechRecognition' in window)) {
-                alert("您的瀏覽器不支援語音辨識功能，請使用 Chrome 或 Safari.");
+                alert("您的瀏覽器不支持語音識別功能，請使用 Chrome 或 Safari。");
                 return;
             }
 
             const resEl = document.getElementById(elementId);
-            resEl.innerHTML = '<span class="text-blue-500 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> 聆聽中... 請說話</span>';
+            resEl.innerHTML = '<span class="text-blue-500 font-medium"><i class="fas fa-spinner fa-spin mr-1"></i> 錄音中... 請說話</span>';
             resEl.className = "text-sm mt-2 p-2 bg-blue-50 rounded border border-blue-100 empty:hidden transition-all";
 
             if (pronuncRecognition) {
@@ -1308,23 +1011,23 @@
                 const isPass = checkMissionStandalone(transcript, targetText, appState.lang);
 
                 if (isPass) {
-                    resEl.innerHTML = '<span class="text-green-600 font-bold"><i class="fas fa-check-circle mr-1"></i> 發音標準！</span>';
+                    resEl.innerHTML = '<span class="text-green-600 font-bold"><i class="fas fa-check-circle mr-1"></i> 發音正確！</span>';
                     resEl.className = "text-sm mt-2 p-2 bg-green-50 rounded border border-green-200 empty:hidden active transition-all";
                 } else {
-                    resEl.innerHTML = `<span class="text-red-500 font-bold"><i class="fas fa-times-circle mr-1"></i> 聽起來像:</span> <span class="text-gray-700">${transcript}</span>`;
+                    resEl.innerHTML = `<span class="text-red-500 font-bold"><i class="fas fa-times-circle mr-1"></i> 你說的是:</span> <span class="text-gray-700">${transcript}</span>`;
                     resEl.className = "text-sm mt-2 p-2 bg-red-50 rounded border border-red-200 empty:hidden active transition-all";
                 }
             };
 
             pronuncRecognition.onerror = (e) => {
                 if (!handled) {
-                    resEl.innerHTML = '<span class="text-gray-500"><i class="fas fa-exclamation-circle mr-1"></i> 沒有偵測到聲音或發生錯誤</span>';
+                    resEl.innerHTML = '<span class="text-gray-500"><i class="fas fa-exclamation-circle mr-1"></i> 未識別到語音，請調整音量或再試一次</span>';
                     resEl.className = "text-sm mt-2 p-2 bg-gray-50 rounded border border-gray-200 empty:hidden active transition-all";
                 }
             };
 
             pronuncRecognition.onend = () => {
-                if (!handled && resEl.innerHTML.includes('聆聽中')) {
+                if (!handled && resEl.innerHTML.includes('錄音中')) {
                     resEl.innerHTML = '<span class="text-gray-500"><i class="fas fa-stop-circle mr-1"></i> 錄音結束</span>';
                     resEl.className = "text-sm mt-2 p-2 bg-gray-50 rounded border border-gray-200 empty:hidden active transition-all";
                 }
@@ -1372,7 +1075,7 @@
             let html = '';
             if (correction) {
                 html += `<div class="correction-box">
-            <div class="font-bold flex items-center gap-1"><i class="fas fa-magic"></i> 優化建議</div>
+            <div class="font-bold flex items-center gap-1"><i class="fas fa-magic"></i> 文法建議</div>
             <div class="text-gray-800">${correction.correction}</div>
             <div class="text-[11px] mt-1 opacity-80 border-t border-yellow-300 pt-1">${correction.reason}</div>
         </div>`;
@@ -1387,12 +1090,12 @@
             div.innerHTML = html;
             container.appendChild(div);
 
-            // === 修正捲動邏輯 ===
-            // 使用 requestAnimationFrame 確保畫面渲染完才捲動
+            // === 修正滾動位置 ===
+            // 使用 requestAnimationFrame 確保在渲染後滾動
             requestAnimationFrame(() => {
                 container.scrollTop = container.scrollHeight;
             });
-            // 雙重保險，防止圖片載入造成的高度變化
+            // 額外補償，處理輸入法開啟導致的高度變化
             setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
         }
 
@@ -1452,7 +1155,7 @@
                 const loader = document.getElementById(loaderId);
                 if (loader) loader.remove();
 
-                // 清理可能回傳的 Markdown 標籤 (例如 ```json)
+                // 清理可能出現的 Markdown 格式
                 let cleanRawText = rawText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
                 let replyText = cleanRawText;
                 let correctionData = null;
@@ -1484,7 +1187,6 @@
             const map = { 'en': 'en-US', 'jp': 'ja-JP', 'kr': 'ko-KR' };
             u.lang = explicitLang ? map[explicitLang] : map[appState.lang];
             u.rate = 0.9;
-            // Safari workaround: sometimes voices aren't loaded immediately or need a specific voice assigned
             const voices = window.speechSynthesis.getVoices();
             if (voices.length > 0) {
                 const voice = voices.find(v => v.lang.startsWith(u.lang) || v.lang.replace('-', '_').startsWith(u.lang.replace('-', '_')));
@@ -1520,7 +1222,6 @@
             };
         } else { micBtn.style.display = 'none'; }
 
-        // Vocab Quiz Toggle
         /* =========================================
            Vocab & Quiz Logic (Updated)
            ========================================= */
@@ -1539,7 +1240,7 @@
         function openQuizModal() {
             const filteredVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang);
             if (filteredVocab.length < 4) {
-                alert("該語言的單字少於 4 個，選項不足，請多收藏一些單字再來測驗！");
+                alert("單字本至少需要 4 個單字才能開始測驗，請先從對話中收藏一些單字吧！");
                 return;
             }
             document.getElementById('quiz-modal').classList.remove('hidden');
@@ -1551,21 +1252,21 @@
             container.innerHTML = `
                 <div class="space-y-5">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">測驗範圍 (難度)</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">皜祇蝭 (漲)</label>
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="setQuizRange('all', this)" class="quiz-range-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">全部單字</button>
-                            <button onclick="setQuizRange('recent', this)" class="quiz-range-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">最近 20 個</button>
+                            <button onclick="setQuizRange('all', this)" class="quiz-range-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">券桀</button>
+                            <button onclick="setQuizRange('recent', this)" class="quiz-range-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">餈 20 </button>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">題型設定</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">憿閮剖</label>
                         <div class="grid grid-cols-3 gap-2">
-                            <button onclick="setQuizType('mixed', this)" class="quiz-type-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">混合出題</button>
-                            <button onclick="setQuizType('mcq', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">選擇題</button>
-                            <button onclick="setQuizType('spell', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">拼寫題</button>
+                            <button onclick="setQuizType('mixed', this)" class="quiz-type-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">瘛瑕粹</button>
+                            <button onclick="setQuizType('mcq', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">豢憿</button>
+                            <button onclick="setQuizType('spell', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">澆神憿</button>
                         </div>
                     </div>
-                    <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mt-4 shadow-lg active:scale-95 transition">開始測驗</button>
+                    <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mt-4 shadow-lg active:scale-95 transition">见皜祇</button>
                 </div>
             `;
             appState.quizConfig.type = 'mixed';
@@ -1594,7 +1295,7 @@
                 filteredVocab = filteredVocab.slice(0, 20);
             }
             if (filteredVocab.length < 4) {
-                alert("所選範圍的單字少於 4 個，無法組成測驗！");
+                alert("當前語言的單字少於 4 個，無法開始測驗。");
                 return;
             }
 
@@ -1613,7 +1314,7 @@
             if (appState.quizIndex >= appState.quizVocab.length) {
                 container.innerHTML = `
             <div class="text-center py-6">
-                <div class="text-5xl mb-4">🎉</div>
+                <div class="text-5xl mb-4">🏆</div>
                 <h3 class="text-xl font-bold mb-2">測驗完成！</h3>
                 <p class="text-gray-500">得分: ${appState.quizScore} / ${appState.quizVocab.length}</p>
                 <button onclick="closeQuizModal()" class="mt-6 w-full bg-blue-500 text-white py-3 rounded-lg font-bold shadow-md">關閉</button>
@@ -1659,15 +1360,15 @@
                 </div>
                 <div class="space-y-3">
                     <input type="text" id="spell-input" class="w-full border border-gray-300 rounded-lg p-3 text-center text-lg font-bold focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition" placeholder="輸入單字拼寫..." autocomplete="off">
-                    <button id="spell-submit-btn" class="w-full bg-indigo-500 text-white py-3 rounded-lg font-bold hover:bg-indigo-600 active:scale-95 transition">確認送出</button>
-                    <button onclick="alert('提示： ${currentWord.lemma || currentWord.word}')" class="w-full text-sm text-gray-400 py-2">需要提示？</button>
+                    <button id="spell-submit-btn" class="w-full bg-indigo-500 text-white py-3 rounded-lg font-bold hover:bg-indigo-600 active:scale-95 transition">送出答案</button>
+                    <button onclick="alert('正確拼寫: ${currentWord.lemma || currentWord.word}')" class="w-full text-sm text-gray-400 py-2">看答案</button>
                 </div>`;
             }
 
             container.innerHTML = `
         <div class="mb-4 flex justify-between text-sm text-gray-500 font-medium">
             <span>第 ${appState.quizIndex + 1} 題 / 共 ${appState.quizVocab.length} 題</span>
-            <span>分數: ${appState.quizScore}</span>
+            <span>得分: ${appState.quizScore}</span>
         </div>
         ${contentHtml}
     `;
@@ -1696,7 +1397,7 @@
             if (inputVal === targetWord) {
                 appState.quizScore++;
             } else {
-                alert(`❌ 答錯了！\n正確拼法是: ${targetWord}`);
+                alert(`哦 答錯了\n正確拼寫: ${targetWord}`);
             }
             appState.quizIndex++;
             renderQuizQuestion();
@@ -1707,7 +1408,7 @@
                 appState.quizScore++;
             } else {
                 const correctWord = appState.quizVocab.find(v => String(v.id) === String(correctId));
-                alert(`❌ 答錯了！\n正確答案是: ${correctWord.trans || correctWord.translation}`);
+                alert(`哦 答錯了\n正確答案: ${correctWord.trans || correctWord.translation}`);
             }
             appState.quizIndex++;
             renderQuizQuestion();
@@ -1718,7 +1419,7 @@
             const filteredVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang);
 
             if (!filteredVocab.length) {
-                list.innerHTML = '<div class="text-center text-gray-400 mt-10">該語言尚無單字<br>請在對話中選取文字進行收藏</div>';
+                list.innerHTML = '<div class="text-center text-gray-400 mt-10">單字本目前空空如也<br>請在對話中長按單字或點擊翻譯來收藏</div>';
                 return;
             }
             list.innerHTML = '';
@@ -1734,15 +1435,15 @@
                     detailHtml = `
                     <div id="vocab-detail-${v.id}" class="hidden mt-4 pt-4 border-t border-gray-100 text-sm space-y-4">
                         ${v.core_concept ? `<div><span class="font-bold text-blue-500 flex items-center gap-1 mb-1"><i class="fas fa-lightbulb"></i> 核心概念</span><p class="text-gray-700 leading-relaxed">${v.core_concept}</p></div>` : ''}
-                        ${v.memory_hook ? `<div><span class="font-bold text-green-500 flex items-center gap-1 mb-1"><i class="fas fa-link"></i> 記憶掛勾</span><p class="text-gray-700 leading-relaxed">${v.memory_hook}</p></div>` : ''}
-                        ${collocationsHtml ? `<div><span class="font-bold text-purple-500 flex items-center gap-1 mb-1"><i class="fas fa-layer-group"></i> 黃金搭配</span><div class="mt-1">${collocationsHtml}</div></div>` : ''}
+                        ${v.memory_hook ? `<div><span class="font-bold text-green-500 flex items-center gap-1 mb-1"><i class="fas fa-link"></i> 記憶掛鉤</span><p class="text-gray-700 leading-relaxed">${v.memory_hook}</p></div>` : ''}
+                        ${collocationsHtml ? `<div><span class="font-bold text-purple-500 flex items-center gap-1 mb-1"><i class="fas fa-layer-group"></i> 常見搭配</span><div class="mt-1">${collocationsHtml}</div></div>` : ''}
                         ${examplesHtml ? `<div><span class="font-bold text-orange-500 flex items-center gap-1 mb-1"><i class="fas fa-quote-left"></i> 例句</span><div class="mt-1">${examplesHtml}</div></div>` : ''}
                     </div>
                     `;
                 } else {
                     detailHtml = `
                     <div id="vocab-detail-${v.id}" class="hidden mt-4 pt-4 border-t border-gray-100 text-sm text-center text-gray-400">
-                        【無詳細資料】<br>此單字可能為系統升級前收藏，或解析失敗。<br>請重新在對話中選取收藏以獲取完整 AI 解析！
+                        暫無詳細資料<br>此單字可能是手動添加或識別異常。<br>請嘗試在對話中重新點擊以獲得 AI 解析。
                     </div>
                     `;
                 }
@@ -1787,29 +1488,28 @@
         }
 
         // Selection Translate
-        // === 修正選取翻譯邏輯 ===
+        // === 修正翻譯按鈕位置 ===
         document.addEventListener('selectionchange', () => {
             const sel = window.getSelection();
             const btn = document.getElementById('float-translate-btn');
             const chatPage = document.getElementById('page-chat');
 
-            // 只有在聊天頁面且有選取文字時才顯示
+            // 僅在聊天頁面且有選取文字時顯示
             if (sel.toString().trim().length > 0 && chatPage.classList.contains('active-page')) {
-                // 改為固定位置顯示在頂部，避免被手機原生選單遮擋
                 btn.style.display = 'block';
-                btn.style.top = '100px'; // 固定在 Header 下方
+                btn.style.top = '100px'; 
                 btn.style.left = '50%';
                 btn.style.transform = 'translateX(-50%)';
-                btn.style.zIndex = '9999'; // 確保最上層
+                btn.style.zIndex = '9999';
 
-                // 使用 onmousedown 防止點擊時失去焦點導致選取消失
+                // 使用 onmousedown 避免點擊時失去選取焦點
                 btn.onmousedown = async (e) => {
-                    e.preventDefault(); // 關鍵：防止按鈕點擊取消了文字選取
+                    e.preventDefault(); 
                     e.stopPropagation();
 
                     const text = sel.toString();
                     btn.style.display = 'none';
-                    sel.removeAllRanges(); // 翻譯後取消選取
+                    sel.removeAllRanges(); 
 
                     await doTranslate(text);
                 };
@@ -1870,7 +1570,7 @@ Return ONLY valid JSON, no markdown formatting.`;
                     item.trans = parsed.translation || parsed.trans; // ensure backwards compatibility
                     localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
                     renderVocab();
-                    alert(`已收藏：\n${text}\n⬇\n${parsed.translation || parsed.trans}`);
+                    alert(`收藏成功！\n${text}\n${parsed.translation || parsed.trans}`);
                 }
             } catch (e) {
                 console.error(e);
@@ -1926,7 +1626,7 @@ Return ONLY valid JSON, no markdown formatting.`;
             );
             
             if(!filtered.length) {
-                list.innerHTML = `<div class="text-center text-gray-400 mt-10">尚無當前等級的${appState.grammarType === 'grammar' ? '文法' : '單字比較'}紀錄<br>請在上方搜尋欄發問，AI將自動建置。</div>`;
+                list.innerHTML = `<div class="text-center text-gray-400 mt-10">目前尚無此類型的課程。<br>請在對話中主動詢問，AI 將自動為您生成內容。</div>`;
                 return;
             }
 
@@ -1949,7 +1649,7 @@ Return ONLY valid JSON, no markdown formatting.`;
 
                 let sentsHtml = '';
                 if(g.sentences && g.sentences.length > 0) {
-                    sentsHtml = `<div class="mt-4"><span class="font-bold text-orange-500 text-sm flex items-center gap-1 mb-2"><i class="fas fa-quote-left"></i> 實例應用</span>`;
+                    sentsHtml = `<div class="mt-4"><span class="font-bold text-orange-500 text-sm flex items-center gap-1 mb-2"><i class="fas fa-quote-left"></i> 例句</span>`;
                     g.sentences.forEach(s => {
                         sentsHtml += `<div class="mb-2 text-sm"><div class="font-medium text-gray-800">${s.en}</div><div class="text-gray-500 text-xs">${s.zh}</div></div>`;
                     });
@@ -1957,7 +1657,7 @@ Return ONLY valid JSON, no markdown formatting.`;
                 }
 
                 const badgeColor = g.type === 'comparison' ? 'purple' : 'green';
-                const badgeText = g.type === 'comparison' ? '單字比較' : '文法解析';
+                const badgeText = g.type === 'comparison' ? '單字比較' : '語法解析';
 
                 html += `
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 relative mb-4">
@@ -1983,7 +1683,7 @@ Return ONLY valid JSON, no markdown formatting.`;
             if (!query) return;
 
             if(!localStorage.getItem('v21_key')) {
-                alert("請先至設定頁面設定 API Key 才能向 AI 查詢文法/比較！");
+                alert("請先到設置頁面設置 API Key 以啟動 AI 語法生成。");
                 return;
             }
 
@@ -1993,8 +1693,8 @@ Return ONLY valid JSON, no markdown formatting.`;
                 lang: appState.grammarLang,
                 level: appState.grammarLevel,
                 type: appState.grammarType,
-                title: "🔍 " + query,
-                explanation: "正在透過 AI 解析，請稍候...",
+                title: "解析 " + query,
+                explanation: "正在請求 AI 老師解析，請稍候...",
                 table: [],
                 sentences: []
             });
@@ -2008,7 +1708,7 @@ Please act as a professional ${langName} teacher. The user is asking about: "${q
 The requested content is a ${appState.grammarType} (Grammar vs Comparison). The difficulty target is ${appState.grammarLevel}.
 Provide a clear analysis in Traditional Chinese. Output as strict JSON format:
 {
-  "title": "A summary title (e.g. speak vs talk, or ～て形)",
+  "title": "A summary title (e.g. speak vs talk, or 語法解析)",
   "type": "${appState.grammarType}",
   "explanation": "High-level explanation in Traditional Chinese",
   "table": [
@@ -2038,7 +1738,7 @@ No markdown wrappers outside the JSON.`;
                 }
             } catch (err) {
                 console.error(err);
-                alert("查詢失敗，有可能是網路錯誤或無效請求。");
+                alert("解析失敗，可能是網路不穩定，請稍後再試。");
                 appState.grammarList = appState.grammarList.filter(i => i.id !== loaderId);
                 renderGrammar();
             }
@@ -2046,34 +1746,25 @@ No markdown wrappers outside the JSON.`;
 
         function saveApiKey() {
             const key = document.getElementById('api-key-input').value.trim();
-            if (key) { localStorage.setItem('v21_key', key); alert("API Key 已儲存"); location.reload(); }
-        }
-        function backupData() {
-            const data = { key: localStorage.getItem('v21_key'), vocab: appState.vocabList };
-            const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = "mylearning_backup.json";
-            a.click();
-        }
-        function restoreData(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const r = new FileReader();
-            r.onload = (e) => {
-                try {
-                    const d = JSON.parse(e.target.result);
-                    if (d.key) localStorage.setItem('v21_key', d.key);
-                    if (d.vocab) localStorage.setItem('my_vocab', JSON.stringify(d.vocab));
-                    alert("還原成功！");
-                    location.reload();
-                } catch (err) { }
-            };
-            r.readAsText(file);
+            if (key) { localStorage.setItem('v21_key', key); alert("API Key 已保存"); location.reload(); }
         }
 
-        init();
+        function delGrammar(id) {
+            if(!confirm("確定要刪除這條文法記錄嗎？")) return;
+            appState.grammarList = appState.grammarList.filter(g => g.id !== id);
+            localStorage.setItem('my_grammar', JSON.stringify(appState.grammarList));
+            renderGrammar();
+        }
+
+        function getCourseVocab(courseId) {
+            const v = {
+                101: ['name', 'nice'], 102: ['order', 'price'], 201: ['experience'], 301: ['negotiation'],
+                401: ['はじめまして'], 501: ['予約'], 601: ['単価'], 701: ['안녕하세요'], 801: ['예약'], 901: ['거시경제']
+            };
+            return v[courseId] || ["hello"];
+        }
+
+        window.onload = init;
     </script>
 </body>
-
 </html>
