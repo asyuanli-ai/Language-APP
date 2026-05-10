@@ -213,55 +213,54 @@
     </header>
 
     <!-- Page: Home (Conversation Practice) -->
-    <div id="page-home" class="ios-page active-page px-4 flex flex-col h-full pt-6">
-        <div class="flex-1">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-sm border border-indigo-100">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h2 class="text-3xl font-bold text-slate-800 tracking-tight">AI 對話練習</h2>
-                <p class="text-slate-500 text-sm mt-2">選擇適合的情境，隨時隨地開口說</p>
-            </div>
+    <div id="page-home" class="ios-page active-page px-4 flex flex-col h-full pt-4">
+        <div class="mb-4">
+            <h2 class="text-2xl font-bold text-slate-800">對話練習</h2>
+            <p class="text-gray-500 text-sm mt-1">選擇情境並嘗試達成任務目標</p>
+        </div>
 
-            <div class="ios-card m-0 mb-6 relative z-20">
-                <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                    <i class="fas fa-map-marker-alt text-indigo-400"></i> 對話情境
+        <!-- Language & Level moved to top for mobile visibility -->
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">學習語言</label>
+                <div class="flex gap-1 bg-slate-50 p-1 rounded-lg border border-slate-100">
+                    <button onclick="setLang('en')" class="lang-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all shadow-sm bg-white text-slate-800" data-lang="en">EN</button>
+                    <button onclick="setLang('jp')" class="lang-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-slate-400" data-lang="jp">JP</button>
+                    <button onclick="setLang('kr')" class="lang-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-slate-400" data-lang="kr">KR</button>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    難度 <span id="lvl-desc-main" class="text-indigo-500 ml-1">A1/A2</span>
                 </label>
+                <div class="flex gap-1">
+                    <button onclick="setLevel('beginner')" data-lvl="beginner" class="level-btn px-3 py-1.5 border border-indigo-500 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-xs transition-all">初級</button>
+                    <button onclick="setLevel('intermediate')" data-lvl="intermediate" class="level-btn px-3 py-1.5 border border-transparent bg-slate-50 text-slate-500 rounded-lg font-bold text-xs transition-all">中級</button>
+                    <button onclick="setLevel('advanced')" data-lvl="advanced" class="level-btn px-3 py-1.5 border border-transparent bg-slate-50 text-slate-500 rounded-lg font-bold text-xs transition-all">高級</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1">
+            <div class="ios-card m-0 mb-6 relative z-20">
+                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">對話情境</label>
                 <div class="relative">
-                    <select id="scenario-select" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-4 px-4 pr-10 rounded-xl leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all text-base font-medium shadow-sm">
-                        <!-- Options injected by JS -->
+                    <select id="scenario-select" onchange="updateSelectedScenario()" class="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-base font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-800">
+                        <!-- Scenarios will be injected here -->
                     </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                         <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
             </div>
 
-            <button onclick="startSelectedChat()" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2">
-                <i class="fas fa-play-circle text-xl"></i> 開始練習
+            <button onclick="startSelectedChat()" class="w-full bg-blue-600 text-white py-5 rounded-3xl font-bold text-lg shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 mb-8">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-play text-sm"></i>
+                </div>
+                <span>開始練習對話</span>
             </button>
-        </div>
-
-        <div class="mt-8 mb-6 bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
-            <div class="flex items-center justify-between mb-3">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">學習語言</label>
-                <div class="flex gap-1 bg-slate-50 p-1 rounded-lg border border-slate-100">
-                    <button onclick="setLang('en')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all shadow-sm bg-white text-slate-800" data-lang="en">EN</button>
-                    <button onclick="setLang('jp')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400" data-lang="jp">JP</button>
-                    <button onclick="setLang('kr')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400" data-lang="kr">KR</button>
-                </div>
-            </div>
-            
-            <div class="flex items-center justify-between">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    難度 <span id="lvl-desc-main" class="text-indigo-500 ml-1">A1/A2</span>
-                </label>
-                <div class="flex gap-1">
-                    <button onclick="setLevel('beginner')" data-lvl="beginner" class="level-btn px-3 py-1.5 border border-indigo-500 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-[10px] transition-all">初級</button>
-                    <button onclick="setLevel('intermediate')" data-lvl="intermediate" class="level-btn px-3 py-1.5 border border-transparent bg-slate-50 text-slate-500 rounded-lg font-bold text-[10px] transition-all">中級</button>
-                    <button onclick="setLevel('advanced')" data-lvl="advanced" class="level-btn px-3 py-1.5 border border-transparent bg-slate-50 text-slate-500 rounded-lg font-bold text-[10px] transition-all">高級</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -299,9 +298,9 @@
 
 
         <div class="flex gap-2 mb-4">
-            <button onclick="setGrammarLevel('beginner')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lvl="beginner">初級</button>
-            <button onclick="setGrammarLevel('intermediate')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lvl="intermediate">中級</button>
-            <button onclick="setGrammarLevel('advanced')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lvl="advanced">高級</button>
+            <button onclick="setGrammarLevel('beginner')" class="grammar-lvl-btn flex-1 py-1.5 rounded-md text-xs font-medium transition-all bg-white shadow-sm text-black" data-lvl="beginner">初級</button>
+            <button onclick="setGrammarLevel('intermediate')" class="grammar-lvl-btn flex-1 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500" data-lvl="intermediate">中級</button>
+            <button onclick="setGrammarLevel('advanced')" class="grammar-lvl-btn flex-1 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500" data-lvl="advanced">高級</button>
         </div>
 
         <div class="flex border-b border-gray-200 mb-6">
@@ -327,11 +326,11 @@
         
         <div class="mt-6 mb-6 bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
             <div class="flex items-center justify-between">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">切換語言</label>
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">切換語言</label>
                 <div class="flex gap-1 bg-slate-50 p-1 rounded-lg border border-slate-100">
-                    <button onclick="setLang('en')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all shadow-sm bg-white text-slate-800" data-lang="en">EN</button>
-                    <button onclick="setLang('jp')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400" data-lang="jp">JP</button>
-                    <button onclick="setLang('kr')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400" data-lang="kr">KR</button>
+                    <button onclick="setLang('en')" class="lang-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all shadow-sm bg-white text-slate-800" data-lang="en">EN</button>
+                    <button onclick="setLang('jp')" class="lang-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-slate-400" data-lang="jp">JP</button>
+                    <button onclick="setLang('kr')" class="lang-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-slate-400" data-lang="kr">KR</button>
                 </div>
             </div>
         </div>
@@ -857,9 +856,9 @@
             document.querySelectorAll('.lang-btn').forEach(b => {
                 const isActive = b.dataset.lang === lang;
                 if (isActive) {
-                    b.className = 'lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all shadow-sm bg-white text-slate-800';
+                    b.className = 'lang-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all shadow-sm bg-white text-slate-800';
                 } else {
-                    b.className = 'lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400';
+                    b.className = 'lang-btn px-4 py-1.5 rounded-md text-xs font-bold transition-all text-slate-400';
                 }
             });
             updateLevelDesc();
