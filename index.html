@@ -408,6 +408,16 @@
         </div>
     </div>
 
+    <!-- Translation Modal -->
+    <div id="trans-modal" class="modal-overlay hidden backdrop-blur-sm">
+        <div class="modal-content relative shadow-2xl border border-slate-100 max-w-sm">
+            <button onclick="closeTransModal()" class="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition"><i class="fas fa-times text-xl"></i></button>
+            <div id="trans-modal-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+    </div>
+
     <!-- Tab Bar -->
     <nav class="tab-bar">
         <div class="tab-item active" onclick="switchPage('home', this)">
@@ -740,7 +750,8 @@
             quizVocab: [],
             quizIndex: 0,
             quizScore: 0,
-            quizConfig: { type: 'mixed', difficulty: 'all' }
+            quizConfig: { type: 'mixed', difficulty: 'all' },
+            tempTransResult: null
         };
 
         function init() {
@@ -1751,6 +1762,8 @@
                     btn.style.display = 'none';
                     sel.removeAllRanges(); 
 
+                    // 開啟彈窗並顯示讀取中
+                    openTransModal(text);
                     await doTranslate(text);
                 };
             } else {
@@ -1758,11 +1771,22 @@
             }
         });
 
-        async function doTranslate(text) {
-            const id = Date.now();
-            appState.vocabList.unshift({ id, word: text, trans: "翻譯中...", lang: appState.lang });
-            renderVocab();
+        function openTransModal(text) {
+            document.getElementById('trans-modal').classList.remove('hidden');
+            document.getElementById('trans-modal-content').innerHTML = `
+                <div class="text-center py-10">
+                    <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p class="text-gray-500 font-medium">AI 正在分析 "${text}"...</p>
+                </div>
+            `;
+        }
 
+        function closeTransModal() {
+            document.getElementById('trans-modal').classList.add('hidden');
+            appState.tempTransResult = null;
+        }
+
+        async function doTranslate(text) {
             try {
                 const langName = APP_DATA.langs[appState.lang].name;
                 const prompt = `
@@ -1804,19 +1828,95 @@ Return ONLY valid JSON, no markdown formatting.`;
                     };
                 }
 
-                const item = appState.vocabList.find(i => i.id === id);
-                if (item) {
-                    Object.assign(item, parsed);
-                    item.trans = parsed.translation || parsed.trans; // ensure backwards compatibility
-                    localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
-                    renderVocab();
-                    alert(`收藏成功！\n${text}\n${parsed.translation || parsed.trans}`);
-                }
+                appState.tempTransResult = { ...parsed, word: text, lang: appState.lang, id: Date.now() };
+                renderTransResult(appState.tempTransResult);
+
             } catch (e) {
                 console.error(e);
-                alert("翻譯失敗，請檢查網路或 API Key");
-                appState.vocabList = appState.vocabList.filter(v => v.id !== id);
-                renderVocab();
+                document.getElementById('trans-modal-content').innerHTML = `
+                    <div class="text-center py-6">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-3"></i>
+                        <p class="text-gray-600">翻譯失敗，請檢查網路或 API Key</p>
+                        <button onclick="closeTransModal()" class="mt-4 px-6 py-2 bg-gray-100 rounded-lg text-sm font-bold">關閉</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderTransResult(res) {
+            const container = document.getElementById('trans-modal-content');
+            
+            let collocationsHtml = res.collocations && res.collocations.length > 0 ? res.collocations.map(c => `<span class="bg-indigo-50 text-indigo-600 text-[10px] px-2 py-1 rounded-md font-medium">${c}</span>`).join('') : '';
+            let examplesHtml = res.example_sentences && res.example_sentences.length > 0 ? res.example_sentences.map(ex => `
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <div class="font-bold text-sm text-slate-800 mb-1">${ex.en}</div>
+                    <div class="text-xs text-slate-500">${ex.zh}</div>
+                </div>
+            `).join('') : '';
+
+            container.innerHTML = `
+                <div class="pt-2">
+                    <div class="mb-6">
+                        <h4 class="text-2xl font-bold text-slate-800">${res.lemma}</h4>
+                        <div class="text-sm text-slate-400 mt-1">${res.phonetic ? `/${res.phonetic}/` : ''} ${res.translation}</div>
+                    </div>
+
+                    <div class="space-y-4 mb-8">
+                        ${res.core_concept ? `
+                        <div>
+                            <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block mb-1">核心概念</span>
+                            <p class="text-sm text-slate-600 leading-relaxed">${res.core_concept}</p>
+                        </div>` : ''}
+                        
+                        ${collocationsHtml ? `
+                        <div>
+                            <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest block mb-1">常見搭配</span>
+                            <div class="flex flex-wrap gap-2 mt-1">${collocationsHtml}</div>
+                        </div>` : ''}
+
+                        ${examplesHtml ? `
+                        <div>
+                            <span class="text-[10px] font-bold text-orange-500 uppercase tracking-widest block mb-2">例句對照</span>
+                            <div class="space-y-2">${examplesHtml}</div>
+                        </div>` : ''}
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="saveTransToVocab()" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-bold active:scale-95 transition shadow-lg shadow-indigo-100 flex items-center justify-center gap-2">
+                            <i class="fas fa-bookmark"></i> 收藏單字
+                        </button>
+                        <button onclick="closeTransModal()" class="flex-none bg-slate-100 text-slate-500 px-6 py-4 rounded-2xl font-bold active:scale-95 transition">取消</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveTransToVocab() {
+            if (!appState.tempTransResult) return;
+            
+            const res = appState.tempTransResult;
+            // 檢查是否已收藏
+            if (appState.vocabList.some(v => v.lemma === res.lemma && v.lang === res.lang)) {
+                alert("此單字已在收藏中！");
+                closeTransModal();
+                return;
+            }
+
+            appState.vocabList.unshift({
+                ...res,
+                trans: res.translation // 確保與舊版屬性一致
+            });
+            localStorage.setItem('my_vocab', JSON.stringify(appState.vocabList));
+            renderVocab();
+            
+            // 收藏成功提示 (Toast 效果)
+            const btn = document.querySelector('#trans-modal-content button');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-check"></i> 已收藏';
+                btn.className = "flex-1 bg-green-500 text-white py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2";
+                setTimeout(() => {
+                    closeTransModal();
+                }, 800);
             }
         }
 
