@@ -31,13 +31,16 @@
             border: 1px solid rgba(226, 232, 240, 0.8);
         }
         .ios-page {
-            display: none;
+            display: none !important;
             padding-bottom: 90px;
             min-height: 100vh;
         }
         .ios-page.active-page {
-            display: block;
+            display: block !important;
             animation: fadeIn 0.3s ease-out;
+        }
+        .ios-page.active-page.flex {
+            display: flex !important;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -239,74 +242,61 @@
             </button>
         </div>
 
-        <div class="mt-auto mb-6 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">學習語言</label>
-                <div class="flex gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                    <button onclick="setLang('en')" class="lang-btn flex-1 py-2 rounded-lg text-sm font-bold transition-all shadow-sm bg-white text-slate-800" data-lang="en">English</button>
-                    <button onclick="setLang('jp')" class="lang-btn flex-1 py-2 rounded-lg text-sm font-bold transition-all text-slate-400" data-lang="jp">日本語</button>
-                    <button onclick="setLang('kr')" class="lang-btn flex-1 py-2 rounded-lg text-sm font-bold transition-all text-slate-400" data-lang="kr">한국어</button>
+        <div class="mt-8 mb-6 bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-3">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">學習語言</label>
+                <div class="flex gap-1 bg-slate-50 p-1 rounded-lg border border-slate-100">
+                    <button onclick="setLang('en')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all shadow-sm bg-white text-slate-800" data-lang="en">EN</button>
+                    <button onclick="setLang('jp')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400" data-lang="jp">JP</button>
+                    <button onclick="setLang('kr')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400" data-lang="kr">KR</button>
                 </div>
             </div>
             
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex justify-between">
-                    <span>難度等級</span>
-                    <span id="lvl-desc-main" class="text-indigo-500">CEFR A1/A2</span>
+            <div class="flex items-center justify-between">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    難度 <span id="lvl-desc-main" class="text-indigo-500 ml-1">A1/A2</span>
                 </label>
-                <div class="flex gap-2">
-                    <button onclick="setLevel('beginner')" data-lvl="beginner" class="level-btn flex-1 py-3 border-2 border-indigo-500 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm transition-all">初級</button>
-                    <button onclick="setLevel('intermediate')" data-lvl="intermediate" class="level-btn flex-1 py-3 border-2 border-transparent bg-slate-50 text-slate-500 rounded-xl font-bold text-sm transition-all">中級</button>
-                    <button onclick="setLevel('advanced')" data-lvl="advanced" class="level-btn flex-1 py-3 border-2 border-transparent bg-slate-50 text-slate-500 rounded-xl font-bold text-sm transition-all">高級</button>
+                <div class="flex gap-1">
+                    <button onclick="setLevel('beginner')" data-lvl="beginner" class="level-btn px-3 py-1.5 border border-indigo-500 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-[10px] transition-all">初級</button>
+                    <button onclick="setLevel('intermediate')" data-lvl="intermediate" class="level-btn px-3 py-1.5 border border-transparent bg-slate-50 text-slate-500 rounded-lg font-bold text-[10px] transition-all">中級</button>
+                    <button onclick="setLevel('advanced')" data-lvl="advanced" class="level-btn px-3 py-1.5 border border-transparent bg-slate-50 text-slate-500 rounded-lg font-bold text-[10px] transition-all">高級</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Page: Library (Vocab & Grammar) -->
-    <div id="page-library" class="ios-page px-4 pt-4">
-        <div class="flex bg-slate-100 p-1 rounded-xl mb-6 shadow-inner border border-slate-200">
-            <button onclick="switchLibraryTab('vocab')" id="lib-tab-vocab" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white text-slate-800 shadow transition-all">單字本</button>
-            <button onclick="switchLibraryTab('grammar')" id="lib-tab-grammar" class="flex-1 py-2 text-sm font-bold rounded-lg text-slate-500 transition-all">語法庫</button>
-        </div>
-        
-        <div id="lib-content-vocab">
+    <div id="page-library" class="ios-page px-4 flex flex-col h-full pt-6">
+        <div class="flex-1 overflow-y-auto no-scrollbar">
+            <div class="flex bg-slate-100 p-1 rounded-xl mb-6 shadow-inner border border-slate-200">
+                <button onclick="switchLibraryTab('vocab')" id="lib-tab-vocab" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white text-slate-800 shadow transition-all">單字本</button>
+                <button onclick="switchLibraryTab('grammar')" id="lib-tab-grammar" class="flex-1 py-2 text-sm font-bold rounded-lg text-slate-500 transition-all">語法庫</button>
+            </div>
+            
+            <div id="lib-content-vocab">
+                <!-- Page: Vocabulary Inner -->
+                <div id="page-vocab">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold">我的單字本</h2>
+                        <button onclick="openQuizModal()" class="bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md hover:bg-slate-700 active:scale-95 transition">
+                            <i class="fas fa-play mr-1"></i> 開始測驗
+                        </button>
+                    </div>
 
-    <!-- Page: Vocabulary Inner -->
-    <div id="page-vocab">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">我的單字本</h2>
-            <button onclick="openQuizModal()" class="bg-slate-800 text-white px-4 py-2 rounded-full text-sm font-bold shadow-md hover:bg-slate-700 active:scale-95 transition">
-                <i class="fas fa-play mr-1"></i> 開始測驗
-            </button>
-        </div>
+                    <div id="vocab-list" class="space-y-3">
+                        <!-- Vocab items -->
+                    </div>
+                </div>
+            </div>
 
-        <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-            <button onclick="setVocabLang('en')" class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lang="en">English</button>
-            <button onclick="setVocabLang('jp')" class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
-            <button onclick="setVocabLang('kr')" class="vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
-        </div>
+            <div id="lib-content-grammar" style="display:none;">
+                <!-- Page: Grammar Inner -->
+                <div id="page-grammar">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold">語法與比較</h2>
+                        <p class="text-gray-500 text-sm mt-1">收藏你在對話中遇到的語法重點</p>
+                    </div>
 
-        <div id="vocab-list" class="space-y-3">
-            <!-- Vocab items -->
-        </div>
-    </div>
-
-        </div>
-
-        <div id="lib-content-grammar" style="display:none;">
-    <!-- Page: Grammar Inner -->
-    <div id="page-grammar">
-        <div class="mb-6">
-            <h2 class="text-2xl font-bold">語法與比較</h2>
-            <p class="text-gray-500 text-sm mt-1">收藏你在對話中遇到的語法重點</p>
-        </div>
-
-        <div class="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-            <button onclick="setGrammarLang('en')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lang="en">English</button>
-            <button onclick="setGrammarLang('jp')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="jp">日本語</button>
-            <button onclick="setGrammarLang('kr')" class="grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500" data-lang="kr">한국어</button>
-        </div>
 
         <div class="flex gap-2 mb-4">
             <button onclick="setGrammarLevel('beginner')" class="grammar-lvl-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black" data-lvl="beginner">初級</button>
@@ -328,10 +318,22 @@
             </div>
         </div>
 
-        <div id="grammar-list">
-            <!-- Grammar items -->
+                    <div id="grammar-list">
+                        <!-- Grammar items -->
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+        
+        <div class="mt-6 mb-6 bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">切換語言</label>
+                <div class="flex gap-1 bg-slate-50 p-1 rounded-lg border border-slate-100">
+                    <button onclick="setLang('en')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all shadow-sm bg-white text-slate-800" data-lang="en">EN</button>
+                    <button onclick="setLang('jp')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400" data-lang="jp">JP</button>
+                    <button onclick="setLang('kr')" class="lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400" data-lang="kr">KR</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -745,8 +747,6 @@
         function init() {
             setLang('en');
             setLevel('beginner');
-            setVocabLang('en');
-            setGrammarLang('en');
             renderHome();
             renderVocab();
             renderGrammar();
@@ -790,6 +790,36 @@
             };
         }
 
+        function closeCourseDetail() {
+            document.getElementById('page-course-detail').classList.remove('show');
+            document.getElementById('header-title').innerText = "GoSpeak";
+            document.getElementById('header-back-btn').style.display = 'none';
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('api-key-input').value.trim();
+            if(key) {
+                localStorage.setItem('v21_key', key);
+                alert("設置已保存");
+                location.reload();
+            } else {
+                alert("請輸入 API Key");
+            }
+        }
+
+        function saveModalApiKey() {
+            const key = document.getElementById('modal-api-key-input').value.trim();
+            if(key) {
+                localStorage.setItem('v21_key', key);
+                document.getElementById('api-key-input').value = key;
+                document.getElementById('api-modal').classList.add('hidden');
+                alert("設定完成，歡迎開始使用！");
+                location.reload();
+            } else {
+                alert("請輸入有效的 API Key");
+            }
+        }
+
         function switchPage(pageId, btn) {
             document.querySelectorAll('.ios-page').forEach(p => p.classList.remove('active-page'));
             document.getElementById('page-' + pageId).classList.add('active-page');
@@ -822,15 +852,20 @@
 
         function setLang(lang) {
             appState.lang = lang;
+            appState.vocabLang = lang;
+            appState.grammarLang = lang;
             document.querySelectorAll('.lang-btn').forEach(b => {
                 const isActive = b.dataset.lang === lang;
-                b.className = isActive
-                    ? 'lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black'
-                    : 'lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
+                if (isActive) {
+                    b.className = 'lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all shadow-sm bg-white text-slate-800';
+                } else {
+                    b.className = 'lang-btn px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-400';
+                }
             });
             updateLevelDesc();
-            updateLevelDesc();
             renderHome();
+            renderVocab();
+            renderGrammar();
         }
 
         function setLevel(lvl) {
@@ -1442,16 +1477,6 @@
            Vocab & Quiz Logic (Updated)
            ========================================= */
 
-        function setVocabLang(lang) {
-            appState.vocabLang = lang;
-            document.querySelectorAll('.vocab-lang-btn').forEach(b => {
-                const isActive = b.dataset.lang === lang;
-                b.className = isActive
-                    ? 'vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black'
-                    : 'vocab-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
-            });
-            renderVocab();
-        }
 
         function openQuizModal() {
             const filteredVocab = appState.vocabList.filter(v => v.lang === appState.vocabLang);
@@ -1800,16 +1825,6 @@ Return ONLY valid JSON, no markdown formatting.`;
            Grammar Logic
            ========================================= */
 
-        function setGrammarLang(lang) {
-            appState.grammarLang = lang;
-            document.querySelectorAll('.grammar-lang-btn').forEach(b => {
-                const isActive = b.dataset.lang === lang;
-                b.className = isActive
-                    ? 'grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all bg-white shadow-sm text-black'
-                    : 'grammar-lang-btn flex-1 py-1 rounded-md text-sm font-medium transition-all text-gray-500';
-            });
-            renderGrammar();
-        }
 
         function setGrammarLevel(lvl) {
             appState.grammarLevel = lvl;
@@ -1835,12 +1850,14 @@ Return ONLY valid JSON, no markdown formatting.`;
 
         function renderGrammar(searchQuery = '') {
             const list = document.getElementById('grammar-list');
+            if (!list) return;
+
+            // 確保 DEFAULT_GRAMMAR_DATA 存在
+            const defaultData = (typeof DEFAULT_GRAMMAR_DATA !== 'undefined') ? DEFAULT_GRAMMAR_DATA : [];
             
-            // 由於使用者要求純靜態資料庫，這裡直接顯示硬編碼的 DEFAULT_GRAMMAR_DATA
-            // 為了向下相容，還是把之前可能存的資料也混進來顯示
             const userIds = new Set(appState.grammarList.map(g => g.id));
             const allGrammar = [
-                ...DEFAULT_GRAMMAR_DATA.filter(g => !userIds.has(g.id)),
+                ...defaultData.filter(g => !userIds.has(g.id)),
                 ...appState.grammarList
             ];
 
@@ -1918,55 +1935,6 @@ Return ONLY valid JSON, no markdown formatting.`;
             const input = document.getElementById('grammar-search-input');
             const query = input.value.trim();
             renderGrammar(query);
-        }
-
-        function saveApiKey() {
-            const key = document.getElementById('api-key-input').value.trim();
-            if (key) { localStorage.setItem('v21_key', key); alert("API Key 已保存"); location.reload(); }
-        }
-
-        async function detectModels() {
-            const apiKey = localStorage.getItem('v21_key');
-            const resultEl = document.getElementById('model-detect-result');
-            if (!apiKey) {
-                resultEl.classList.remove('hidden');
-                resultEl.innerHTML = '<span class="text-red-500">⚠️ 請先儲存 API Key</span>';
-                return;
-            }
-            resultEl.classList.remove('hidden');
-            resultEl.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> 偵測中...';
-            try {
-                const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                const data = await resp.json();
-                if (!resp.ok) {
-                    resultEl.innerHTML = `<span class="text-red-500">錯誤: ${data.error?.message || '未知錯誤'}</span>`;
-                    return;
-                }
-                // Filter to only models that support generateContent
-                const models = (data.models || [])
-                    .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
-                    .map(m => m.name.replace('models/', ''));
-                if (models.length === 0) {
-                    resultEl.innerHTML = '<span class="text-orange-500">⚠️ 找不到支援 generateContent 的模型，請確認 API Key 是否正確。</span>';
-                } else {
-                    resultEl.innerHTML = `<div class="font-bold mb-2 text-green-600">✅ 找到 ${models.length} 個可用模型（請截圖給開發者）：</div>` +
-                        models.map(m => `<div class="py-0.5 border-b border-slate-100">• ${m}</div>`).join('');
-                }
-            } catch (e) {
-                resultEl.innerHTML = `<span class="text-red-500">網路錯誤: ${e.message}</span>`;
-            }
-        }
-
-        function saveModalApiKey() {
-            const key = document.getElementById('modal-api-key-input').value.trim();
-            if (key) {
-                localStorage.setItem('v21_key', key);
-                document.getElementById('api-key-input').value = key;
-                document.getElementById('api-modal').classList.add('hidden');
-                alert("設定完成，歡迎開始使用！");
-            } else {
-                alert("請輸入有效的 API Key");
-            }
         }
 
         function delGrammar(id) {
