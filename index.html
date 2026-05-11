@@ -1374,9 +1374,17 @@
             setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
         }
 
+        let isAiProcessing = false;
+
         async function triggerAIResponse(isInit, userText) {
+            if (isAiProcessing) return;
+            
             const container = document.getElementById('chat-container');
             const loaderId = 'loader-' + Date.now();
+            const sendBtn = document.getElementById('send-btn');
+            
+            isAiProcessing = true;
+            if(sendBtn) sendBtn.disabled = true;
 
             if (!isInit) {
                 const loader = document.createElement('div');
@@ -1418,12 +1426,48 @@
                     contents.push({ role: msg.role, parts: [{ text: msg.text }] });
                 });
 
-                if (!isInit) {
-                    contents.push({ role: "user", parts: [{ text: userText }] });
-                    appState.chatHistory.push({ role: "user", text: userText });
-                } else {
-                    contents.push({ role: "user", parts: [{ text: "Start the conversation naturally based on the scenario." }] });
+                if (isInit) {
+                    // --- 方案二：本地生成開場白，節省 API 配額 ---
+                    let localReply = "";
+                    const lang = appState.lang;
+
+                    if (appState.courseMode) {
+                        const role = appState.currentScenario.role;
+                        const context = appState.currentScenario.title;
+                        
+                        // 根據語言與角色產生基礎開場白
+                        const greetings = {
+                            en: `Hello! I'm your ${role} today for this "${context}" practice. Let's get started!`,
+                            jp: `こんにちは！今日は「${context}」の練習で、私は${role}を担当します。始めましょう！`,
+                            kr: `안녕하세요! 오늘은 "${context}" 연습을 위해 제가 ${role} 역을 맡았습니다. 시작해볼까요?`
+                        };
+                        localReply = greetings[lang] || greetings['en'];
+                    } else {
+                        const title = appState.currentScenario === 'free' ? "Free Talk" : appState.currentScenario.title;
+                        const greetings = {
+                            en: `Hi! Welcome to ${title}. How can I help you today?`,
+                            jp: `こんにちは！${title}へようこそ。今日はどのようにお手伝いしましょうか？`,
+                            kr: `안녕하세요! ${title}에 오신 것을 환영합니다. 무엇을 도와드릴까요?`
+                        };
+                        localReply = greetings[lang] || greetings['en'];
+                    }
+
+                    // 模擬載入一下下，增加真實感但不扣配額
+                    setTimeout(() => {
+                        addBubble(localReply, 'ai');
+                        appState.chatHistory.push({ role: "model", text: localReply });
+                        if (appState.autoAudio) speakText(localReply);
+                        
+                        isAiProcessing = false;
+                        if(sendBtn) sendBtn.disabled = false;
+                    }, 500);
+                    
+                    return; // 結束函數，不往下呼叫 callGemini
                 }
+
+                // 只有非初始化對話才會走到這裡
+                contents.push({ role: "user", parts: [{ text: userText }] });
+                appState.chatHistory.push({ role: "user", text: userText });
 
                 const rawText = await callGemini(contents, sysPrompt);
 
@@ -1450,12 +1494,31 @@
             } catch (err) {
                 const loader = document.getElementById(loaderId);
                 if (loader) loader.remove();
-                // Show error in chat bubble instead of blocking alert
+
+                let friendlyMsg = "系統忙碌中，請稍後再試。";
+                let icon = "fa-exclamation-circle";
+                
+                if (err.message.includes("Quota exceeded") || err.message.includes("limit")) {
+                    const secondsMatch = err.message.match(/retry in ([\d.]+)s/);
+                    icon = "fa-clock";
+                    if (secondsMatch) {
+                        friendlyMsg = `AI 正在休息，請在 ${Math.ceil(parseFloat(secondsMatch[1]))} 秒後再試。`;
+                    } else {
+                        friendlyMsg = "今日的 AI 練習配額已達上限，請明天再繼續或檢查您的 API 設定。";
+                    }
+                } else if (err.message.includes("API Key Missing")) {
+                    friendlyMsg = "請先到設置頁面輸入有效的 API Key。";
+                }
+
                 const errDiv = document.createElement('div');
-                errDiv.className = 'bubble-ai text-red-500 text-sm';
-                errDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-1"></i>系統錯誤: ${err.message}`;
+                errDiv.className = 'bubble-ai bg-amber-50 text-amber-700 text-sm border-amber-100 border';
+                errDiv.innerHTML = `<i class="fas ${icon} mr-1"></i>${friendlyMsg}`;
                 container.appendChild(errDiv);
+                container.scrollTop = container.scrollHeight;
                 console.error(err);
+            } finally {
+                isAiProcessing = false;
+                if(sendBtn) sendBtn.disabled = false;
             }
         }
 
@@ -1852,11 +1915,17 @@ Return ONLY valid JSON, no markdown formatting.`;
 
             } catch (e) {
                 console.error(e);
+                let errorHint = "翻譯失敗，請檢查網路或 API Key";
+                if (e.message.includes("Quota exceeded") || e.message.includes("limit")) {
+                    const sec = e.message.match(/retry in ([\d.]+)s/);
+                    errorHint = sec ? `AI 需要休息一下，請在 ${Math.ceil(parseFloat(sec[1]))} 秒後重試` : "今日的翻譯配額已用完，請明天再試";
+                }
+
                 document.getElementById('trans-modal-content').innerHTML = `
                     <div class="text-center py-6">
-                        <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-3"></i>
-                        <p class="text-gray-600">翻譯失敗，請檢查網路或 API Key</p>
-                        <button onclick="closeTransModal()" class="mt-4 px-6 py-2 bg-gray-100 rounded-lg text-sm font-bold">關閉</button>
+                        <i class="fas fa-mug-hot text-amber-400 text-3xl mb-3"></i>
+                        <p class="text-gray-600 font-medium">${errorHint}</p>
+                        <button onclick="closeTransModal()" class="mt-4 px-6 py-2 bg-gray-100 rounded-lg text-sm font-bold">好的</button>
                     </div>
                 `;
             }
