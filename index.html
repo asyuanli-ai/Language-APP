@@ -1343,6 +1343,9 @@
             await triggerAIResponse(false, text);
         }
 
+        document.getElementById('send-btn').addEventListener('click', handleUserSend);
+        document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleUserSend(); }});
+
         function addBubble(text, type, correction = null) {
             const container = document.getElementById('chat-container');
             const div = document.createElement('div');
@@ -1561,6 +1564,8 @@
                 document.getElementById('chat-input').value = e.results[0][0].transcript;
                 micBtn.classList.remove('recording', 'bg-red-500', 'text-white');
                 micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                // 語音輸入完畢後自動發送
+                handleUserSend();
             };
             recognition.onend = () => {
                 micBtn.classList.remove('recording', 'bg-red-500', 'text-white');
