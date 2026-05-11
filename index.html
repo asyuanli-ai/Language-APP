@@ -1412,7 +1412,7 @@
              Instructions:
              1. Stay in character.
              2. Be encouraging.
-             3. If user makes grammar mistake, start with JSON {"correction": "...", "reason": "..."}.
+             3. If user makes a grammar mistake, strictly prepend ONLY a raw JSON block like {"correction": "...", "reason": "..."}. Do not write the word "JSON".
              4. Keep replies concise.
              `;
                 } else {
@@ -1420,7 +1420,7 @@
                     const scenarioInfo = appState.currentScenario === 'free'
                         ? "Mode: Free Talk."
                         : `Scenario: ${appState.currentScenario.title}. Role: ${appState.currentScenario.role}.`;
-                    sysPrompt = `System: Tutor for ${langName}. Level: ${appState.level}. ${scenarioInfo}. If mistake, JSON {"correction":...}.`;
+                    sysPrompt = `System: Tutor for ${langName}. Level: ${appState.level}. ${scenarioInfo}. If mistake, strictly prepend ONLY a raw JSON block like {"correction":...}. Do not write the word "JSON".`;
                 }
 
                 appState.chatHistory.slice(-6).forEach(msg => {
@@ -1473,28 +1473,42 @@
                 const loader = document.getElementById(loaderId);
                 if (loader) loader.remove();
 
-                // 清理可能出現的 Markdown 格式
+                // 清理可能出現的 Markdown 格式與不必要的開頭
                 let cleanRawText = rawText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+                cleanRawText = cleanRawText.replace(/^(JSON\s*:?\s*|json\s*:?\s*)/i, '').trim();
+                
                 let replyText = cleanRawText;
                 let correctionData = null;
                 
-                // 尋找 JSON 區塊的起點與終點
                 const startIdx = cleanRawText.indexOf('{');
-                const endIdx = cleanRawText.lastIndexOf('}');
-                
-                if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-                    const potentialJson = cleanRawText.substring(startIdx, endIdx + 1);
-                    if (potentialJson.includes('"correction"')) {
-                        try {
-                            correctionData = JSON.parse(potentialJson);
-                            replyText = cleanRawText.replace(potentialJson, '').trim();
-                        } catch (e) {
-                            console.error("JSON parse failed", e);
-                            // 若解析失敗，強制把包含 correction 的區塊隱藏，避免印出亂碼
-                            replyText = cleanRawText.replace(/\{[\s\S]*?"correction"[\s\S]*?\}/g, '').trim();
+                if (startIdx !== -1) {
+                    let endIdx = cleanRawText.indexOf('}', startIdx);
+                    let foundValidJson = false;
+                    
+                    // 嘗試尋找有效的 JSON 結尾
+                    while (endIdx !== -1) {
+                        const potentialJson = cleanRawText.substring(startIdx, endIdx + 1);
+                        if (potentialJson.includes('"correction"')) {
+                            try {
+                                correctionData = JSON.parse(potentialJson);
+                                replyText = cleanRawText.replace(potentialJson, '').trim();
+                                foundValidJson = true;
+                                break;
+                            } catch (e) {
+                                // JSON 格式不對，繼續找下一個 '}'
+                            }
                         }
+                        endIdx = cleanRawText.indexOf('}', endIdx + 1);
+                    }
+                    
+                    // 如果模型輸出的 JSON 真的壞到無法 parse，強制隱藏它，不要印給使用者看
+                    if (!foundValidJson && cleanRawText.substring(startIdx).includes('"correction"')) {
+                         replyText = cleanRawText.replace(/\{[\s\S]*?"correction"[\s\S]*?\}/g, '').trim();
                     }
                 }
+                
+                // 再清一次可能殘留的 開頭 JSON 字眼
+                replyText = replyText.replace(/^(JSON\s*:?\s*|json\s*:?\s*)/i, '').trim();
 
                 addBubble(replyText, 'ai', correctionData);
                 appState.chatHistory.push({ role: "model", text: rawText });
