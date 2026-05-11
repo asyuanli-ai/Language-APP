@@ -779,7 +779,7 @@
             }
 
             // --- Google Gemini Integration ---
-            const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+            const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
 
             window.callGemini = async function(contents, systemInstruction = "") {
                 const apiKey = localStorage.getItem('v21_key');
