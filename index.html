@@ -1874,7 +1874,10 @@
             appState.tempTransResult = null;
         }
 
+        let isTranslating = false;
         async function doTranslate(text) {
+            if (isTranslating) return;
+            isTranslating = true;
             try {
                 const langName = APP_DATA.langs[appState.lang].name;
                 const prompt = `
@@ -1933,6 +1936,8 @@ Return ONLY valid JSON, no markdown formatting.`;
                         <button onclick="closeTransModal()" class="mt-4 px-6 py-2 bg-gray-100 rounded-lg text-sm font-bold">好的</button>
                     </div>
                 `;
+            } finally {
+                isTranslating = false;
             }
         }
 
