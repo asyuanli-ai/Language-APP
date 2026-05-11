@@ -452,8 +452,8 @@
            ========================================= */
         
         // Helper to create course objects
-        function createCourse(id, title, desc, sentences, aiRole, userRole, context) {
-            return { id, title, desc, sentences, aiRole, userRole, context };
+        function createCourse(id, title, desc, sentences, aiRole, userRole, context, keywords) {
+            return { id, title, desc, sentences, aiRole, userRole, context, keywords };
         }
 
         const APP_DATA = {
@@ -523,74 +523,74 @@
             courses: {
                 en: {
                     beginner: [
-                        createCourse(101, "Self Introduction", "Learn to introduce yourself naturally.", [{ text: "My name is...", trans: "我的名字是..." }, { text: "I am from...", trans: "我來自..." }, { text: "Nice to meet you", trans: "很高興見到你" }], "New Neighbor", "New Resident", "Meeting a new neighbor at the apartment lobby."),
-                        createCourse(102, "Ordering Food", "Order your favorite meal.", [{ text: "I would like...", trans: "我想點..." }, { text: "How much is this?", trans: "這個多少錢？" }, { text: "No spicy, please", trans: "請不要加辣" }], "Waiter", "Customer", "Ordering at a fast food restaurant."),
-                        createCourse(103, "Asking Directions", "Never get lost again.", [{ text: "Where is the...", trans: "請問...在哪裡？" }, { text: "Go straight", trans: "直走" }, { text: "Turn left", trans: "向左轉" }], "Police Officer", "Lost Tourist", "Asking for directions on the street."),
-                        createCourse(104, "Checking into Hotel", "Hotel check-in essentials.", [{ text: "I have a reservation", trans: "我有預訂" }, { text: "Breakfast included?", trans: "含早餐嗎？" }, { text: "What is the WiFi password?", trans: "WiFi密碼是什麼？" }], "Receptionist", "Guest", "Checking in at the front desk."),
-                        createCourse(105, "Taking a Taxi", "Getting to your destination.", [{ text: "Please take me to...", trans: "請帶我去..." }, { text: "Stop here, please", trans: "請在這裡停車" }, { text: "Keep the change", trans: "不用找錢了" }], "Taxi Driver", "Passenger", "In a taxi going to the airport.")
+                        createCourse(101, "Self Introduction", "Learn to introduce yourself naturally.", [{ text: "My name is...", trans: "我的名字是..." }, { text: "I am from...", trans: "我來自..." }, { text: "Nice to meet you", trans: "很高興見到你" }], "New Neighbor", "New Resident", "Meeting a new neighbor at the apartment lobby.", ["Name", "From", "Nice", "Meet"]),
+                        createCourse(102, "Ordering Food", "Order your favorite meal.", [{ text: "I would like...", trans: "我想點..." }, { text: "How much is this?", trans: "這個多少錢？" }, { text: "No spicy, please", trans: "請不要加辣" }], "Waiter", "Customer", "Ordering at a fast food restaurant.", ["Order", "Price", "Spicy", "Please"]),
+                        createCourse(103, "Asking Directions", "Never get lost again.", [{ text: "Where is the...", trans: "請問...在哪裡？" }, { text: "Go straight", trans: "直走" }, { text: "Turn left", trans: "向左轉" }], "Police Officer", "Lost Tourist", "Asking for directions on the street.", ["Where", "Straight", "Left", "Right"]),
+                        createCourse(104, "Checking into Hotel", "Hotel check-in essentials.", [{ text: "I have a reservation", trans: "我有預訂" }, { text: "Breakfast included?", trans: "含早餐嗎？" }, { text: "What is the WiFi password?", trans: "WiFi密碼是什麼？" }], "Receptionist", "Guest", "Checking in at the front desk.", ["Reservation", "Breakfast", "WiFi", "Key"]),
+                        createCourse(105, "Taking a Taxi", "Getting to your destination.", [{ text: "Please take me to...", trans: "請帶我去..." }, { text: "Stop here, please", trans: "請在這裡停車" }, { text: "Keep the change", trans: "不用找錢了" }], "Taxi Driver", "Passenger", "In a taxi going to the airport.", ["Destination", "Stop", "Change", "Taxi"])
                     ],
                     intermediate: [
-                        createCourse(201, "Job Interview", "Answer common interview questions.", [{ text: "What sets me apart is my comprehensive experience in...", trans: "使我與眾不同的是我在...方面的豐富經驗" }, { text: "I consider myself highly adaptable and resilient.", trans: "我認為自己具有很強的適應能力和韌性。" }, { text: "Could you elaborate on the team's dynamics?", trans: "您能詳細說明一下團隊的運作方式嗎？" }], "Hiring Manager", "Applicant", "Job interview for a mid-level marketing role."),
-                        createCourse(202, "Doctor Visit", "Explain your symptoms in detail.", [{ text: "I've been experiencing persistent migraines lately.", trans: "我最近一直感到持續性的偏頭痛。" }, { text: "The pain radiates down to my lower back.", trans: "疼痛感向下延伸到我的下背部。" }, { text: "Are there any side effects to this prescription?", trans: "這份處方藥有什麼副作用嗎？" }], "Doctor", "Patient", "Consulting a doctor about chronic pain."),
-                        createCourse(203, "Restaurant Complaint", "Politely solving food issues.", [{ text: "I'm afraid this dish is slightly undercooked.", trans: "恐怕這道菜還沒完全煮熟。" }, { text: "Could you possibly have the chef look into this?", trans: "能請主廚幫忙確認一下嗎？" }, { text: "We'd appreciate it if you could deduct this from the bill.", trans: "如果您能從帳單中扣除這筆費用，我們將不勝感激。" }], "Manager", "Customer", "Complain politely about undercooked food."),
-                        createCourse(204, "Debating a Plan", "Discussing travel itineraries.", [{ text: "Wouldn't it be more practical to take the train?", trans: "搭火車難道不是更實際嗎？" }, { text: "I see your point, but we run the risk of delays.", trans: "我明白你的觀點，但我們面臨延誤的風險。" }, { text: "Let's compromise and stick to the original schedule.", trans: "我們折衷一下，按照原定計劃進行吧。" }], "Friend", "You", "Debating transportation options for a trip."),
-                        createCourse(205, "Shopping for Clothes", "Asking for specific fits and materials.", [{ text: "Do you have this garment in a more breathable fabric?", trans: "這件衣服有透氣一點的面料嗎？" }, { text: "It's a bit snug around the shoulders.", trans: "肩膀部位有點太緊了。" }, { text: "I'm looking for something versatile for both work and casual wear.", trans: "我在尋找適合工作和休閒穿著的多功能款式。" }], "Shop Assistant", "Shopper", "Buying a versatile outfit in a boutique.")
+                        createCourse(201, "Job Interview", "Answer common interview questions.", [{ text: "What sets me apart is my comprehensive experience in...", trans: "使我與眾不同的是我在...方面的豐富經驗" }, { text: "I consider myself highly adaptable and resilient.", trans: "我認為自己具有很強的適應能力和韌性。" }, { text: "Could you elaborate on the team's dynamics?", trans: "您能詳細說明一下團隊的運作方式嗎？" }], "Hiring Manager", "Applicant", "Job interview for a mid-level marketing role.", ["Experience", "Adaptable", "Dynamics", "Role"]),
+                        createCourse(202, "Doctor Visit", "Explain your symptoms in detail.", [{ text: "I've been experiencing persistent migraines lately.", trans: "我最近一直感到持續性的偏頭痛。" }, { text: "The pain radiates down to my lower back.", trans: "疼痛感向下延伸到我的下背部。" }, { text: "Are there any side effects to this prescription?", trans: "這份處方藥有什麼副作用嗎？" }], "Doctor", "Patient", "Consulting a doctor about chronic pain.", ["Symptoms", "Pain", "Prescription", "Effects"]),
+                        createCourse(203, "Restaurant Complaint", "Politely solving food issues.", [{ text: "I'm afraid this dish is slightly undercooked.", trans: "恐怕這道菜還沒完全煮熟。" }, { text: "Could you possibly have the chef look into this?", trans: "能請主廚幫忙確認一下嗎？" }, { text: "We'd appreciate it if you could deduct this from the bill.", trans: "如果您能從帳單中扣除這筆費用，我們將不勝感激。" }], "Manager", "Customer", "Complain politely about undercooked food.", ["Undercooked", "Chef", "Deduct", "Bill"]),
+                        createCourse(204, "Debating a Plan", "Discussing travel itineraries.", [{ text: "Wouldn't it be more practical to take the train?", trans: "搭火車難道不是更實際嗎？" }, { text: "I see your point, but we run the risk of delays.", trans: "我明白你的觀點，但我們面臨延誤的風險。" }, { text: "Let's compromise and stick to the original schedule.", trans: "我們折衷一下，按照原定計劃進行吧。" }], "Friend", "You", "Debating transportation options for a trip.", ["Practical", "Risk", "Compromise", "Schedule"]),
+                        createCourse(205, "Shopping for Clothes", "Asking for specific fits and materials.", [{ text: "Do you have this garment in a more breathable fabric?", trans: "這件衣服有透氣一點的面料嗎？" }, { text: "It's a bit snug around the shoulders.", trans: "肩膀部位有點太緊了。" }, { text: "I'm looking for something versatile for both work and casual wear.", trans: "我在尋找適合工作和休閒穿著的多功能款式。" }], "Shop Assistant", "Shopper", "Buying a versatile outfit in a boutique.", ["Fabric", "Snug", "Versatile", "Casual"])
                     ],
                     advanced: [
-                        createCourse(301, "Business Negotiation", "Negotiating a complex deal.", [{ text: "We are willing to make concessions provided that...", trans: "我們願意做出讓步，前提是..." }, { text: "It is imperative that we reach a consensus today.", trans: "今天我們必須達成共識。" }, { text: "Let's review the stipulations in clause four.", trans: "讓我們複習一下第四條款的規定。" }], "Client", "Sales Manager", "Negotiating a high-stakes contract."),
-                        createCourse(302, "Presentation Q&A", "Handling tough questions.", [{ text: "That's an insightful observation to bring forward.", trans: "那是一個非常精闢的觀察。" }, { text: "To elaborate on the nuances of this paradigm...", trans: "為了詳述這個範式的細微差別..." }, { text: "Empirical data substantiates our preliminary hypothesis.", trans: "實證數據證實了我們的初步假設。" }], "Audience Member", "Presenter", "Q&A session at a global convention."),
-                        createCourse(303, "Academic Discussion", "Debating sociology.", [{ text: "I must respectfully disagree with your premise.", trans: "我必須禮貌地反對您的前提。" }, { text: "The aforementioned phenomenon merely scratches the surface.", trans: "上述現象僅僅是皮毛而已。" }, { text: "It fundamentally contradicts established sociological frameworks.", trans: "它從根本上與既定的社會學框架相矛盾。" }], "Professor", "Student", "Debating the impact of globalization."),
-                        createCourse(304, "Tech Support Escalation", "Solving systemic issues.", [{ text: "We're experiencing intermittent latency across the network.", trans: "我們整個網絡正經歷間歇性的延遲。" }, { text: "Could you verify the integrity of the recent deployment?", trans: "您能確認一下最近部署的完整性嗎？" }, { text: "We need to mitigate the vulnerabilities immediately.", trans: "我們需要立即緩解這些漏洞。" }], "Senior IT Engineer", "Employee", "Reporting a critical systemic vulnerability."),
-                        createCourse(305, "Networking", "Professional connection building.", [{ text: "Your recent publication profoundly altered my perspective on...", trans: "您最近的出版物深刻改變了我對...的看法" }, { text: "I foresee a tremendous synergy between our respective divisions.", trans: "我預見到我們各自部門之間巨大的協同效應。" }, { text: "It would be an honor to ostensibly collaborate on future endeavors.", trans: "能在未來的事業中進行合作將是我的榮幸。" }], "Industry Expert", "Attendee", "Networking at a high-level corporate event.")
+                        createCourse(301, "Business Negotiation", "Negotiating a complex deal.", [{ text: "We are willing to make concessions provided that...", trans: "我們願意做出讓步，前提是..." }, { text: "It is imperative that we reach a consensus today.", trans: "今天我們必須達成共識。" }, { text: "Let's review the stipulations in clause four.", trans: "讓我們複習一下第四條款的規定。" }], "Client", "Sales Manager", "Negotiating a high-stakes contract.", ["Concessions", "Imperative", "Consensus", "Stipulations"]),
+                        createCourse(302, "Presentation Q&A", "Handling tough questions.", [{ text: "That's an insightful observation to bring forward.", trans: "那是一個非常精闢的觀察。" }, { text: "To elaborate on the nuances of this paradigm...", trans: "為了詳述這個範式的細微差別..." }, { text: "Empirical data substantiates our preliminary hypothesis.", trans: "實證數據證實了我們的初步假設。" }], "Audience Member", "Presenter", "Q&A session at a global convention.", ["Insightful", "Nuances", "Empirical", "Hypothesis"]),
+                        createCourse(303, "Academic Discussion", "Debating sociology.", [{ text: "I must respectfully disagree with your premise.", trans: "我必須禮貌地反對您的前提。" }, { text: "The aforementioned phenomenon merely scratches the surface.", trans: "上述現象僅僅是皮毛而已。" }, { text: "It fundamentally contradicts established sociological frameworks.", trans: "它從根本上與既定的社會學框架相矛盾。" }], "Professor", "Student", "Debating the impact of globalization.", ["Premise", "Phenomenon", "Contradicts", "Frameworks"]),
+                        createCourse(304, "Tech Support Escalation", "Solving systemic issues.", [{ text: "We're experiencing intermittent latency across the network.", trans: "我們整個網絡正經歷間歇性的延遲。" }, { text: "Could you verify the integrity of the recent deployment?", trans: "您能確認一下最近部署的完整性嗎？" }, { text: "We need to mitigate the vulnerabilities immediately.", trans: "我們需要立即緩解這些漏洞。" }], "Senior IT Engineer", "Employee", "Reporting a critical systemic vulnerability.", ["Intermittent", "Integrity", "Mitigate", "Vulnerabilities"]),
+                        createCourse(305, "Networking", "Professional connection building.", [{ text: "Your recent publication profoundly altered my perspective on...", trans: "您最近的出版物深刻改變了我對...的看法" }, { text: "I foresee a tremendous synergy between our respective divisions.", trans: "我預見到我們各自部門之間巨大的協同效應。" }, { text: "It would be an honor to ostensibly collaborate on future endeavors.", trans: "能在未來的事業中進行合作將是我的榮幸。" }], "Industry Expert", "Attendee", "Networking at a high-level corporate event.", ["Publication", "Perspective", "Synergy", "Collaborate"])
                     ]
                 },
                 jp: {
                     beginner: [
-                        createCourse(401, "自己紹介 (Jikoshoukai)", "學習基礎的日語自己介紹", [{ text: "はじめまして", trans: "初次見面" }, { text: "どうぞよろしく", trans: "請多指教" }, { text: "そうです", trans: "是這樣" }], "鄰居", "", "在公寓大廳初次見面"),
-                        createCourse(402, "コンビニ (Konbini)", "便利商店購物對話", [{ text: "これをください", trans: "請給我這個" }, { text: "袋をください", trans: "請給我袋子" }, { text: "大丈夫です", trans: "不用了/沒關係" }], "店員", "顧客", "在便利商店結帳"),
-                        createCourse(403, "道を聞く", "詢問路徑", [{ text: "すみません、駅はどこですか？", trans: "不好意思，請問車站搬在哪裡？" }, { text: "まっすぐ行ってください", trans: "請直走" }, { text: "左に曲がります", trans: "左轉" }], "路人", "遊客", "在街上問路"),
-                        createCourse(404, "注文 (Order)", "在餐廳點餐", [{ text: "これをお願いします", trans: "請給我這個" }, { text: "お会計をお願いします", trans: "請幫我結帳" }, { text: "ごちそうさまでした", trans: "謝謝招待" }], "店員", "顧客", "在餐廳點餐與結帳"),
-                        createCourse(405, "電車 (Train)", "搭乘電車相關對話", [{ text: "この電車は新宿に行きますか？", trans: "這班電車去新宿嗎？" }, { text: "乗り換えが必要です", trans: "需要換乘" }, { text: "ここで降ります", trans: "在這裡下車" }], "乘務員", "乘客", "在車站詢問搭車資訊")
+                        createCourse(401, "自己紹介 (Jikoshoukai)", "學習基礎的日語自己介紹", [{ text: "はじめまして", trans: "初次見面" }, { text: "どうぞよろしく", trans: "請多指教" }, { text: "そうです", trans: "是這樣" }], "鄰居", "", "在公寓大廳初次見面", ["はじめまして", "よろしく", "名前", "出身"]),
+                        createCourse(402, "コンビニ (Konbini)", "便利商店購物對話", [{ text: "これをください", trans: "請給我這個" }, { text: "袋をください", trans: "請給我袋子" }, { text: "大丈夫です", trans: "不用了/沒關係" }], "店員", "顧客", "在便利商店結帳", ["ください", "袋", "大丈夫", "お会計"]),
+                        createCourse(403, "道を聞く", "詢問路徑", [{ text: "すみません、駅はどこですか？", trans: "不好意思，請問車站搬在哪裡？" }, { text: "まっすぐ行ってください", trans: "請直走" }, { text: "左に曲がります", trans: "左轉" }], "路人", "遊客", "在街上問路", ["どこ", "駅", "まっすぐ", "左"]),
+                        createCourse(404, "注文 (Order)", "在餐廳點餐", [{ text: "これをお願いします", trans: "請給我這個" }, { text: "お会計をお願いします", trans: "請幫我結帳" }, { text: "ごちそうさまでした", trans: "謝謝招待" }], "店員", "顧客", "在餐廳點餐與結帳", ["注文", "お願いします", "お会計", "おいしい"]),
+                        createCourse(405, "電車 (Train)", "搭乘電車相關對話", [{ text: "この電車は新宿に行きますか？", trans: "這班電車去新宿嗎？" }, { text: "乗り換えが必要です", trans: "需要換乘" }, { text: "ここで降ります", trans: "在這裡下車" }], "乘務員", "乘客", "在車站詢問搭車資訊", ["電車", "新宿", "乗り換え", "降りる"])
                     ],
                     intermediate: [
-                        createCourse(501, "電話予約", "撥打電話進行預約", [{ text: "明日の7時に予約をお願いします", trans: "請預約明天晚上7點" }, { text: "アレルギーはありますか？", trans: "有過敏原嗎？" }, { text: "確認させていただきます", trans: "讓我確認一下" }], "店員", "顧客", "撥打餐廳電話預約位子"),
-                        createCourse(502, "健康相談", "在診所說明身體狀況", [{ text: "昨日から熱があって喉が痛いです", trans: "從昨天開始發燒且喉嚨痛" }, { text: "お薬を出しておきますね", trans: "我幫您開藥" }, { text: "お大事にしてください", trans: "請保重身體" }], "醫生", "病人", "在診所諮詢醫生"),
-                        createCourse(503, "買い物 (服)", "購買衣服與詢問細節", [{ text: "もう少し明るい色のものはありますか？", trans: "有再亮一點顏色的嗎？" }, { text: "試着してもいいですか？", trans: "可以試穿嗎？" }, { text: "これをいただきます", trans: "我要買這個" }], "店員", "顧客", "在服飾店購買衣服"),
-                        createCourse(504, "旅行の計画", "討論旅遊行程", [{ text: "新幹線で行くほうが便利だと思います", trans: "我覺得搭新幹線比較方便" }, { text: "ホテルはもう予約しましたか？", trans: "飯店已經預訂了嗎？" }, { text: "おすすめの場所はどこですか？", trans: "推薦的地方在哪裡？" }], "朋友", "你", "與朋友討論旅遊計劃"),
-                        createCourse(505, "ビジネス會議", "在商務會議中發言", [{ text: "このプロジェクトについて説明します", trans: "關於這個專案進行說明" }, { text: "ご意見をお聞かせください", trans: "請讓我們聽聽您的意見" }, { text: "検討させていただきます", trans: "我們會進行考慮" }], "主管", "職員", "在辦公室進行專案會議")
+                        createCourse(501, "電話予約", "撥打電話進行預約", [{ text: "明日の7時に予約をお願いします", trans: "請預約明天晚上7點" }, { text: "アレルギーはありますか？", trans: "有過敏原嗎？" }, { text: "確認させていただきます", trans: "讓我確認一下" }], "店員", "顧客", "撥打餐廳電話預約位子", ["予約", "7時", "アレルギー", "確認"]),
+                        createCourse(502, "健康相談", "在診所說明身體狀況", [{ text: "昨日から熱があって喉が痛いです", trans: "從昨天開始發燒且喉嚨痛" }, { text: "お藥を出しておきますね", trans: "我幫您開藥" }, { text: "お大事にしてください", trans: "請保重身體" }], "醫生", "病人", "在診所諮詢醫生", ["熱", "喉", "痛い", "藥"]),
+                        createCourse(503, "買い物 (服)", "購買衣服與詢問細節", [{ text: "もう少し明るい色的ものはありますか？", trans: "有再亮一點顏色的嗎？" }, { text: "試着してもいいですか？", trans: "可以試穿嗎？" }, { text: "これをいただきます", trans: "我要買這個" }], "店員", "顧客", "在服飾店購買衣服", ["明るい", "試着", "サイズ", "これ"]),
+                        createCourse(504, "旅行の計画", "討論旅遊行程", [{ text: "新幹線で行くほうが便利だと思います", trans: "我覺得搭新幹線比較方便" }, { text: "ホテルはもう予約しましたか？", trans: "飯店已經預訂了嗎？" }, { text: "おすすめの場所はどこですか？", trans: "推薦的地方在哪裡？" }], "朋友", "你", "與朋友討論旅遊計劃", ["新幹線", "便利", "ホテル", "おすすめ"]),
+                        createCourse(505, "ビジネス會議", "在商務會議中發言", [{ text: "このプロジェクトについて說明します", trans: "關於這個專案進行說明" }, { text: "ご意見をお聞かせください", trans: "請讓我們聽聽您的意見" }, { text: "検討させていただきます", trans: "我們會進行考慮" }], "主管", "職員", "在辦公室進行專案會議", ["プロジェクト", "說明", "意見", "検討"])
                     ],
                     advanced: [
-                        createCourse(601, "價格交渉", "進行商務價格談判", [{ text: "単価を少し下げていただけませんか", trans: "單價可以幫我們調降一點嗎" }, { text: "他社と比較検討しています", trans: "我們正在與其他公司比較考慮" }, { text: "合意に至りました", trans: "達成協議" }], "採購員", "供應商", "在會議室進行商務談判"),
-                        createCourse(602, "トラブル対応", "處理系統故障或投訴", [{ text: "早急に対応させていただきます", trans: "我們會儘速處理" }, { text: "ご迷惑をおかけして申し訳ございません", trans: "造成您的困擾非常抱歉" }, { text: "原因を調査中です", trans: "原因正在調查中" }], "客服", "客戶", "處理技術支援或產品投訴"),
-                        createCourse(603, "謝罪 (Apology)", "正式的道歉與賠償討論", [{ text: "不手際があったことを深くお詫び申し上げます", trans: "對於發生的失誤我們深感抱歉" }, { text: "誠心誠意対応させていただきます", trans: "我們會誠心誠意地進行處理" }, { text: "今後の対策を検討します", trans: "我們會考慮今後的對策" }], "公司代表", "受害者", "正式的商務道歉場景"),
-                        createCourse(604, "プレゼン", "進行正式的專案簡報", [{ text: "本日のプレゼンテーションを始めます", trans: "開始今天的簡報" }, { text: "こちらの圖表をご覧ください", trans: "請看這裡的圖表" }, { text: "ご清聴ありがとうございました", trans: "感謝您的聆聽" }], "主講人", "聽眾", "在會議室進行正式簡報"),
-                        createCourse(605, "面接 (Interview)", "高級職位的求職面試", [{ text: "私の強みはリーダーシップです", trans: "我的強項是領導力" }, { text: "貴社のビジョンに共感しています", trans: "我很認同貴公司的願景" }, { text: "貢献できると確信しています", trans: "我確信我可以做出貢獻" }], "面試官", "求職者", "高階職位面試場景")
+                        createCourse(601, "價格交渉", "進行商務價格談判", [{ text: "単価を少し下げていただけませんか", trans: "單價可以幫我們調降一點嗎" }, { text: "他社と比較検討しています", trans: "我們正在與其他公司比較考慮" }, { text: "合意に至りました", trans: "達成協議" }], "採購員", "供應商", "在會議室進行商務談判", ["單價", "下げる", "比較", "合意"]),
+                        createCourse(602, "トラブル対応", "處理系統故障或投訴", [{ text: "早急に対応させていただきます", trans: "我們會儘速處理" }, { text: "ご迷惑をおかけして申し訳ございません", trans: "造成您的困擾非常抱歉" }, { text: "原因を調查中です", trans: "原因正在調查中" }], "客服", "客戶", "處理技術支援或產品投訴", ["早急", "対応", "迷惑", "原因"]),
+                        createCourse(603, "謝罪 (Apology)", "正式的道歉與賠償討論", [{ text: "不手際があったことを深くお詫び申し上げます", trans: "對於發生的失誤我們深感抱歉" }, { text: "誠心誠意対応させていただきます", trans: "我們會誠心誠意地進行處理" }, { text: "今後の対策を検討します", trans: "我們會考慮今後的對策" }], "公司代表", "受害者", "正式的商務道歉場景", ["不手際", "お詫び", "誠心誠意", "対策"]),
+                        createCourse(604, "プレゼン", "進行正式的專案簡報", [{ text: "本日のプレゼンテーションを始めます", trans: "開始今天的簡報" }, { text: "こちらの圖表をご覧ください", trans: "請看這裡的圖表" }, { text: "ご清聴ありがとうございました", trans: "感謝您的聆聽" }], "主講人", "聽眾", "在會議室進行正式簡報", ["プレゼン", "圖表", "ご覧", "清聴"]),
+                        createCourse(605, "面接 (Interview)", "高級職位的求職面試", [{ text: "私の強みは領導力", trans: "我的強項是領導力" }, { text: "貴社のビジョンに共感しています", trans: "我很認同貴公司的願景" }, { text: "貢献できると確信しています", trans: "我確信我可以做出貢獻" }], "面試官", "求職者", "高階職位面試場景", ["強み", "ビジョン", "共感", "貢献"])
                     ]
                 },
                 kr: {
                     beginner: [
-                        createCourse(701, "자기소개 (Self Intro)", "學習基礎的韓語自己介紹", [{ text: "안녕하세요", trans: "您好" }, { text: "저는 대만 사람입니다", trans: "我是台灣人" }, { text: "만나서 반갑습니다", trans: "見到你很高興" }], "新鄰居", "", "在公寓電梯前初次見面"),
-                        createCourse(702, "음식 주문", "在餐廳點餐對話", [{ text: "이것 좀 주세요", trans: "請給我這個" }, { text: "맵지 않게 해주세요", trans: "請不要做太辣" }, { text: "메뉴판 좀 보여주세요", trans: "請給我看一下菜單" }], "店員", "顧客", "在餐廳點餐"),
-                        createCourse(703, "길 찾기", "在街上問路", [{ text: "죄송하지만, 지하철역이 어디예요?", trans: "不好意思，請問地鐵站在哪裡？" }, { text: "앞으로 쭉 가세요", trans: "請往前直走" }, { text: "고맙습니다", trans: "謝謝" }], "路人", "遊客", "在街上詢問地鐵站位置"),
-                        createCourse(704, "쇼핑", "在商店購物", [{ text: "이거 얼마예요?", trans: "這個多少錢？" }, { text: "좀 깎아 주세요", trans: "請算便宜一點" }, { text: "카드로 계산할게요", trans: "我要用信用卡付錢" }], "店員", "顧客", "在東大門購物場景"),
-                        createCourse(705, "택시", "搭乘計程車", [{ text: "강남역으로 가주세요", trans: "請帶我去江南站" }, { text: "여기서 세워주세요", trans: "請在這裡停車" }, { text: "잔돈은 괜찮아요", trans: "不用找錢了" }], "司機", "乘客", "在計程車內對話")
+                        createCourse(701, "자기소개 (Self Intro)", "學習基礎的韓語自己介紹", [{ text: "안녕하세요", trans: "您好" }, { text: "저는 대만 사람입니다", trans: "我是台灣人" }, { text: "만나서 반갑습니다", trans: "見到你很高興" }], "新鄰居", "", "在公寓電梯前初次見面", ["안녕하세요", "대만", "사람", "반갑습니다"]),
+                        createCourse(702, "음식 주문", "在餐廳點餐對話", [{ text: "이것 좀 주세요", trans: "請給我這個" }, { text: "맵지 않게 해주세요", trans: "請不要做太辣" }, { text: "메뉴판 좀 보여주세요", trans: "請給我看一下菜單" }], "店員", "顧客", "在餐廳點餐", ["주세요", "맵지", "메뉴판", "여기요"]),
+                        createCourse(703, "길 찾기", "在街上問路", [{ text: "죄송하지만, 지하철역이 어디예요?", trans: "不好意思，請問地鐵站在哪裡？" }, { text: "앞으로 쭉 가세요", trans: "請往前直走" }, { text: "고맙습니다", trans: "謝謝" }], "路人", "遊客", "在街上詢問地鐵站位置", ["지하철역", "어디", "앞으로", "고맙습니다"]),
+                        createCourse(704, "쇼핑", "在商店購物", [{ text: "이거 얼마예요?", trans: "這個多少錢？" }, { text: "좀 깎아 주세요", trans: "請算便宜一點" }, { text: "카드로 계산할게요", trans: "我要用信用卡付錢" }], "店員", "顧客", "在東大門購物場景", ["얼마", "깎아", "카드", "계산"]),
+                        createCourse(705, "택시", "搭乘計程車", [{ text: "강남역으로 가주세요", trans: "請帶我去江南站" }, { text: "여기서 세워주세요", trans: "請在這裡停車" }, { text: "잔돈은 괜찮아요", trans: "不用找錢了" }], "司機", "乘客", "在計程車內對話", ["강남역", "세워", "잔돈", "택시"])
                     ],
                     intermediate: [
-                        createCourse(801, "전화 예약", "進行餐廳或診所預約", [{ text: "오늘 저녁에 예약할 수 있을까요?", trans: "可以預約今天晚上嗎？" }, { text: "몇 시에 방문하시겠어요?", trans: "您預計幾點過來？" }, { text: "성함과 연락처를 알려주세요", trans: "請告知您的姓名和聯絡方式" }], "職員", "顧客", "撥打電話進行餐廳預約"),
-                        createCourse(802, "병원", "在醫院說明症狀", [{ text: "어디가 아파서 오셨어요?", trans: "您哪裡不舒服呢？" }, { text: "어제부터 열이 나고 머리가 아파요", trans: "從昨天開始發燒且頭痛" }, { text: "처방전 드릴게요", trans: "給您處方箋" }], "護理師/醫生", "病人", "在醫院諮詢醫生"),
-                        createCourse(803, "취미 생활", "與朋友討論興趣愛好", [{ text: "주말에 보통 뭐 하세요?", trans: "週末通常都做什麼？" }, { text: "저는 영화 보는 것을 좋아해요", trans: "我喜歡看電影" }, { text: "다음에 같이 갈까요?", trans: "下次要一起去嗎？" }], "朋友", "", "與韓國朋友閒聊愛好"),
-                        createCourse(804, "부동산", "諮詢租屋相關資訊", [{ text: "방 좀 보러 왔는데요", trans: "我是來看看房子的" }, { text: "보증금이 얼마예요?", trans: "保證金是多少？" }, { text: "월세는 관리비 포함인가요?", trans: "房租包含管理費嗎？" }], "房屋仲介", "租客", "在房地產經紀公司諮詢"),
-                        createCourse(805, "직장 생활", "在辦公室與同事溝通", [{ text: "이 서류 좀 확인해 주시겠어요?", trans: "可以幫我確認一下這份文件嗎？" }, { text: "오늘 회의가 몇 시였죠?", trans: "今天的會議是幾點來著？" }, { text: "수고하셨습니다", trans: "辛苦了" }], "同事", "你", "在韓國公司辦公室")
+                        createCourse(801, "전화 예약", "進行餐廳或診所預約", [{ text: "오늘 저녁에 예약할 수 있을까요?", trans: "可以預約今天晚上嗎？" }, { text: "몇 시에 방문하시겠어요?", trans: "您預計幾點過來？" }, { text: "성함和連絡處를 알려주세요", trans: "請告知您的姓名和聯絡方式" }], "職員", "顧客", "撥打電話進行餐廳預約", ["예약", "저녁", "방문", "連絡處"]),
+                        createCourse(802, "병원", "在醫院說明症狀", [{ text: "어디가 아파서 오셨어요?", trans: "您哪裡不舒服呢？" }, { text: "어제부터 열이 나고 머리가 아파요", trans: "從昨天開始發燒且頭痛" }, { text: "處方箋 드릴게요", trans: "給您處方箋" }], "護理師/醫生", "病人", "在醫院諮詢醫生", ["아파요", "열", "머리", "處方箋"]),
+                        createCourse(803, "취미 生活", "與朋友討論興趣愛好", [{ text: "주말에 보통 뭐 하세요?", trans: "週末通常都做什麼？" }, { text: "저는 영화 보는 것을 좋아해요", trans: "我喜歡看電影" }, { text: "다음에 같이 갈까요?", trans: "下次要一起去嗎？" }], "朋友", "", "與韓國朋友閒聊愛好", ["주말", "취미", "영화", "같이"]),
+                        createCourse(804, "부동산", "諮詢租屋相關資訊", [{ text: "房 좀 보러 왔는데요", trans: "我是來看看房子的" }, { text: "保證金이 얼마예요?", trans: "保證金是多少？" }, { text: "月稅는 管理費 包含인가요?", trans: "房租包含管理費嗎？" }], "房屋仲介", "租客", "在房地產經紀公司諮詢", ["房", "保證金", "月稅", "管理費"]),
+                        createCourse(805, "職場 生活", "在辦公室與同事溝通", [{ text: "이 書類 좀 確認해 주시겠어요?", trans: "可以幫我確認一下這份文件嗎？" }, { text: "오늘 會議가 몇 시였죠?", trans: "今天的會議是幾點來著？" }, { text: "辛苦了", trans: "辛苦了" }], "同事", "你", "在韓國公司辦公室", ["書類", "確認", "會議", "辛苦了"])
                     ],
                     advanced: [
-                        createCourse(901, "경제 토론", "討論宏觀經濟趨勢", [{ text: "거시경제적으로 보면...", trans: "從宏觀經濟的角度來看..." }, { text: "인플레이션이 우려되는 상황입니다", trans: "這是令人擔憂通貨膨脹的情況" }, { text: "대안을 제시해야 합니다", trans: "必須提出替代方案" }], "經濟專家", "記者", "經濟論壇討論場景"),
-                        createCourse(902, "취업 면접", "應徵高階職位面試", [{ text: "자신의 강점에 대해 말씀해 보세요", trans: "請說說看您自己的強項" }, { text: "저는 위기 관리 능력이 뛰어납니다", trans: "我的危機管理能力很出色" }, { text: "입사 후 포부를 밝혀 주세요", trans: "請說明入職後的理想抱負" }], "面試官", "應徵者", "韓國大型企業面試"),
-                        createCourse(903, "비즈니스 협상", "進行契約細節談判", [{ text: "단가 인하를 요청하고 싶습니다", trans: "我想要求調降單價" }, { text: "서로 윈윈할 수 있는 조건입니다", trans: "這是雙方都能贏的條件" }, { text: "계약서에 서명하시죠", trans: "請在合約上簽名吧" }], "採購經理", "供應商", "商務合約談判"),
-                        createCourse(904, "법률 상담", "諮詢法律糾紛與建議", [{ text: "손해 배상을 청구하고 싶습니다", trans: "我想請求損害賠償" }, { text: "증거 자료를 준비해야 합니다", trans: "必須準備證據資料" }, { text: "법적 조치를 취하겠습니다", trans: "我會採取法律行動" }], "律師", "委託人", "法律諮詢事務所"),
-                        createCourse(905, "사회 이슈", "討論社會熱點問題", [{ text: "고령화 사회의 문제점은...", trans: "高齡化社會的問題在於..." }, { text: "해결 방안을 모색해야 합니다", trans: "必須尋求解決方案" }, { text: "의견이 분분합니다", trans: "意見紛紜" }], "主持人", "嘉賓", "電視討論節目場景")
+                        createCourse(901, "經濟 토론", "討論宏觀經濟趨勢", [{ text: "巨視經濟적으로 보면...", trans: "從宏觀經濟的角度來看..." }, { text: "인플레이션이 우려되는 상황입니다", trans: "這是令人擔憂通貨膨脹的情況" }, { text: "對案을 제시해야 합니다", trans: "必須提出替代方案" }], "經濟專家", "記者", "經濟論壇討論場景", ["巨視經濟", "인플레이션", "對案", "展望"]),
+                        createCourse(902, "就業 面接", "應徵高階職位面試", [{ text: "자신의 強點에 대해 말씀해 보세요", trans: "請說說看您自己的強項" }, { text: "저는 危機 管理 能力이 뛰어납니다", trans: "我的危機管理能力很出色" }, { text: "入社 後 抱負를 밝혀 주세요", trans: "請說明入職後的理想抱負" }], "面試官", "應徵者", "韓國大型企業面試", ["強點", "危機管理", "抱負", "寄與"]),
+                        createCourse(903, "비즈니스 協商", "進行契約細節談判", [{ text: "單價 引下를 요청하고 싶습니다", trans: "我想要求調降單價" }, { text: "서로 윈윈할 수 있는 條件입니다", trans: "這是雙方都能贏的條件" }, { text: "契約書에 서명하시죠", trans: "請在合約上簽名吧" }], "採購經理", "供應商", "商務合約談判", ["單價", "引下", "윈윈", "契約書"]),
+                        createCourse(904, "法律 相談", "諮詢法律糾紛與建議", [{ text: "損害 賠償을 請求하고 싶습니다", trans: "我想請求損害賠償" }, { text: "證據 資料를 準備해야 합니다", trans: "必須準備證據資料" }, { text: "法的 措置를 취하겠습니다", trans: "我會採取法律行動" }], "律師", "委託人", "法律諮詢事務所", ["損害賠償", "證據", "措置", "法律"]),
+                        createCourse(905, "社會 이슈", "討論社會熱點問題", [{ text: "高齡化 社會의 問題點은...", trans: "高齡化社會的問題在於..." }, { text: "解決 方案을 모색해야 합니다", trans: "必須尋求解決方案" }, { text: "意見이 分分합니다", trans: "意見紛紜" }], "主持人", "嘉賓", "電視討論節目場景", ["高齡化", "問題點", "解決方案", "이슈"])
                     ]
                 }
-            }
+            },
         };
 
         const MISSION_DATA = {
@@ -693,14 +693,14 @@
                     advanced:     ['コーディネート', 'トレンド', 'ブランド', 'テイラード']
                 },
                 jp_corptalk_a: {
-                    beginner:     ['会議', '資料', '仕事', '提案'],
+                    beginner:     ['會議', '資料', '仕事', '提案'],
                     intermediate: ['プレゼン', '進捗', '承認', '戦略'],
                     advanced:     ['コンプライアンス', 'シナジー', '意思決定', 'KPI']
                 },
                 jp_interview_a: {
-                    beginner:     ['仕事', 'スキル', '志望', '経験'],
-                    intermediate: ['強み', '弱点', 'ビジョン', 'キャリア'],
-                    advanced:     ['貢献', 'リーダーシップ', '課題解決', '企業理念']
+                    beginner:     ['仕事', 'スキル', '志望', '經驗'],
+                    intermediate: ['強み', '弱點', 'ビジョン', 'キャリア'],
+                    advanced:     ['貢獻', 'リーダーシップ', '課題解決', '企業理念']
                 }
             },
             kr: {
@@ -730,14 +730,14 @@
                     advanced:     ['진단', '부작용', '만성', '정밀검사']
                 },
                 kr_corptalk_a: {
-                    beginner:     ['회의', '보고', '제안', '팀'],
-                    intermediate: ['전략', '일정', '검토', '협력'],
-                    advanced:     ['리더십', '의사결정', '성과지표', '비전']
+                    beginner:     ['會議', '報告', '提案', '팀'],
+                    intermediate: ['戰略', '日程', '檢討', '協力'],
+                    advanced:     ['리더십', '意思決定', '成果指標', '비전']
                 },
                 kr_interview_a: {
-                    beginner:     ['지원', '경험', '능력', '목표'],
-                    intermediate: ['강점', '약점', '커리어', '포부'],
-                    advanced:     ['위기관리', '핵심역량', '기업문화', '기여']
+                    beginner:     ['支援', '經驗', '能力', '目標'],
+                    intermediate: ['強點', '弱點', '커리어', '抱負'],
+                    advanced:     ['危機管理', '核心能力', '企業文化', '寄與']
                 }
             }
         };
@@ -779,7 +779,7 @@
             }
 
             // --- Google Gemini Integration ---
-            const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+            const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
             window.callGemini = async function(contents, systemInstruction = "") {
                 const apiKey = localStorage.getItem('v21_key');
@@ -1021,7 +1021,7 @@
             });
 
             // 課程重點單字
-            const vocabs = getCourseVocab(courseId);
+            const vocabs = course.keywords || ["hello"];
             let vocabHtml = '<div class="flex flex-wrap gap-2 mb-4">';
             vocabs.forEach(v => {
                 vocabHtml += `<span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full text-sm">${v}</span>`;
@@ -1037,7 +1037,7 @@
         <div class="mb-6">
             <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2"><i class="fas fa-book text-indigo-500"></i> 課程重點單字</h3>
             ${vocabHtml}
-            <p class="text-xs text-gray-400">點擊單字可查看詳細解析。熟練這些單字將有助於您在對話中更流暢地表達。</p>
+            <p class="text-xs text-gray-400">熟練這些單字將有助於您在對話中更流暢地表達。</p>
         </div>
 
         <div class="mb-6">
@@ -1075,14 +1075,6 @@
             document.getElementById('page-course-detail').classList.add('show');
         }
 
-        function closeCourseDetail() {
-            document.getElementById('page-course-detail').classList.remove('show');
-            // Reset Header
-            document.getElementById('header-title').innerText = "My Learning";
-            document.getElementById('header-back-btn').style.display = 'none';
-            document.getElementById('header-back-btn').onclick = endChat;
-        }
-
         /* =========================================
            4. CHAT SYSTEM (Updated for Course Mode)
            ========================================= */
@@ -1110,7 +1102,7 @@
             appState.courseMode = true; // Mark as course mode
             appState.chatHistory = [];
             appState.completedMissions = [];
-            appState.missionWords = course.sentences.map(s => s.text); // Mission = Course Sentences
+            appState.missionWords = course.keywords || course.sentences.map(s => s.text); // Use keywords if available
 
             // Switch UI
             document.getElementById('header-title').innerText = "對話練習";
@@ -1152,9 +1144,12 @@
             let pool = MISSION_DATA[appState.lang][scenarioId] ? MISSION_DATA[appState.lang][scenarioId][appState.level] : [];
             
             if (!pool || pool.length === 0) {
-                if (appState.level === 'beginner') pool = ['Hello', 'Thank you', 'Please'];
-                else if (appState.level === 'intermediate') pool = ['Actually', 'However', 'Therefore'];
-                else pool = ['Paradigm', 'Synergy', 'Crucial'];
+                const defaults = {
+                    en: { beginner: ['Hello', 'Thanks', 'Please', 'Sorry'], intermediate: ['Actually', 'However', 'Therefore', 'Although'], advanced: ['Paradigm', 'Synergy', 'Eloquent', 'Substantiate'] },
+                    jp: { beginner: ['こんにちは', 'ありがとう', 'すみません', 'はい'], intermediate: ['実は', 'しかし', 'それから', 'もちろん'], advanced: ['相乗効果', 'パラダイム', '洞察', '戦略的'] },
+                    kr: { beginner: ['안녕하세요', '감사합니다', '주세요', '죄송해요'], intermediate: ['사실', '하지만', '그래서', '물론'], advanced: ['시너지', '패러다임', '전략적', '통찰'] }
+                };
+                pool = defaults[appState.lang][appState.level];
             }
             appState.missionWords = pool;
 
@@ -1182,7 +1177,7 @@
             document.body.classList.remove('chat-mode');
             document.getElementById('header-back-btn').style.display = 'none';
             document.getElementById('audio-toggle').style.display = 'none';
-            document.getElementById('header-title').innerText = "SpeakAI";
+            document.getElementById('header-title').innerText = "GoSpeak";
             window.speechSynthesis.cancel();
 
             // Return to home (Practice page)
@@ -1527,21 +1522,21 @@
             container.innerHTML = `
                 <div class="space-y-5">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">皜祇蝭 (漲)</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">測驗範圍</label>
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="setQuizRange('all', this)" class="quiz-range-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">券桀</button>
-                            <button onclick="setQuizRange('recent', this)" class="quiz-range-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">餈 20 </button>
+                            <button onclick="setQuizRange('all', this)" class="quiz-range-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">全部單字</button>
+                            <button onclick="setQuizRange('recent', this)" class="quiz-range-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">最近 20 個</button>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">憿閮剖</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">題型設定</label>
                         <div class="grid grid-cols-3 gap-2">
-                            <button onclick="setQuizType('mixed', this)" class="quiz-type-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">瘛瑕粹</button>
-                            <button onclick="setQuizType('mcq', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">豢憿</button>
-                            <button onclick="setQuizType('spell', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">澆神憿</button>
+                            <button onclick="setQuizType('mixed', this)" class="quiz-type-btn py-2 border-2 border-blue-500 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold active">混合模式</button>
+                            <button onclick="setQuizType('mcq', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">選擇題</button>
+                            <button onclick="setQuizType('spell', this)" class="quiz-type-btn py-2 border-2 border-gray-200 text-gray-500 rounded-xl text-sm font-bold">拼寫題</button>
                         </div>
                     </div>
-                    <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mt-4 shadow-lg active:scale-95 transition">见皜祇</button>
+                    <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold mt-4 shadow-lg active:scale-95 transition">開始測驗</button>
                 </div>
             `;
             appState.quizConfig.type = 'mixed';
@@ -2065,14 +2060,6 @@ Return ONLY valid JSON, no markdown formatting.`;
             appState.grammarList = appState.grammarList.filter(g => g.id !== id);
             localStorage.setItem('my_grammar', JSON.stringify(appState.grammarList));
             renderGrammar();
-        }
-
-        function getCourseVocab(courseId) {
-            const v = {
-                101: ['name', 'nice'], 102: ['order', 'price'], 201: ['experience'], 301: ['negotiation'],
-                401: ['はじめまして'], 501: ['予約'], 601: ['単価'], 701: ['안녕하세요'], 801: ['예약'], 901: ['거시경제']
-            };
-            return v[courseId] || ["hello"];
         }
 
         window.onload = init;
